@@ -1,10 +1,13 @@
-from typing import List, Dict
-from core_service.domain.note_repository import IZettelkastenRepository
-from core_service.domain.search_query import SearchQuery
-from core_service.domain.zettelkasten_note import ValidationError, ZettelkastenNote
+from typing import Dict, List
+
+from domain.note_repository import IZettelkastenRepository
+from domain.search_query import SearchQuery
+from domain.zettelkasten_note import ValidationError, ZettelkastenNote
+
 
 class ZettelkastenService:
     """Application Service for Zettelkasten"""
+
     def __init__(self, repository: IZettelkastenRepository):
         self.repository = repository
 

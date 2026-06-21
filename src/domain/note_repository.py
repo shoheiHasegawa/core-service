@@ -1,11 +1,12 @@
-import os
-import re
-from typing import List, Dict
-from core_service.domain.zettelkasten_note import ZettelkastenNote
-from core_service.domain.search_query import SearchQuery
+from typing import List
+
+from domain.search_query import SearchQuery
+from domain.zettelkasten_note import ZettelkastenNote
+
 
 class IZettelkastenRepository:
     """Interface for Zettelkasten Note Repository"""
+
     def get_all(self) -> List[ZettelkastenNote]:
         raise NotImplementedError
 

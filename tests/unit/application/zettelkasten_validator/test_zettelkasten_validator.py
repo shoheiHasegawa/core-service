@@ -1,8 +1,20 @@
 import unittest
-from core_service.domain.zettelkasten_note import ZettelkastenNote, ValidationError
+
+from domain.zettelkasten_note import ZettelkastenNote
+from infrastructure.markdown_parser import MarkdownParser
+
 
 class TestZettelkastenNote(unittest.TestCase):
+    def _create_note(self, filename: str, content: str) -> ZettelkastenNote:
+        parser = MarkdownParser(content)
+        return ZettelkastenNote(
+            filename=filename,
+            frontmatter_keys=parser.parse_frontmatter_keys(),
+            lines_with_number=parser.parse_links_with_line_numbers(),
+        )
+
     def test_valid_note(self):
+        """[SCENARIO-01] Zettelkastenノートの正常系バリデーション"""
         content = """---
 id: 20260620170000
 aliases: []
@@ -14,17 +26,19 @@ updated_at: 2026-06-20
 ## Connections
 - [Support] [[Valid_Other_Note]]
 """
-        note = ZettelkastenNote(filename="Valid_Note.md", content=content)
+        note = self._create_note("Valid_Note.md", content)
         errors = note.validate()
         self.assertEqual(len(errors), 0)
 
     def test_missing_frontmatter(self):
+        """[SCENARIO-02] YAMLフロントマターの欠落・必須キー不足の検知"""
         content = "# No frontmatter"
-        note = ZettelkastenNote(filename="Bad.md", content=content)
+        note = self._create_note("Bad.md", content)
         errors = note.validate()
         self.assertTrue(any("Missing YAML frontmatter" in e.message for e in errors))
 
     def test_invalid_links(self):
+        """[SCENARIO-03] 禁止ディレクトリへのアウトバウンドリンク検知"""
         content = """---
 id: 123
 aliases: []
@@ -36,9 +50,10 @@ updated_at: 2026-06-20
 [Link to Area](file:///Users/shoheihasegawa/play_ground/second-brain/10_Areas/Marketing.md)
 [Link to Project](../../10_Projects/Proj.md)
 """
-        note = ZettelkastenNote(filename="Bad_Links.md", content=content)
+        note = self._create_note("Bad_Links.md", content)
         errors = note.validate()
         self.assertTrue(any("Forbidden outbound link" in e.message for e in errors))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
