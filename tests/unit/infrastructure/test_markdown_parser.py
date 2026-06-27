@@ -1,8 +1,10 @@
 import unittest
+
 from infrastructure.markdown_parser import MarkdownParser
 
+
 class TestMarkdownParser(unittest.TestCase):
-    
+
     def test_parse_frontmatter_keys_no_match(self):
         """[SCENARIO-04] Frontmatterがない場合のキー抽出"""
         content = "# No frontmatter here\nJust text."

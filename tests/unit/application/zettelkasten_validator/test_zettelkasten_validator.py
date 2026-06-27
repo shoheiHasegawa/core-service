@@ -27,14 +27,14 @@ updated_at: 2026-06-20
 - [Support] [[Valid_Other_Note]]
 """
         note = self._create_note("Valid_Note.md", content)
-        errors = note.validate()
+        errors = note.validate(forbidden_patterns=["/Mock_Area", "/Mock_Project"])
         self.assertEqual(len(errors), 0)
 
     def test_missing_frontmatter(self):
         """[SCENARIO-02] YAMLフロントマターの欠落・必須キー不足の検知"""
         content = "# No frontmatter"
         note = self._create_note("Bad.md", content)
-        errors = note.validate()
+        errors = note.validate(forbidden_patterns=["/Mock_Area", "/Mock_Project"])
         self.assertTrue(any("Missing YAML frontmatter" in e.message for e in errors))
 
     def test_invalid_links(self):
@@ -47,11 +47,11 @@ created_at: 2026-06-20
 updated_at: 2026-06-20
 ---
 # Invalid Links
-[Link to Area](file:///Users/shoheihasegawa/play_ground/second-brain/10_Areas/Marketing.md)
-[Link to Project](../../10_Projects/Proj.md)
+[Link to Area](file:///Users/mock/path/Mock_Area/Marketing.md)
+[Link to Project](../../Mock_Project/Proj.md)
 """
         note = self._create_note("Bad_Links.md", content)
-        errors = note.validate()
+        errors = note.validate(forbidden_patterns=["/Mock_Area", "/Mock_Project"])
         self.assertTrue(any("Forbidden outbound link" in e.message for e in errors))
 
 

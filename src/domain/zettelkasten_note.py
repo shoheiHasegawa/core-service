@@ -16,10 +16,10 @@ class ZettelkastenNote:
         self.frontmatter_keys = frontmatter_keys
         self.lines_with_number = lines_with_number
 
-    def validate(self) -> List[ValidationError]:
+    def validate(self, forbidden_patterns: List[str]) -> List[ValidationError]:
         errors = []
         errors.extend(self._validate_frontmatter())
-        errors.extend(self._validate_links())
+        errors.extend(self._validate_links(forbidden_patterns))
         return errors
 
     def _validate_frontmatter(self) -> List[ValidationError]:
@@ -33,9 +33,8 @@ class ZettelkastenNote:
 
         return errors
 
-    def _validate_links(self) -> List[ValidationError]:
+    def _validate_links(self, forbidden_patterns: List[str]) -> List[ValidationError]:
         errors = []
-        forbidden_patterns = ["/10_Areas", "/10_Projects", "/00_Inbox", "/20_Sense_Making", "/30_Resources"]
 
         for line_num, line_text in self.lines_with_number:
             for fp in forbidden_patterns:

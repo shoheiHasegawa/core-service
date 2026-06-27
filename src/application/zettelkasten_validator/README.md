@@ -6,7 +6,7 @@
 
 1. **取得**: `IZettelkastenRepository` を通じて `second-brain` からノート一覧を取得する。
 2. **検証**: 各ノートに対し、Domainモデル（`ZettelkastenNote`）の `validate()` を実行する。
-3. **結果集約**: 検証エラー（`ValidationError`）があったファイルとそのエラー内容のリストを呼び出し元（agent-core）へ返却する。
+3. **目的**: Zettelkastenルール（YAMLフロントマターの存在、許可されないリンクの禁止など）に違反しているノートを検出し、そのリストを上位の呼び出し元へ返却する。
 
 ## Agent駆動パッケージング (Feature-Driven)
 このディレクトリは、AIエージェントが自律的にコンテキストを理解できるよう、以下の構成で自己完結しています。

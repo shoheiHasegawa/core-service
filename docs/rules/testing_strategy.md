@@ -27,8 +27,8 @@
 ## 5. AI Pair Programming Protocol (AI分業制)
 - エージェントがタスクを実行する際、TDDにおける確証バイアス（実装に合わせてテストを書き換える等）を防ぐため、1体のAIがテストと実装を兼務してはならない。
 - **Testerフェーズ**: `Tester Agent` を起動し、Failするテストのみを書かせる（`src/` への書き込み禁止）。
-- **Implementerフェーズ**: `Implementer Agent` を起動し、テストをパスする最小限の実装を行わせる（既存のテストファイルの書き換え禁止）。
-- 詳細は `agent-core/skills/core-service-engineer/SKILL.md` のワークフローを参照すること。
+- 実装（TDD）の担当は Engineer エージェント、その後の検証と受け入れは Reviewer エージェントといった形で、複数エージェントによる分割統治を行うこと（Pair Programming Protocol）。
+- 詳細は上位レイヤーのワークフロー定義を参照すること。
 
 ## 6. テスト品質とエッジケース制約
 - **カバレッジの絶対閾値**: `make test` 時のカバレッジは常に 90% 以上を維持しなければならない。下回る場合はCI/Linterレベルでブロックされる。
