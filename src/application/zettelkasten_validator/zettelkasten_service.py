@@ -9,6 +9,7 @@ from domain.zettelkasten_note import ValidationError, ZettelkastenNote
 @dataclass
 class ZettelkastenConfig:
     """Configuration for Zettelkasten Service."""
+
     forbidden_patterns: List[str]
     # Future expansion: e.g., max_search_results: int = 100, exclude_tags: List[str] = field(default_factory=list)
 

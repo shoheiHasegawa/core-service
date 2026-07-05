@@ -34,9 +34,7 @@ def check_test_file(filepath: Path) -> list[str]:
                 continue
 
             if not SCENARIO_PATTERN.search(docstring):
-                errors.append(
-                    f"Function '{node.name}' in {filepath.name} lacks spec ID in docstring."
-                )
+                errors.append(f"Function '{node.name}' in {filepath.name} lacks spec ID in docstring.")
 
     return errors
 

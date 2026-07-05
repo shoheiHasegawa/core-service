@@ -27,8 +27,10 @@
 ## 5. AI Pair Programming Protocol (AI分業制)
 - エージェントがタスクを実行する際、TDDにおける確証バイアス（実装に合わせてテストを書き換える等）を防ぐため、1体のAIがテストと実装を兼務してはならない。
 - **Testerフェーズ**: `Tester Agent` を起動し、Failするテストのみを書かせる（`src/` への書き込み禁止）。
-- 実装（TDD）の担当は Engineer エージェント、その後の検証と受け入れは Reviewer エージェントといった形で、複数エージェントによる分割統治を行うこと（Pair Programming Protocol）。
-- 詳細は上位レイヤーのワークフロー定義を参照すること。
+- **Implementer (Red -> Green) フェーズ**: `Engineer Agent` がテストをパスさせるための実装を行う。
+- **Refactor (Green -> Clean) フェーズ【重要】**: テストがパスした後、Implementer は**直ちに**自身でDDDとSOLID原則に基づくリファクタリングを行わなければならない（Application層からDomain層へのビジネスロジックの抽出など）。これをスキップして Reviewer に提出することは禁止する。
+- **CI Verificationフェーズ**: レビューを開始する前に、必ず機械的な検証ツール（`pytest`やカバレッジ計測など）を実行し、そのログ結果を確認しなければならない。AIの「目視」によるテスト網羅性の判断はハルシネーション（見落とし）を引き起こすため、絶対に信用してはならない。
+- **Specialized Reviewフェーズ**: 単一の「汎用Reviewer」に査読を任せると、コンテキストの希薄化（Attention Dilution）により重大な構造的欠陥を見落とす。レビューは必ず「QA Engineer（品質保証）」「Domain Architect（DDD設計）」「Code Quality Reviewer（SOLID・保守性）」のように、複数の専門特化ペルソナ（サブエージェント）に分割して並列で実行させること。
 
 ## 6. テスト品質とエッジケース制約
 - **カバレッジの絶対閾値**: `make test` 時のカバレッジは常に 90% 以上を維持しなければならない。下回る場合はCI/Linterレベルでブロックされる。

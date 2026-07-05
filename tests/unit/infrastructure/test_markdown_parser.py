@@ -4,7 +4,6 @@ from infrastructure.markdown_parser import MarkdownParser
 
 
 class TestMarkdownParser(unittest.TestCase):
-
     def test_parse_frontmatter_keys_no_match(self):
         """[SCENARIO-04] Frontmatterがない場合のキー抽出"""
         content = "# No frontmatter here\nJust text."
@@ -42,5 +41,6 @@ other: value
         self.assertEqual(len(tags), 0)
         self.assertEqual(len(aliases), 0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
