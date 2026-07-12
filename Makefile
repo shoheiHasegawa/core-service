@@ -6,7 +6,7 @@ setup:
 
 test:
 	@echo "Running unit tests with coverage..."
-	PYTHONPATH=src uv run pytest tests/unit/ --cov=src --cov-report=term-missing --cov-fail-under=90
+	PYTHONPATH=src uv run pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=90
 
 lint:
 	@echo "Running static analysis (Ruff)..."
