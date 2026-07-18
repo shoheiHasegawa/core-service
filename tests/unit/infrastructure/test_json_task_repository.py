@@ -1,11 +1,12 @@
 from datetime import date
 from pathlib import Path
 
-from domain.action_pipeline.task import EnergyLevel, Task, TaskCategory, TaskStatus
+from domain.task_management.task import Task, TaskCategory, TaskStatus
 from infrastructure.json_task_repository import JsonTaskRepository
 
 
 def test_json_task_repository_save_and_retrieve_tasks(tmp_path: Path):
+    """[SCENARIO-01]"""
     """
     [SCENARIO-01] JSON Task Repository should save and retrieve tasks properly.
     """
@@ -15,7 +16,6 @@ def test_json_task_repository_save_and_retrieve_tasks(tmp_path: Path):
         id="task_1",
         title="Test Task 1",
         category=TaskCategory.MUST,
-        energy_level=EnergyLevel.HIGH,
         estimated_minutes=30,
         status=TaskStatus.TODO,
         actual_minutes=0,
@@ -38,6 +38,7 @@ def test_json_task_repository_save_and_retrieve_tasks(tmp_path: Path):
 
 
 def test_json_task_repository_ignores_completed_tasks(tmp_path: Path):
+    """[SCENARIO-01]"""
     """
     [SCENARIO-02] JSON Task Repository should ignore completed tasks when retrieving ready tasks.
     """
@@ -47,7 +48,6 @@ def test_json_task_repository_ignores_completed_tasks(tmp_path: Path):
         id="task_1",
         title="Test Task 1",
         category=TaskCategory.MUST,
-        energy_level=EnergyLevel.HIGH,
         estimated_minutes=30,
         status=TaskStatus.COMPLETED,
         actual_minutes=30,
@@ -64,6 +64,7 @@ def test_json_task_repository_ignores_completed_tasks(tmp_path: Path):
 
 
 def test_json_task_repository_handles_malformed_json(tmp_path: Path):
+    """[SCENARIO-01]"""
     """
     [SCENARIO-03] JSON Task Repository should handle malformed JSON files gracefully without crashing.
     """
@@ -76,6 +77,7 @@ def test_json_task_repository_handles_malformed_json(tmp_path: Path):
 
 
 def test_json_task_repository_filters_by_target_date(tmp_path: Path):
+    """[SCENARIO-01]"""
     """
     [SCENARIO-04] JSON Task Repository must filter out tasks that do not match the target_date.
     """
@@ -85,7 +87,6 @@ def test_json_task_repository_filters_by_target_date(tmp_path: Path):
         id="t1",
         title="Today",
         category=TaskCategory.MUST,
-        energy_level=EnergyLevel.HIGH,
         estimated_minutes=10,
         status=TaskStatus.TODO,
         actual_minutes=0,
@@ -97,7 +98,6 @@ def test_json_task_repository_filters_by_target_date(tmp_path: Path):
         id="t2",
         title="Tomorrow",
         category=TaskCategory.MUST,
-        energy_level=EnergyLevel.HIGH,
         estimated_minutes=10,
         status=TaskStatus.TODO,
         actual_minutes=0,
@@ -114,6 +114,7 @@ def test_json_task_repository_filters_by_target_date(tmp_path: Path):
 
 
 def test_json_task_repository_handles_missing_keys_and_invalid_values(tmp_path: Path):
+    """[SCENARIO-01]"""
     """
     [SCENARIO-05] Missing keys (KeyError) or invalid enum values (ValueError) should skip the file without crashing.
     """
@@ -121,12 +122,12 @@ def test_json_task_repository_handles_missing_keys_and_invalid_values(tmp_path: 
 
     # Missing 'title' key (KeyError)
     missing_key_file = tmp_path / "missing.json"
-    missing_key_file.write_text('{"id": "t3", "category": "Work", "energy_level": "High", "estimated_minutes": 10}')
+    missing_key_file.write_text('{"id": "t3", "category": "Work", "estimated_minutes": 10}')
 
     # Invalid enum value (ValueError)
     invalid_enum_file = tmp_path / "invalid.json"
     invalid_enum_file.write_text(
-        '{"id": "t4", "title": "Invalid", "category": "UNKNOWN", "energy_level": "High", "estimated_minutes": 10}'
+        '{"id": "t4", "title": "Invalid", "category": "UNKNOWN", "estimated_minutes": 10}'
     )
 
     # This should skip both and return 0 tasks, not crash
@@ -135,6 +136,7 @@ def test_json_task_repository_handles_missing_keys_and_invalid_values(tmp_path: 
 
 
 def test_json_task_repository_initializes_missing_directory(tmp_path: Path):
+    """[SCENARIO-01]"""
     """
     [SCENARIO-06] The repository should create the target directory if it does not exist.
     """
@@ -143,3 +145,28 @@ def test_json_task_repository_initializes_missing_directory(tmp_path: Path):
 
     JsonTaskRepository(new_dir)
     assert new_dir.exists()
+
+def test_json_task_repository_get_tasks_by_ids(tmp_path: Path):
+    """[SCENARIO-01]"""
+    """
+    [SCENARIO-07] The repository should retrieve tasks by their IDs.
+    """
+    repo = JsonTaskRepository(tmp_path)
+
+    task1 = Task(id="t1", title="T1", category=TaskCategory.MUST, estimated_minutes=10)
+    task2 = Task(id="t2", title="T2", category=TaskCategory.SHOULD, estimated_minutes=20)
+
+    repo.save_tasks([task1, task2])
+
+    tasks = repo.get_tasks_by_ids(["t1", "t3"])
+    assert len(tasks) == 1
+    assert tasks[0].id == "t1"
+
+def test_json_task_repository_get_tasks_by_ids_malformed(tmp_path: Path):
+    """[SCENARIO-01]"""
+    repo = JsonTaskRepository(tmp_path)
+    malformed = tmp_path / "t_malformed.json"
+    malformed.write_text("{ invalid json")
+
+    tasks = repo.get_tasks_by_ids(["t_malformed"])
+    assert len(tasks) == 0

@@ -4,13 +4,13 @@ from datetime import date
 from pathlib import Path
 from typing import List
 
-from domain.action_pipeline.repository import ITaskRepository
-from domain.action_pipeline.task import EnergyLevel, Task, TaskCategory, TaskStatus
+from domain.task_management.repository import TaskRepository as DomainTaskRepository
+from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
 
 logger = logging.getLogger(__name__)
 
 
-class JsonTaskRepository(ITaskRepository):
+class JsonTaskRepository(DomainTaskRepository):
     def __init__(self, registry_dir: Path):
         self.registry_dir = registry_dir
         if not self.registry_dir.exists():
@@ -35,7 +35,9 @@ class JsonTaskRepository(ITaskRepository):
                     id=data["id"],
                     title=data["title"],
                     category=TaskCategory(data["category"]),
-                    energy_level=EnergyLevel(data["energy_level"]),
+                    task_type=TaskType(data.get("task_type", TaskType.ONE_OFF.value)),
+                    area_id=data.get("area_id", "00_Unknown"),
+                    cumulative_minutes=data.get("cumulative_minutes", 0),
                     estimated_minutes=data["estimated_minutes"],
                     status=TaskStatus(data.get("status", TaskStatus.TODO.value)),
                     actual_minutes=data.get("actual_minutes", 0),
@@ -52,6 +54,44 @@ class JsonTaskRepository(ITaskRepository):
         # Domain logic (like sliding past tasks) should be handled in the Domain/Application layer.
         return [t for t in tasks if t.status != TaskStatus.COMPLETED and t.target_date == target_date]
 
+    def get_tasks_by_ids(self, task_ids: List[str]) -> List[Task]:
+        tasks = []
+        for task_id in task_ids:
+            file_path = self.registry_dir / f"{task_id}.json"
+            if not file_path.exists():
+                continue
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+
+                task_date = None
+                if data.get("target_date"):
+                    task_date = date.fromisoformat(data["target_date"])
+
+                task_deadline = None
+                if data.get("deadline"):
+                    task_deadline = date.fromisoformat(data["deadline"])
+
+                task = Task(
+                    id=data["id"],
+                    title=data["title"],
+                    category=TaskCategory(data["category"]),
+                    task_type=TaskType(data.get("task_type", TaskType.ONE_OFF.value)),
+                    area_id=data.get("area_id", "00_Unknown"),
+                    cumulative_minutes=data.get("cumulative_minutes", 0),
+                    estimated_minutes=data["estimated_minutes"],
+                    status=TaskStatus(data.get("status", TaskStatus.TODO.value)),
+                    actual_minutes=data.get("actual_minutes", 0),
+                    deadline=task_deadline,
+                    target_date=task_date,
+                    dependencies=data.get("dependencies", []),
+                )
+                tasks.append(task)
+            except (json.JSONDecodeError, KeyError, ValueError) as e:
+                logger.warning("Failed to parse %s: %s. Skipping.", file_path.name, e)
+                continue
+        return tasks
+
     def save_tasks(self, tasks: List[Task]) -> None:
         for task in tasks:
             file_path = self.registry_dir / f"{task.id}.json"
@@ -60,7 +100,9 @@ class JsonTaskRepository(ITaskRepository):
                 "id": task.id,
                 "title": task.title,
                 "category": task.category.value,
-                "energy_level": task.energy_level.value,
+                "task_type": task.task_type.value,
+                "area_id": task.area_id,
+                "cumulative_minutes": task.cumulative_minutes,
                 "estimated_minutes": task.estimated_minutes,
                 "status": task.status.value,
                 "actual_minutes": task.actual_minutes,

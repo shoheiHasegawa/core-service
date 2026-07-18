@@ -41,3 +41,8 @@ class LocalFileRepository:
             with open(file_path, "r", encoding="utf-8") as f:
                 results.append(f.read())
         return results
+
+    def generate_safe_filename(self, title: str) -> str:
+        import re
+        safe_title = re.sub(r'[/\\*?"<>|]+', "_", title).strip()
+        return f"{safe_title}.md"

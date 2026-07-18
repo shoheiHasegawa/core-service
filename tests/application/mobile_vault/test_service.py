@@ -24,7 +24,7 @@ def test_retrieve_unprocessed_packets_scenario_01(tmp_path):
     mock_repo = MagicMock(spec=IMobileVaultRepository)
     mock_parser = MagicMock(spec=MarkdownImageParser)
 
-    mock_repo.list_markdown_files.return_value = [config.inbox_dir / "note1.md"]
+    mock_repo.list_markdown_files.return_value = [str(config.inbox_dir / "note1.md")]
     mock_repo.read_text.return_value = "Test content with ![[image.png]]"
     mock_parser.extract_images.return_value = ["image.png"]
 
@@ -35,10 +35,10 @@ def test_retrieve_unprocessed_packets_scenario_01(tmp_path):
 
     # Assert
     assert processed_count == 1
-    mock_repo.list_markdown_files.assert_called_once_with(config.inbox_dir)
-    mock_repo.read_text.assert_called_once_with(config.inbox_dir / "note1.md")
+    mock_repo.list_markdown_files.assert_called_once_with(str(config.inbox_dir))
+    mock_repo.read_text.assert_called_once_with(str(config.inbox_dir / "note1.md"))
     mock_parser.extract_images.assert_called_once_with("Test content with ![[image.png]]")
-    mock_repo.delete_file.assert_called_once_with(config.inbox_dir / "note1.md")
+    mock_repo.delete_file.assert_called_once_with(str(config.inbox_dir / "note1.md"))
 
 
 def test_place_dashboard_scenario_02(tmp_path):
@@ -63,6 +63,6 @@ def test_place_dashboard_scenario_02(tmp_path):
     result_path = service.place_dashboard(content=content, filename=filename)
 
     # Assert
-    mock_repo.ensure_directory_exists.assert_called_once_with(config.dashboard_dir)
-    mock_repo.save_file.assert_called_once_with(content=content, directory=config.dashboard_dir, filename=filename)
+    mock_repo.ensure_directory_exists.assert_called_once_with(str(config.dashboard_dir))
+    mock_repo.save_file.assert_called_once_with(content=content, directory=str(config.dashboard_dir), filename=filename)
     assert result_path == str(config.dashboard_dir / filename)

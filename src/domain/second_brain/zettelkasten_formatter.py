@@ -1,5 +1,4 @@
 import datetime
-import re
 from typing import List
 
 
@@ -7,7 +6,7 @@ class ZettelkastenFormatter:
     def __init__(self, template: str):
         self.template = template
 
-    def format(self, title: str, body: str, tags: List[str] = None, **kwargs) -> str:
+    def format(self, title: str, body: str, current_time: datetime.datetime, tags: List[str] = None, **kwargs) -> str:
         result = self.template
         # タイトルと本文
         result = result.replace("{{TITLE}}", title)
@@ -22,8 +21,8 @@ class ZettelkastenFormatter:
                 result = result.replace(f"{{{{{key.upper()}}}}}", str(value))
 
         # 日付 ({{date}})
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-        result = result.replace("{{date}}", current_time)
+        time_str = current_time.strftime("%Y-%m-%d %H:%M")
+        result = result.replace("{{date}}", time_str)
 
         # タグ (tags: [])
         if tags:
@@ -32,8 +31,3 @@ class ZettelkastenFormatter:
             result = result.replace("tags: []", f"tags: [{tags_str}]")
 
         return result
-
-    def generate_filename(self, title: str) -> str:
-        # 日本語を残すため、ファイル名に使えない文字だけを置換
-        safe_title = re.sub(r'[/\\*?"<>|]+', "_", title).strip()
-        return f"{safe_title}.md"

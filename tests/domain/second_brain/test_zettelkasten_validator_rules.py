@@ -2,6 +2,7 @@ from domain.second_brain.zettelkasten_validator import ZettelkastenValidator
 
 
 def test_validate_missing_id():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator()
@@ -16,6 +17,7 @@ def test_validate_missing_id():
 
 
 def test_validate_missing_tags():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator()
@@ -30,6 +32,7 @@ def test_validate_missing_tags():
 
 
 def test_validate_forbidden_links():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator(forbidden_dirs=["/draft", "/temp"])
@@ -44,6 +47,7 @@ def test_validate_forbidden_links():
 
 
 def test_validate_tag_format_invalid():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator()
@@ -62,6 +66,7 @@ def test_validate_tag_format_invalid():
 
 
 def test_validate_tag_format_valid():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator()

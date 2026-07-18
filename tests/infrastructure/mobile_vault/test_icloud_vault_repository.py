@@ -18,12 +18,12 @@ def test_icloud_repository_list_markdown_files(tmp_path):
     file2.touch()
     file3.touch()
 
-    files = repo.list_markdown_files(inbox_dir)
+    files = repo.list_markdown_files(str(inbox_dir))
 
     assert len(files) == 2
-    assert file1 in files
-    assert file3 in files
-    assert file2 not in files
+    assert str(file1) in files
+    assert str(file3) in files
+    assert str(file2) not in files
 
 
 def test_icloud_repository_file_operations(tmp_path):
@@ -34,24 +34,24 @@ def test_icloud_repository_file_operations(tmp_path):
     work_dir = tmp_path / "work"
 
     # ディレクトリ作成
-    repo.ensure_directory_exists(work_dir)
+    repo.ensure_directory_exists(str(work_dir))
     assert work_dir.exists()
     assert work_dir.is_dir()
 
     # ファイル保存
     content = "Hello, Mobile Vault!"
     filename = "test.md"
-    repo.save_file(content=content, directory=work_dir, filename=filename)
+    repo.save_file(content=content, directory=str(work_dir), filename=filename)
 
     file_path = work_dir / filename
     assert file_path.exists()
 
     # ファイル読み込み
-    read_content = repo.read_text(file_path)
+    read_content = repo.read_text(str(file_path))
     assert read_content == content
 
     # ファイル削除
-    repo.delete_file(file_path)
+    repo.delete_file(str(file_path))
     assert not file_path.exists()
 
 
@@ -70,7 +70,7 @@ def test_icloud_repository_move_file(tmp_path):
 
     dest_file = dest_dir / "moved.md"
 
-    repo.move_file(source_path=source_file, dest_path=dest_file)
+    repo.move_file(source_path=str(source_file), dest_path=str(dest_file))
 
     assert not source_file.exists()
     assert dest_file.exists()

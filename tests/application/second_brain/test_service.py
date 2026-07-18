@@ -1,10 +1,19 @@
 from unittest.mock import MagicMock
 
-from application.second_brain.service import SecondBrainConfig, SecondBrainService
+import pytest
+
+from application.second_brain.config import SecondBrainConfig
+from application.second_brain.service import SecondBrainService
 from domain.second_brain.repository import SecondBrainRepository
 
 
+@pytest.fixture
+def mock_repo():
+    return MagicMock(spec=SecondBrainRepository)
+
+
 def test_second_brain_service_di():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     config = SecondBrainConfig(
@@ -41,6 +50,7 @@ def _create_mock_config():
 
 
 def test_register_inbox_note():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
@@ -59,6 +69,7 @@ def test_register_inbox_note():
 
 
 def test_register_sense_making_note():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
@@ -79,6 +90,7 @@ def test_register_sense_making_note():
 
 
 def test_search_notes():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
@@ -95,6 +107,7 @@ def test_search_notes():
 
 
 def test_audit_zettelkasten_rules():
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()

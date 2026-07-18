@@ -1,6 +1,6 @@
 from typing import List
 
-from .task import EnergyLevel, Task, TaskCategory, WarningFlag
+from .task import Task, TaskCategory, WarningFlag
 
 
 class WIPAllocationPolicy:
@@ -18,10 +18,7 @@ class ContextBatchingPolicy:
     @staticmethod
     def apply(tasks: List[Task]) -> List[Task]:
         """[SCENARIO-05] コンテキストバッチング: 深い⇔浅い作業の往復を最小化するためにソート"""
-        high = [t for t in tasks if t.energy_level == EnergyLevel.HIGH]
-        med = [t for t in tasks if t.energy_level == EnergyLevel.MEDIUM]
-        low = [t for t in tasks if t.energy_level == EnergyLevel.LOW]
-        return high + med + low
+        return sorted(tasks, key=lambda t: t.area_id)
 
 
 class SchedulingValidator:

@@ -4,6 +4,7 @@ from infrastructure.second_brain.local_file_repository import LocalFileRepositor
 
 
 def test_save_and_read_note(tmp_path):
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     repo = LocalFileRepository(base_path=str(tmp_path))
@@ -19,6 +20,7 @@ def test_save_and_read_note(tmp_path):
 
 
 def test_copy_asset(tmp_path):
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     repo = LocalFileRepository(base_path=str(tmp_path))
@@ -35,6 +37,7 @@ def test_copy_asset(tmp_path):
 
 
 def test_search_existing_notes(tmp_path):
+    """[SCENARIO-01]"""
     """[SCENARIO-01] Auto-generated spec"""
     # Arrange
     repo = LocalFileRepository(base_path=str(tmp_path))

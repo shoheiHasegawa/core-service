@@ -14,11 +14,14 @@ class SecondBrainService:
     def _save_formatted_note(
         self, template_path: str, save_dir: str, title: str, content: str, tags: List[str], **kwargs
     ) -> bool:
+        import datetime
         template_content = self.repository.read(template_path)
         formatter = ZettelkastenFormatter(template=template_content)
-        formatted_content = formatter.format(title=title, body=content, tags=tags, **kwargs)
+        formatted_content = formatter.format(
+            title=title, body=content, current_time=datetime.datetime.now(), tags=tags, **kwargs
+        )
 
-        filename = formatter.generate_filename(title)
+        filename = self.repository.generate_safe_filename(title)
         save_path = f"{save_dir}/{filename}"
         self.repository.save(save_path, formatted_content)
         return True
