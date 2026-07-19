@@ -10,7 +10,8 @@
 詳細な設計ルールやテスト方針は、作業開始前に必ず以下のドキュメントからJITロード（動的読み込み）すること。
 - **アーキテクチャ境界線**: `docs/architecture.md` （※本番ジョブの配置禁止ルール等）
 - **DDDおよびSOLIDの制約**: `docs/rules/ddd_guidelines.md`
-- **テスト方針とTDD分業プロトコル**: `docs/rules/testing_strategy.md`
+- **DIと命名規則 (Naming Conventions)**: `docs/rules/dependency_injection.md`
+- **テスト方針とTDD分業プロトコル (Mock禁止等)**: `docs/rules/testing_strategy.md`
 ## 実行環境の制約 (Makefile / uv)
 - 本リポジトリのパッケージ管理およびコマンド実行は **`uv`** に依存している。
 - AIエージェントがコマンドを実行する際は、生コマンド（`pytest` 等）を直接叩かず、必ず **`make check-all`**, `make test`, `make lint` などの **Makefile** を経由すること。

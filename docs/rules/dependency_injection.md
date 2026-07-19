@@ -30,3 +30,14 @@ class ExampleService:
 
 ## Composition Root
 `core-service` 内にすべての依存関係を組み立てる `main.py` やDIコンテナの設定ファイルは置きません。その責務は上位の実行レイヤー（Composition Root）が担います。
+
+## Naming Conventions (命名規則)
+DIを適用する上で、ドメイン層（インターフェース）とインフラ層（実装クラス）の関心事を分離するため、以下の命名規則を厳守してください。
+
+### Interface (Domain層)
+インターフェース名は、ドメインの概念を純粋に表す名称を使用します（例: `TaskRepository`, `IssueParser`）。
+- **禁止事項**: C#やJavaに見られるようなインターフェース特有の接頭辞（例: `ITaskRepository`）を付与してはなりません。
+
+### Implementation (Infrastructure層)
+実装クラスは、必ず「どんな技術を使って実現しているか」を示す接頭辞を冠します（例: `SqlTaskRepository`, `LocalFileMobileVaultRepository`）。
+- **禁止事項**: インターフェース名と全く同じ名前（例: `TaskRepository`）にしてはなりません。同じ名前にすると、インフラ層のコード内で `import TaskRepository as DomainTaskRepository` のようなエイリアスが必要になり、コードが極めて不格好になります。

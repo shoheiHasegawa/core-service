@@ -52,7 +52,7 @@ def test_place_dashboard_scenario_02(tmp_path):
     )
     mock_repo = MagicMock(spec=MobileVaultRepository)
 
-    service = MobileVaultService(config=config, repository=mock_repo, parser=MagicMock())
+    service = MobileVaultService(config=config, repository=mock_repo, parser=MagicMock(spec=MarkdownImageParser))
 
     content = "# My Dashboard\nContent here."
     filename = "dashboard.md"

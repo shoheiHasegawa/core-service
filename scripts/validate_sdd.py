@@ -122,6 +122,29 @@ def extract_scenarios_from_tests(test_dir: Path, is_integration: bool = False) -
                         f"Empty Assertion Detected: Function '{node.name}' in {filepath.name} contains no 'assert' statements."
                     )
 
+                # 4. Try-Except Evasion の検知
+                for body_node in ast.walk(node):
+                    if isinstance(body_node, ast.Try):
+                        errors.append(
+                            f"Evasion Detected: Function '{node.name}' in {filepath.name} uses 'try...except'. Use 'pytest.raises()' instead."
+                        )
+
+                # 5. Fake Mocking の検知
+                for body_node in ast.walk(node):
+                    if isinstance(body_node, ast.Call):
+                        func_name = ""
+                        if isinstance(body_node.func, ast.Name):
+                            func_name = body_node.func.id
+                        elif isinstance(body_node.func, ast.Attribute):
+                            func_name = body_node.func.attr
+
+                        if func_name in ("Mock", "MagicMock"):
+                            has_spec = any(kw.arg in ("spec", "spec_set", "autospec") for kw in body_node.keywords)
+                            if not has_spec:
+                                errors.append(
+                                    f"Fake Mocking Detected: '{func_name}()' used without 'spec' or 'autospec' in {filepath.name}."
+                                )
+
                 docstring = ast.get_docstring(node)
                 if not docstring:
                     errors.append(f"Function '{node.name}' in {filepath.name} lacks a docstring entirely.")
@@ -175,6 +198,59 @@ def check_scripts_readme(scripts_dir: Path) -> list[str]:
     return errors
 
 
+def check_naming_conventions(src_dir: Path) -> list[str]:
+    errors = []
+    if not src_dir.exists():
+        return errors
+
+    # Whitelist for words starting with 'I' + uppercase + lowercase
+    whitelist = {"Issue", "Item", "Image", "Index", "Info", "Input", "Invalid", "Init", "Id", "Integration", "Identity"}
+    i_prefix_pattern = re.compile(r"^I[A-Z][a-z]")
+
+    domain_dir = src_dir / "domain"
+    if domain_dir.exists():
+        for filepath in domain_dir.rglob("*.py"):
+            with open(filepath, "r", encoding="utf-8") as f:
+                try:
+                    tree = ast.parse(f.read())
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.ClassDef):
+                            class_name = node.name
+                            if i_prefix_pattern.match(class_name):
+                                # Check if it's in whitelist
+                                is_whitelisted = any(class_name.startswith(w) for w in whitelist)
+                                if not is_whitelisted:
+                                    errors.append(
+                                        f"Naming Violation: Interface '{class_name}' in {filepath.name} uses 'I' prefix."
+                                    )
+                except SyntaxError:
+                    pass
+
+    infrastructure_dir = src_dir / "infrastructure"
+    if infrastructure_dir.exists():
+        for filepath in infrastructure_dir.rglob("*.py"):
+            with open(filepath, "r", encoding="utf-8") as f:
+                try:
+                    tree = ast.parse(f.read())
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.ClassDef):
+                            class_name = node.name
+                            for base in node.bases:
+                                base_name = ""
+                                if isinstance(base, ast.Name):
+                                    base_name = base.id
+                                elif isinstance(base, ast.Attribute):
+                                    base_name = base.attr
+                                if base_name and base_name == class_name:
+                                    errors.append(
+                                        f"Naming Violation: Implementation '{class_name}' in {filepath.name} has the exact same name as its Interface (Alias required). Please add a technical prefix like 'Sql{class_name}'."
+                                    )
+                except SyntaxError:
+                    pass
+
+    return errors
+
+
 def main():
     workspace_root = Path(__file__).parent.parent
     tests_dir = workspace_root / "tests"
@@ -189,7 +265,12 @@ def main():
     # 2. Scripts README Index Validation
     all_errors.extend(check_scripts_readme(scripts_dir))
 
-    # 3. Test Traceability Validation (双方向)
+    # 3. Naming Conventions Validation
+    src_dir = workspace_root / "src"
+    all_errors.extend(check_naming_conventions(src_dir))
+
+    # 4. Test Traceability Validation (双方向)
+
     master_scenarios = extract_scenarios_from_spec(app_dir)
 
     unit_scenarios, unit_errs = extract_scenarios_from_tests(tests_dir / "unit", is_integration=False)

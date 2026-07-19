@@ -13,6 +13,11 @@
 - **境界とDB接続の厳格化**: テストの境界は「Application層からインフラ実体（DB等）まで」とする。システムの層間における**Mock（モック化）を一切禁止**する。とくに `unittest.mock` 等を用いてRepositoryやDB接続をモックすることは厳禁であり、**必ずテスト用DB（インメモリSQLite等）へ接続させること**。
 - **許容されるMock (Fakeの注入)**: Mockが許されるのは、外部API通信のみとする。ただし、現在時刻やUUIDなどの非決定的な値については、DIコンテナ経由で `FakeClock` や `FakeUUIDGenerator` などのテスト用スタブを注入することを例外として許可する。
 
+## 2.1. 悪質なハック（AIの怠慢）の禁止
+自動テストを形骸化させる以下の行為は静的解析（Linter）によって厳しくブロックされる。
+- **例外の握りつぶし禁止**: テストファイル内において、カバレッジを稼ぐためだけに `try...except ImportError` や `Exception` などを用いてエラーを握りつぶすことを禁止する。例外をテストしたい場合は必ず `pytest.raises(ExpectedException):` を用いること。
+- **無秩序なMockの禁止**: Unitテストにおいてモックを使用する場合、生の `unittest.mock.Mock()` の使用を禁止する。存在しないメソッドを呼び出してもアサーションが通ってしまうため、必ず `spec=...` または `autospec=True` を持たせること。
+
 ## 2.5. Integration Test の Helper 実装ルール (共通の型)
 - `tests/integration/helpers/` に、結合テスト専用の「共通の型」を配置することを義務化する。
   - **`IntegrationTestContext`**: `agent-core` の振る舞い（DI組み立て）を模倣し、テストDBの初期化や具象Repositoryの注入を担う「実行環境の型」。
