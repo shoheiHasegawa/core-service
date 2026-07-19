@@ -5,7 +5,6 @@
 テストデータ生成用ビルダー（TestDataBuilder）を提供します。
 """
 
-
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -21,6 +20,7 @@ class IntegrationTestContext:
     インメモリSQLiteデータベースを作成し、毎テスト後にロールバックまたはスキーマ再作成を行うことで
     State Leakage（状態汚染）を防ぎます。
     """
+
     def __init__(self):
         self.engine = create_engine("sqlite:///:memory:", echo=False)
         Base.metadata.create_all(self.engine)
@@ -40,12 +40,15 @@ class IntegrationTestContext:
         self.session.close()
         Base.metadata.drop_all(self.engine)
 
+
 @pytest.fixture
 def test_context():
     context = IntegrationTestContext()
     yield context
     context.teardown()
 
+
 class TestDataBuilder:
     """テストデータを生成するビルダー"""
+
     pass

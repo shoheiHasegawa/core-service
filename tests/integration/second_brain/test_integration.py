@@ -29,7 +29,7 @@ def test_second_brain_integration(test_context: IntegrationTestContext):
         inbox_template_path=os.path.join(base_dir, "template.md"),
         sense_making_template_path=os.path.join(base_dir, "template.md"),
         permanent_note_template_path=os.path.join(base_dir, "template.md"),
-        forbidden_patterns=["forbidden"]
+        forbidden_patterns=["forbidden"],
     )
     with open(config.inbox_template_path, "w") as f:
         f.write("{title}\\n{body}")

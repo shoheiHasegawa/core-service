@@ -1,4 +1,3 @@
-
 from integration.conftest import IntegrationTestContext
 
 from infrastructure.db.models import TaskModel
@@ -22,13 +21,11 @@ def test_task_management_integration(test_context: IntegrationTestContext):
     # 各シナリオ（[TASK-01]等）に基づく正しいセットアップ
     service = test_context.task_management_service
     task = service.register_task(
-        title="Integration Test Planning Task",
-        description="Testing day planning flow",
-        estimated_minutes=90
+        title="Integration Test Planning Task", description="Testing day planning flow", estimated_minutes=90
     )
 
     try:
-        from application.task_management.daily_action_service import DailyActionService
+        from application.task_management.daily_action_service import DailyActionService  # noqa: F401
         # daily_service = DailyActionService(...)
         # daily_service.plan_day(date.today())
     except ImportError:

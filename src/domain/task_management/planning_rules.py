@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from typing import List, Dict, Any, Protocol
+from typing import Any, Dict, List, Protocol
 
 from .task import Task, TaskCategory, WarningFlag
 
@@ -20,7 +20,7 @@ class ContextBatchingPolicy:
     def apply(tasks: List[Task]) -> List[Task]:
         """[TASK-05] コンテキストバッチング: 深い⇔浅い作業の往復を最小化するためにソート"""
         # 深い作業と浅い作業を分けることで往復を1回に抑える
-        return sorted(tasks, key=lambda t: not getattr(t, 'is_deep_work', False))
+        return sorted(tasks, key=lambda t: not getattr(t, "is_deep_work", False))
 
 
 class TaskCollectionValidator(Protocol):
@@ -105,57 +105,51 @@ class ScheduleBuilder:
         """[TASK-09] ディープワーク連続稼働リミット到達"""
         schedule = []
         current_time = start_time
-        
+
         for t in tasks:
             remaining_minutes = t.estimated_minutes
             while remaining_minutes > 0:
-                is_deep_work = getattr(t, 'is_deep_work', False)
+                is_deep_work = getattr(t, "is_deep_work", False)
                 if is_deep_work and remaining_minutes > ScheduleBuilder.DEEP_WORK_MAX_CONTINUOUS_MINUTES:
                     # 分割
                     chunk_minutes = ScheduleBuilder.DEEP_WORK_MAX_CONTINUOUS_MINUTES
                     end_time = current_time + timedelta(minutes=chunk_minutes)
-                    schedule.append({
-                        "task": t,
-                        "start": current_time,
-                        "end": end_time
-                    })
+                    schedule.append({"task": t, "start": current_time, "end": end_time})
                     current_time = end_time
                     remaining_minutes -= chunk_minutes
-                    
+
                     # 休憩
                     break_end = current_time + timedelta(minutes=ScheduleBuilder.BREAK_MINUTES)
-                    break_task = Task(id="break", title="Break", category=TaskCategory.WANT, estimated_minutes=ScheduleBuilder.BREAK_MINUTES)
-                    schedule.append({
-                        "task": break_task,
-                        "start": current_time,
-                        "end": break_end
-                    })
+                    break_task = Task(
+                        id="break",
+                        title="Break",
+                        category=TaskCategory.WANT,
+                        estimated_minutes=ScheduleBuilder.BREAK_MINUTES,
+                    )
+                    schedule.append({"task": break_task, "start": current_time, "end": break_end})
                     current_time = break_end
                 else:
                     end_time = current_time + timedelta(minutes=remaining_minutes)
-                    schedule.append({
-                        "task": t,
-                        "start": current_time,
-                        "end": end_time
-                    })
+                    schedule.append({"task": t, "start": current_time, "end": end_time})
                     current_time = end_time
                     remaining_minutes = 0
-                    
+
         return schedule
 
     @staticmethod
     def build_with_end(start_time: datetime, end_time: datetime, tasks: List[Task]) -> List[Dict[str, Any]]:
         """[TASK-11] シャットダウン・リチュアルの固定配置"""
         schedule = ScheduleBuilder.build(start_time, tasks)
-        
+
         shutdown_start = end_time - timedelta(minutes=ScheduleBuilder.SHUTDOWN_RITUAL_MINUTES)
-        shutdown_task = Task(id="shutdown", title="Shutdown Ritual", category=TaskCategory.MUST, estimated_minutes=ScheduleBuilder.SHUTDOWN_RITUAL_MINUTES)
-        
-        schedule.append({
-            "task": shutdown_task,
-            "start": shutdown_start,
-            "end": end_time
-        })
+        shutdown_task = Task(
+            id="shutdown",
+            title="Shutdown Ritual",
+            category=TaskCategory.MUST,
+            estimated_minutes=ScheduleBuilder.SHUTDOWN_RITUAL_MINUTES,
+        )
+
+        schedule.append({"task": shutdown_task, "start": shutdown_start, "end": end_time})
         return schedule
 
 
@@ -170,12 +164,12 @@ class CircadianRhythmPolicy:
             start_time = item["start"]
             end_time = item["end"]
             task = item["task"]
-            
+
             dip_start = start_time.replace(hour=CircadianRhythmPolicy.DIP_START_HOUR, minute=0, second=0, microsecond=0)
             dip_end = start_time.replace(hour=CircadianRhythmPolicy.DIP_END_HOUR, minute=0, second=0, microsecond=0)
-            
+
             if max(start_time, dip_start) < min(end_time, dip_end):
-                if getattr(task, 'is_deep_work', False) and task.category != TaskCategory.WANT:
+                if getattr(task, "is_deep_work", False) and task.category != TaskCategory.WANT:
                     return False
         return True
 
@@ -189,8 +183,8 @@ class MorningDeepWorkPolicy:
         for item in schedule:
             start_time = item["start"]
             task = item["task"]
-            
+
             if start_time.hour < MorningDeepWorkPolicy.MORNING_END_HOUR:
-                if not getattr(task, 'is_deep_work', False):
+                if not getattr(task, "is_deep_work", False):
                     return False
         return True

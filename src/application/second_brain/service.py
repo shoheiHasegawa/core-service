@@ -1,16 +1,18 @@
-from typing import List
 import uuid
+from typing import List
 
 from application.second_brain.config import SecondBrainConfig
 from domain.second_brain.repository import SecondBrainRepository
 from domain.second_brain.zettelkasten_formatter import ZettelkastenFormatter
 from domain.second_brain.zettelkasten_validator import ZettelkastenValidator
 from domain.task_management.repository import TaskRepository
-from domain.task_management.task import Task, TaskCategory, TaskType, TaskStatus
+from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
 
 
 class SecondBrainService:
-    def __init__(self, config: SecondBrainConfig, repository: SecondBrainRepository, task_repository: TaskRepository = None):
+    def __init__(
+        self, config: SecondBrainConfig, repository: SecondBrainRepository, task_repository: TaskRepository = None
+    ):
         self.config = config
         self.repository = repository
         self.task_repository = task_repository
@@ -46,7 +48,7 @@ class SecondBrainService:
                 category=TaskCategory.MUST,
                 estimated_minutes=15,
                 task_type=TaskType.ONE_OFF,
-                status=TaskStatus.TODO
+                status=TaskStatus.TODO,
             )
             self.task_repository.save(task)
         return success
