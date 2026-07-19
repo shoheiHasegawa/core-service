@@ -10,7 +10,7 @@ test:
 
 lint:
 	@echo "Running static analysis (Ruff)..."
-	uv run ruff check src tests scripts
+	uv run ruff check --fix src tests scripts
 	uv run ruff format src tests scripts
 
 validate:
