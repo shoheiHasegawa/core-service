@@ -17,7 +17,7 @@ def test_vault_integration(test_context: IntegrationTestContext):
     from application.mobile_vault.config import MobileVaultConfig
     from application.mobile_vault.service import MobileVaultService
     from domain.mobile_vault.parser import MarkdownImageParser
-    from infrastructure.mobile_vault.icloud_vault_repository import ICloudVaultRepository
+    from infrastructure.mobile_vault.local_file_mobile_vault_repository import LocalFileMobileVaultRepository
 
     inbox_dir = tempfile.mkdtemp()
     db_dir = tempfile.mkdtemp()
@@ -25,7 +25,7 @@ def test_vault_integration(test_context: IntegrationTestContext):
         f.write("Test Packet")
 
     config = MobileVaultConfig(inbox_dir=inbox_dir, dashboard_dir=db_dir, attachments_dir=db_dir, queue_dir=db_dir)
-    repository = ICloudVaultRepository()
+    repository = LocalFileMobileVaultRepository()
     parser = MarkdownImageParser()
     service = MobileVaultService(
         config=config, repository=repository, parser=parser, task_repository=test_context.task_repo

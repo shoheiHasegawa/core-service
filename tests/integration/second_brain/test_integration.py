@@ -18,23 +18,25 @@ def test_second_brain_integration(test_context: IntegrationTestContext):
 
     from application.second_brain.config import SecondBrainConfig
     from application.second_brain.service import SecondBrainService
-    from infrastructure.second_brain.local_file_repository import LocalFileRepository
+    from infrastructure.second_brain.local_file_second_brain_repository import LocalFileSecondBrainRepository
 
     base_dir = tempfile.mkdtemp()
+    sb_dir = os.path.join(base_dir, "sb")
+    os.makedirs(sb_dir)
     config = SecondBrainConfig(
-        inbox_dir=base_dir,
-        sense_making_dir=base_dir,
-        permanent_notes_dir=base_dir,
-        attachments_dir=base_dir,
-        inbox_template_path=os.path.join(base_dir, "template.md"),
-        sense_making_template_path=os.path.join(base_dir, "template.md"),
-        permanent_note_template_path=os.path.join(base_dir, "template.md"),
+        inbox_dir=sb_dir,
+        sense_making_dir=sb_dir,
+        permanent_notes_dir=sb_dir,
+        attachments_dir=sb_dir,
+        inbox_template_path=os.path.join(sb_dir, "template.md"),
+        sense_making_template_path=os.path.join(sb_dir, "template.md"),
+        permanent_note_template_path=os.path.join(sb_dir, "template.md"),
         forbidden_patterns=["forbidden"],
     )
     with open(config.inbox_template_path, "w") as f:
-        f.write("{title}\\n{body}")
+        f.write("{title}\n{body}")
 
-    repository = LocalFileRepository(base_path=base_dir)
+    repository = LocalFileSecondBrainRepository(base_path=sb_dir)
     service = SecondBrainService(config=config, repository=repository, task_repository=test_context.task_repo)
     service.register_inbox_note("Integration Idea", "Content of the idea")
 

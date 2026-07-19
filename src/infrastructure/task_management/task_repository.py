@@ -4,12 +4,12 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from domain.task_management.repository import TaskRepository as DomainTaskRepository
+from domain.task_management.repository import TaskRepository
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
 from infrastructure.db.models import TaskModel
 
 
-class TaskRepository(DomainTaskRepository):
+class SqlTaskRepository(TaskRepository):
     def __init__(self, session: Session):
         self.session = session
 

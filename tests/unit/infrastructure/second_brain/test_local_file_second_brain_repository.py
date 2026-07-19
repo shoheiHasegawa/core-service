@@ -1,13 +1,13 @@
 import os
 
-from infrastructure.second_brain.local_file_repository import LocalFileRepository
+from infrastructure.second_brain.local_file_second_brain_repository import LocalFileSecondBrainRepository
 
 
 def test_save_and_read_note(tmp_path):
     """[BRAIN-01]"""
     """[BRAIN-01] Auto-generated spec"""
     # Arrange
-    repo = LocalFileRepository(base_path=str(tmp_path))
+    repo = LocalFileSecondBrainRepository(base_path=str(tmp_path))
     note_content = "Test Note Content"
     file_path = "test_note.md"
 
@@ -23,7 +23,7 @@ def test_copy_asset(tmp_path):
     """[BRAIN-01]"""
     """[BRAIN-01] Auto-generated spec"""
     # Arrange
-    repo = LocalFileRepository(base_path=str(tmp_path))
+    repo = LocalFileSecondBrainRepository(base_path=str(tmp_path))
     source_file = tmp_path / "source.png"
     source_file.write_bytes(b"image data")
 
@@ -40,7 +40,7 @@ def test_search_existing_notes(tmp_path):
     """[BRAIN-01]"""
     """[BRAIN-01] Auto-generated spec"""
     # Arrange
-    repo = LocalFileRepository(base_path=str(tmp_path))
+    repo = LocalFileSecondBrainRepository(base_path=str(tmp_path))
     (tmp_path / "note1.md").write_text("Hello World")
     (tmp_path / "note2.md").write_text("Another Note")
 
@@ -56,7 +56,7 @@ def test_save_path_traversal(tmp_path):
     """[BRAIN-02] Path traversal attempt in save should raise ValueError"""
     import pytest
 
-    repo = LocalFileRepository(base_path=str(tmp_path))
+    repo = LocalFileSecondBrainRepository(base_path=str(tmp_path))
     with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
         repo.save("../outside.md", "content")
     assert "Path traversal" in str(exc_info.value)
@@ -66,7 +66,7 @@ def test_save_file_exists(tmp_path):
     """[BRAIN-03] Saving to an existing file should raise FileExistsError"""
     import pytest
 
-    repo = LocalFileRepository(base_path=str(tmp_path))
+    repo = LocalFileSecondBrainRepository(base_path=str(tmp_path))
     file_path = "test.md"
     repo.save(file_path, "content")
     with pytest.raises(FileExistsError) as exc_info:
@@ -78,7 +78,7 @@ def test_read_path_traversal(tmp_path):
     """[BRAIN-04] Path traversal attempt in read should raise ValueError"""
     import pytest
 
-    repo = LocalFileRepository(base_path=str(tmp_path))
+    repo = LocalFileSecondBrainRepository(base_path=str(tmp_path))
     with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
         repo.read("../outside.md")
     assert "Path traversal" in str(exc_info.value)
@@ -88,7 +88,7 @@ def test_copy_asset_path_traversal(tmp_path):
     """[BRAIN-05] Path traversal attempt in copy_asset should raise ValueError"""
     import pytest
 
-    repo = LocalFileRepository(base_path=str(tmp_path))
+    repo = LocalFileSecondBrainRepository(base_path=str(tmp_path))
     source_file = tmp_path / "source.png"
     source_file.write_bytes(b"data")
     with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
@@ -100,7 +100,7 @@ def test_copy_asset_file_exists(tmp_path):
     """[BRAIN-06] Copying to an existing file should raise FileExistsError"""
     import pytest
 
-    repo = LocalFileRepository(base_path=str(tmp_path))
+    repo = LocalFileSecondBrainRepository(base_path=str(tmp_path))
     source_file = tmp_path / "source.png"
     source_file.write_bytes(b"data")
     dest_path = "dest.png"

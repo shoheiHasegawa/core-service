@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 
 from application.task_management.task_management_service import TaskManagementService
 from infrastructure.db.models import Base
-from infrastructure.task_management.task_repository import TaskRepository
+from infrastructure.task_management.task_repository import SqlTaskRepository
 
 
 class IntegrationTestContext:
@@ -28,7 +28,7 @@ class IntegrationTestContext:
         self.session = self.Session()
 
         # Repositories
-        self.task_repo = TaskRepository(self.session)
+        self.task_repo = SqlTaskRepository(self.session)
 
         # Services
         # self.daily_action_service = DailyActionService(...)

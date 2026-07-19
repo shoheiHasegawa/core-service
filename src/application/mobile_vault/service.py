@@ -2,7 +2,7 @@ import os
 import uuid
 
 from application.mobile_vault.config import MobileVaultConfig
-from application.mobile_vault.interfaces import IMobileVaultRepository
+from application.mobile_vault.interfaces import MobileVaultRepository
 from domain.mobile_vault.parser import MarkdownImageParser
 from domain.task_management.repository import TaskRepository
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
@@ -12,7 +12,7 @@ class MobileVaultService:
     def __init__(
         self,
         config: MobileVaultConfig,
-        repository: IMobileVaultRepository,
+        repository: MobileVaultRepository,
         parser: MarkdownImageParser,
         task_repository: TaskRepository = None,
     ):

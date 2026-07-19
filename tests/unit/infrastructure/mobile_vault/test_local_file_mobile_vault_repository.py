@@ -1,11 +1,11 @@
-from infrastructure.mobile_vault.icloud_vault_repository import ICloudVaultRepository
+from infrastructure.mobile_vault.local_file_mobile_vault_repository import LocalFileMobileVaultRepository
 
 
-def test_icloud_repository_list_markdown_files(tmp_path):
+def test_local_file_mobile_vault_repository_list_markdown_files(tmp_path):
     """[VAULT-01]
     指定ディレクトリ内の .md ファイル一覧を正しく取得できるかのテスト。
     """
-    repo = ICloudVaultRepository()
+    repo = LocalFileMobileVaultRepository()
     inbox_dir = tmp_path / "inbox"
     inbox_dir.mkdir()
 
@@ -25,10 +25,10 @@ def test_icloud_repository_list_markdown_files(tmp_path):
     assert str(file2) not in files
 
 
-def test_icloud_repository_ensure_directory(tmp_path):
+def test_local_file_mobile_vault_repository_ensure_directory(tmp_path):
     """[VAULT-01] ディレクトリ作成のテスト。"""
     # Arrange
-    repo = ICloudVaultRepository()
+    repo = LocalFileMobileVaultRepository()
     work_dir = tmp_path / "work"
 
     # Act
@@ -39,10 +39,10 @@ def test_icloud_repository_ensure_directory(tmp_path):
     assert work_dir.is_dir()
 
 
-def test_icloud_repository_save_and_read_file(tmp_path):
+def test_local_file_mobile_vault_repository_save_and_read_file(tmp_path):
     """[VAULT-01] ファイルの保存と読み込みのテスト。"""
     # Arrange
-    repo = ICloudVaultRepository()
+    repo = LocalFileMobileVaultRepository()
     work_dir = tmp_path / "work"
     repo.ensure_directory_exists(str(work_dir))
     content = "Hello, Mobile Vault!"
@@ -58,10 +58,10 @@ def test_icloud_repository_save_and_read_file(tmp_path):
     assert read_content == content
 
 
-def test_icloud_repository_delete_file(tmp_path):
+def test_local_file_mobile_vault_repository_delete_file(tmp_path):
     """[VAULT-01] ファイル削除のテスト。"""
     # Arrange
-    repo = ICloudVaultRepository()
+    repo = LocalFileMobileVaultRepository()
     work_dir = tmp_path / "work"
     repo.ensure_directory_exists(str(work_dir))
     filename = "delete_me.md"
@@ -75,11 +75,11 @@ def test_icloud_repository_delete_file(tmp_path):
     assert not file_path.exists()
 
 
-def test_icloud_repository_move_file(tmp_path):
+def test_local_file_mobile_vault_repository_move_file(tmp_path):
     """[VAULT-01]
     ファイルの移動テスト。
     """
-    repo = ICloudVaultRepository()
+    repo = LocalFileMobileVaultRepository()
     source_dir = tmp_path / "source"
     dest_dir = tmp_path / "dest"
     source_dir.mkdir()
@@ -97,11 +97,11 @@ def test_icloud_repository_move_file(tmp_path):
     assert dest_file.read_text() == "Move this file"
 
 
-def test_icloud_repository_save_file_path_traversal(tmp_path):
+def test_local_file_mobile_vault_repository_save_file_path_traversal(tmp_path):
     """[VAULT-02] Path traversal in save_file should raise ValueError"""
     import pytest
 
-    repo = ICloudVaultRepository()
+    repo = LocalFileMobileVaultRepository()
     work_dir = tmp_path / "work"
     repo.ensure_directory_exists(str(work_dir))
 
@@ -110,11 +110,11 @@ def test_icloud_repository_save_file_path_traversal(tmp_path):
     assert "Path traversal" in str(exc_info.value)
 
 
-def test_icloud_repository_save_file_exists(tmp_path):
+def test_local_file_mobile_vault_repository_save_file_exists(tmp_path):
     """[VAULT-03] Saving to an existing file should raise FileExistsError"""
     import pytest
 
-    repo = ICloudVaultRepository()
+    repo = LocalFileMobileVaultRepository()
     work_dir = tmp_path / "work"
     repo.ensure_directory_exists(str(work_dir))
 
@@ -125,11 +125,11 @@ def test_icloud_repository_save_file_exists(tmp_path):
     assert isinstance(exc_info.value, FileExistsError)
 
 
-def test_icloud_repository_move_file_exists(tmp_path):
+def test_local_file_mobile_vault_repository_move_file_exists(tmp_path):
     """[VAULT-04] Moving to an existing file should raise FileExistsError"""
     import pytest
 
-    repo = ICloudVaultRepository()
+    repo = LocalFileMobileVaultRepository()
     source_dir = tmp_path / "source"
     dest_dir = tmp_path / "dest"
     source_dir.mkdir()

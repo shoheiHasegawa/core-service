@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
 from infrastructure.db.models import Base
-from infrastructure.task_management.task_repository import TaskRepository
+from infrastructure.task_management.task_repository import SqlTaskRepository
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def test_save_and_find_by_target_date(session):
     """
     [TASK-01] TaskRepository can save a task and find it by target_date.
     """
-    repository = TaskRepository(session)
+    repository = SqlTaskRepository(session)
     task = Task(
         id="t-repo-1",
         title="Repo Test Task",
@@ -59,7 +59,7 @@ def test_find_by_id(session):
     """
     [TASK-02] TaskRepository can find a task by id.
     """
-    repository = TaskRepository(session)
+    repository = SqlTaskRepository(session)
     task = Task(
         id="t-repo-2",
         title="Repo Test Task 2",
@@ -83,7 +83,7 @@ def test_find_by_id(session):
 
 def test_get_ready_tasks_for_date(session):
     """[TASK-01]"""
-    repository = TaskRepository(session)
+    repository = SqlTaskRepository(session)
     task1 = Task(
         id="t-ready-1",
         title="Task 1",
@@ -109,7 +109,7 @@ def test_get_ready_tasks_for_date(session):
 
 def test_get_tasks_by_ids(session):
     """[TASK-01]"""
-    repository = TaskRepository(session)
+    repository = SqlTaskRepository(session)
     task1 = Task(id="t-id-1", title="Task 1", category=TaskCategory.MUST, estimated_minutes=30)
     task2 = Task(id="t-id-2", title="Task 2", category=TaskCategory.SHOULD, estimated_minutes=30)
     repository.save_tasks([task1, task2])
@@ -123,7 +123,7 @@ def test_task_repository_malformed_dependencies_raises_value_error(session):
     """[TASK-01]"""
     from infrastructure.db.models import TaskModel
 
-    repository = TaskRepository(session)
+    repository = SqlTaskRepository(session)
 
     # Directly insert corrupted data
     model = TaskModel(
