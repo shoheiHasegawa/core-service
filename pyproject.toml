@@ -17,6 +17,9 @@ ignore = []
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401"]
 
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests"]
+
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",

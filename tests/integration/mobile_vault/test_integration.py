@@ -1,6 +1,6 @@
-from integration.helpers.conftest import IntegrationTestContext
-import pytest
-import os
+
+from integration.conftest import IntegrationTestContext
+
 
 def test_vault_integration(test_context: IntegrationTestContext):
     """

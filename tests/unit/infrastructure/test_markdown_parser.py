@@ -10,7 +10,7 @@ class TestMarkdownParser(unittest.TestCase):
         content = "# No frontmatter here\nJust text."
         parser = MarkdownParser(content)
         keys = parser.parse_frontmatter_keys()
-        self.assertEqual(len(keys), 0)
+        assert len(keys) == 0
 
     def test_parse_frontmatter_keys_invalid_format(self):
         """[VAULT-01]"""
@@ -18,7 +18,7 @@ class TestMarkdownParser(unittest.TestCase):
         content = "---\njust some text without colon\n---\n"
         parser = MarkdownParser(content)
         keys = parser.parse_frontmatter_keys()
-        self.assertEqual(len(keys), 0)
+        assert len(keys) == 0
 
     def test_extract_tags_and_aliases_valid(self):
         """[VAULT-01]"""
@@ -31,10 +31,10 @@ other: value
 """
         parser = MarkdownParser(content)
         tags, aliases = parser.extract_tags_and_aliases()
-        self.assertEqual(len(tags), 1)
-        self.assertIn("tags: [#test]", tags[0])
-        self.assertEqual(len(aliases), 1)
-        self.assertIn("aliases: [TestAlias]", aliases[0])
+        assert len(tags) == 1
+        assert "tags: [#test]" in tags[0]
+        assert len(aliases) == 1
+        assert "aliases: [TestAlias]" in aliases[0]
 
     def test_extract_tags_and_aliases_no_frontmatter(self):
         """[VAULT-01]"""
@@ -42,8 +42,8 @@ other: value
         content = "tags: [#test]\nBut not in frontmatter!"
         parser = MarkdownParser(content)
         tags, aliases = parser.extract_tags_and_aliases()
-        self.assertEqual(len(tags), 0)
-        self.assertEqual(len(aliases), 0)
+        assert len(tags) == 0
+        assert len(aliases) == 0
 
 
 if __name__ == "__main__":

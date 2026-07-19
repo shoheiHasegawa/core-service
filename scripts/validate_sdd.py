@@ -28,7 +28,7 @@ def extract_scenarios_from_spec(app_dir: Path) -> set[str]:
     return master_scenarios
 
 
-def extract_scenarios_from_tests(test_dir: Path) -> tuple[set[str], list[str]]:
+def extract_scenarios_from_tests(test_dir: Path, is_integration: bool = False) -> tuple[set[str], list[str]]:
     """指定されたディレクトリのテストコードをパースし、ID集合とエラーを返す"""
     scenarios = set()
     errors = []
@@ -49,8 +49,53 @@ def extract_scenarios_from_tests(test_dir: Path) -> tuple[set[str], list[str]]:
             errors.append(f"SyntaxError in {filepath}: {e}")
             continue
 
+        # ファイルレベルのモックインポートチェック (Integration Testのみ)
+        if is_integration:
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        if alias.name.startswith("unittest.mock"):
+                            errors.append(f"Mock Usage Detected: {filepath.name} contains 'import {alias.name}'. Mocking is strictly prohibited in integration tests.")
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module and node.module.startswith("unittest.mock"):
+                        errors.append(f"Mock Usage Detected: {filepath.name} contains 'from {node.module} import ...'. Mocking is strictly prohibited in integration tests.")
+
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef) and (node.name.startswith("test_") or node.name.endswith("_test")):
+                # 1. Skip / Skipif デコレータの検知
+                has_skip = False
+                for decorator in node.decorator_list:
+                    if isinstance(decorator, ast.Attribute) and decorator.attr in ("skip", "skipif"):
+                        has_skip = True
+                    elif isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute) and decorator.func.attr in ("skip", "skipif"):
+                        has_skip = True
+                    # @patch の検知 (Integration Testのみ)
+                    if is_integration:
+                        if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Name) and decorator.func.id == "patch":
+                            errors.append(f"Mock Usage Detected: Function '{node.name}' in {filepath.name} uses '@patch' decorator.")
+                        elif isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute) and decorator.func.attr == "patch":
+                            errors.append(f"Mock Usage Detected: Function '{node.name}' in {filepath.name} uses '@patch' decorator.")
+
+                if has_skip:
+                    errors.append(f"Skip Evasion Detected: Function '{node.name}' in {filepath.name} is skipped. Skipping tests to bypass coverage is prohibited.")
+                    continue
+
+                # 2. Integration Test での mocker / monkeypatch 引数の検知
+                if is_integration:
+                    for arg in node.args.args:
+                        if arg.arg in ("mocker", "monkeypatch"):
+                            errors.append(f"Mock Usage Detected: Function '{node.name}' in {filepath.name} uses '{arg.arg}' fixture. Mocking is strictly prohibited in integration tests.")
+
+                # 3. アサーションの空洞化検知 (最低1つの assert 文が含まれているか)
+                has_assert = False
+                for body_node in ast.walk(node):
+                    if isinstance(body_node, ast.Assert):
+                        has_assert = True
+                        break
+                
+                if not has_assert:
+                    errors.append(f"Empty Assertion Detected: Function '{node.name}' in {filepath.name} contains no 'assert' statements.")
+
                 docstring = ast.get_docstring(node)
                 if not docstring:
                     errors.append(f"Function '{node.name}' in {filepath.name} lacks a docstring entirely.")
@@ -121,8 +166,8 @@ def main():
     # 3. Test Traceability Validation (双方向)
     master_scenarios = extract_scenarios_from_spec(app_dir)
 
-    unit_scenarios, unit_errs = extract_scenarios_from_tests(tests_dir / "unit")
-    integration_scenarios, int_errs = extract_scenarios_from_tests(tests_dir / "integration")
+    unit_scenarios, unit_errs = extract_scenarios_from_tests(tests_dir / "unit", is_integration=False)
+    integration_scenarios, int_errs = extract_scenarios_from_tests(tests_dir / "integration", is_integration=True)
 
     all_errors.extend(unit_errs)
     all_errors.extend(int_errs)

@@ -10,10 +10,10 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from infrastructure.db.models import Base
-from infrastructure.task_management.sqlalchemy_task_repository import SqlAlchemyTaskRepository
-from application.task_management.daily_action_service import DailyActionService
 from application.task_management.task_management_service import TaskManagementService
+from infrastructure.db.models import Base
+from infrastructure.task_management.task_repository import TaskRepository
+
 
 class IntegrationTestContext:
     """
@@ -26,11 +26,11 @@ class IntegrationTestContext:
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
         self.session = self.Session()
-        
+
         # Repositories
-        self.task_repo = SqlAlchemyTaskRepository(self.session)
+        self.task_repo = TaskRepository(self.session)
         # TODO: Other repositories like BriefingRepository, ScheduleGateway, WorklogRepository
-        
+
         # Services
         # self.daily_action_service = DailyActionService(...)
         self.task_management_service = TaskManagementService(self.task_repo)

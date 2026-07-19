@@ -140,5 +140,6 @@ def test_task_repository_malformed_dependencies_raises_value_error(session):
     session.add(model)
     session.commit()
 
-    with pytest.raises(ValueError, match="Data corruption detected in dependencies"):
+    with pytest.raises(ValueError, match="Data corruption detected in dependencies") as exc_info:
         repository.find_by_id("t-corrupt-1")
+    assert "Data corruption" in str(exc_info.value)

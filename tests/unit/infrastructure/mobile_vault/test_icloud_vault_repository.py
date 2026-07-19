@@ -85,8 +85,9 @@ def test_icloud_repository_save_file_path_traversal(tmp_path):
     work_dir = tmp_path / "work"
     repo.ensure_directory_exists(str(work_dir))
 
-    with pytest.raises(ValueError, match="Path traversal detected"):
+    with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
         repo.save_file("content", str(work_dir), "../outside.md")
+    assert "Path traversal" in str(exc_info.value)
 
 
 def test_icloud_repository_save_file_exists(tmp_path):
@@ -99,8 +100,9 @@ def test_icloud_repository_save_file_exists(tmp_path):
 
     filename = "test.md"
     repo.save_file("content", str(work_dir), filename)
-    with pytest.raises(FileExistsError):
+    with pytest.raises(FileExistsError) as exc_info:
         repo.save_file("new content", str(work_dir), filename)
+    assert isinstance(exc_info.value, FileExistsError)
 
 
 def test_icloud_repository_move_file_exists(tmp_path):
@@ -119,5 +121,6 @@ def test_icloud_repository_move_file_exists(tmp_path):
     dest_file = dest_dir / "moved.md"
     dest_file.write_text("Existing file")
 
-    with pytest.raises(FileExistsError):
+    with pytest.raises(FileExistsError) as exc_info:
         repo.move_file(source_path=str(source_file), dest_path=str(dest_file))
+    assert isinstance(exc_info.value, FileExistsError)

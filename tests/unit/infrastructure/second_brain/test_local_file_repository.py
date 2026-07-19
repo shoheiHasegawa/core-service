@@ -57,8 +57,9 @@ def test_save_path_traversal(tmp_path):
     import pytest
 
     repo = LocalFileRepository(base_path=str(tmp_path))
-    with pytest.raises(ValueError, match="Path traversal detected"):
+    with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
         repo.save("../outside.md", "content")
+    assert "Path traversal" in str(exc_info.value)
 
 
 def test_save_file_exists(tmp_path):
@@ -68,8 +69,9 @@ def test_save_file_exists(tmp_path):
     repo = LocalFileRepository(base_path=str(tmp_path))
     file_path = "test.md"
     repo.save(file_path, "content")
-    with pytest.raises(FileExistsError):
+    with pytest.raises(FileExistsError) as exc_info:
         repo.save(file_path, "new content")
+    assert isinstance(exc_info.value, FileExistsError)
 
 
 def test_read_path_traversal(tmp_path):
@@ -77,8 +79,9 @@ def test_read_path_traversal(tmp_path):
     import pytest
 
     repo = LocalFileRepository(base_path=str(tmp_path))
-    with pytest.raises(ValueError, match="Path traversal detected"):
+    with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
         repo.read("../outside.md")
+    assert "Path traversal" in str(exc_info.value)
 
 
 def test_copy_asset_path_traversal(tmp_path):
@@ -88,8 +91,9 @@ def test_copy_asset_path_traversal(tmp_path):
     repo = LocalFileRepository(base_path=str(tmp_path))
     source_file = tmp_path / "source.png"
     source_file.write_bytes(b"data")
-    with pytest.raises(ValueError, match="Path traversal detected"):
+    with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
         repo.copy_asset(str(source_file), "../outside.png")
+    assert "Path traversal" in str(exc_info.value)
 
 
 def test_copy_asset_file_exists(tmp_path):
@@ -101,5 +105,6 @@ def test_copy_asset_file_exists(tmp_path):
     source_file.write_bytes(b"data")
     dest_path = "dest.png"
     repo.copy_asset(str(source_file), dest_path)
-    with pytest.raises(FileExistsError):
+    with pytest.raises(FileExistsError) as exc_info:
         repo.copy_asset(str(source_file), dest_path)
+    assert isinstance(exc_info.value, FileExistsError)
