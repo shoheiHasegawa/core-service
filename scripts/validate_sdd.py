@@ -14,7 +14,8 @@ import re
 import sys
 from pathlib import Path
 
-SCENARIO_PATTERN = re.compile(r"\[SCENARIO-\d+\]")
+SCENARIO_PATTERN = re.compile(r"\[[A-Z]+-\d+\]")
+
 
 def extract_scenarios_from_spec(app_dir: Path) -> set[str]:
     """すべての spec.md から正規の要求IDマスターリストを抽出する"""
@@ -25,6 +26,7 @@ def extract_scenarios_from_spec(app_dir: Path) -> set[str]:
             matches = SCENARIO_PATTERN.findall(content)
             master_scenarios.update(matches)
     return master_scenarios
+
 
 def extract_scenarios_from_tests(test_dir: Path) -> tuple[set[str], list[str]]:
     """指定されたディレクトリのテストコードをパースし、ID集合とエラーを返す"""
@@ -62,6 +64,7 @@ def extract_scenarios_from_tests(test_dir: Path) -> tuple[set[str], list[str]]:
 
     return scenarios, errors
 
+
 def check_feature_packaging(app_dir: Path) -> list[str]:
     errors = []
     if not app_dir.exists():
@@ -82,6 +85,7 @@ def check_feature_packaging(app_dir: Path) -> list[str]:
 
     return errors
 
+
 def check_scripts_readme(scripts_dir: Path) -> list[str]:
     errors = []
     readme_path = scripts_dir / "README.md"
@@ -98,6 +102,7 @@ def check_scripts_readme(scripts_dir: Path) -> list[str]:
                     errors.append(f"Script '{script_file.name}' is missing from scripts/README.md.")
 
     return errors
+
 
 def main():
     workspace_root = Path(__file__).parent.parent
@@ -138,9 +143,7 @@ def main():
 
     missing_integration = master_scenarios - integration_scenarios
     if missing_integration:
-        all_errors.append(
-            f"Test Deletion Loophole Detected: Missing integration tests: {missing_integration}"
-        )
+        all_errors.append(f"Test Deletion Loophole Detected: Missing integration tests: {missing_integration}")
 
     if all_errors:
         print("❌ Architecture Validation Failed!\n")
@@ -150,6 +153,7 @@ def main():
 
     print("✅ All architecture constraints and SDD traceability requirements are mathematically proven.")
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

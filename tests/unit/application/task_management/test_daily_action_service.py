@@ -6,7 +6,7 @@ from domain.task_management.task import Task, TaskCategory, TaskStatus, WarningF
 
 
 def test_scenario_02_wip_limit_exceeded():
-    """[SCENARIO-02] WIP制限（3つ）を超過するMUSTタスクは弾かれること"""
+    """[TASK-02] WIP制限（3つ）を超過するMUSTタスクは弾かれること"""
 
     task_repo = Mock()
     tasks = [
@@ -28,7 +28,7 @@ def test_scenario_02_wip_limit_exceeded():
 
 
 def test_scenario_03_w_ratio_low():
-    """[SCENARIO-03] Wタスクの割合が20%未満の場合、W_ratio_lowフラグが立つこと"""
+    """[TASK-03] Wタスクの割合が20%未満の場合、W_ratio_lowフラグが立つこと"""
     task_repo = Mock()
     tasks = [
         Task(id="t1", title="Must 1", category=TaskCategory.MUST, estimated_minutes=60),
@@ -42,7 +42,7 @@ def test_scenario_03_w_ratio_low():
 
 
 def test_record_worklogs():
-    """[SCENARIO-01] record_worklogsが既存のWorklogを考慮して冪等に動作すること"""
+    """[TASK-01] record_worklogsが既存のWorklogを考慮して冪等に動作すること"""
     task_repo = Mock()
     worklog_repo = Mock()
     service = DailyActionService(task_repo, Mock(), Mock(), worklog_repo)

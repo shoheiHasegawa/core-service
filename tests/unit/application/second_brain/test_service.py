@@ -13,8 +13,8 @@ def mock_repo():
 
 
 def test_second_brain_service_di():
-    """[SCENARIO-01]"""
-    """[SCENARIO-01] Auto-generated spec"""
+    """[BRAIN-01]"""
+    """[BRAIN-01] Auto-generated spec"""
     # Arrange
     config = SecondBrainConfig(
         inbox_dir="/path/to/inbox",
@@ -50,8 +50,8 @@ def _create_mock_config():
 
 
 def test_register_inbox_note():
-    """[SCENARIO-01]"""
-    """[SCENARIO-01] Auto-generated spec"""
+    """[BRAIN-01]"""
+    """[BRAIN-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
     repo = MagicMock(spec=SecondBrainRepository)
@@ -69,8 +69,8 @@ def test_register_inbox_note():
 
 
 def test_register_sense_making_note():
-    """[SCENARIO-01]"""
-    """[SCENARIO-01] Auto-generated spec"""
+    """[BRAIN-01]"""
+    """[BRAIN-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
     repo = MagicMock(spec=SecondBrainRepository)
@@ -90,8 +90,8 @@ def test_register_sense_making_note():
 
 
 def test_search_notes():
-    """[SCENARIO-01]"""
-    """[SCENARIO-01] Auto-generated spec"""
+    """[BRAIN-01]"""
+    """[BRAIN-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
     repo = MagicMock(spec=SecondBrainRepository)
@@ -107,8 +107,8 @@ def test_search_notes():
 
 
 def test_audit_zettelkasten_rules():
-    """[SCENARIO-01]"""
-    """[SCENARIO-01] Auto-generated spec"""
+    """[BRAIN-01]"""
+    """[BRAIN-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
     repo = MagicMock(spec=SecondBrainRepository)

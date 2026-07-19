@@ -70,6 +70,7 @@ class TaskRepository(DomainTaskRepository):
                 deps = json.loads(model.dependencies)
             except json.JSONDecodeError as e:
                 import logging
+
                 logging.getLogger(__name__).error("Failed to parse dependencies for task %s: %s", model.id, e)
                 raise ValueError(f"Data corruption detected in dependencies for task {model.id}: {e}")
 

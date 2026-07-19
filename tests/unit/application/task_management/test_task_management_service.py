@@ -5,7 +5,7 @@ from domain.task_management.task import Task, TaskCategory
 
 
 def test_register_task():
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     repo = Mock()
     service = TaskManagementService(repo)
     task = service.register_task("Test Title", "Test Description")
@@ -14,7 +14,7 @@ def test_register_task():
 
 
 def test_refine_task():
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     repo = Mock()
     service = TaskManagementService(repo)
     task = Task(id="task_id_123", title="Mock", category=TaskCategory.MUST, estimated_minutes=30)
@@ -26,7 +26,7 @@ def test_refine_task():
 
 
 def test_refine_task_not_found():
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     repo = Mock()
     service = TaskManagementService(repo)
     repo.get_tasks_by_ids.return_value = []

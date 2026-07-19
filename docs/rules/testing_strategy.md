@@ -3,8 +3,8 @@
 `core-service` におけるテスト設計およびAIエージェントによるテスト駆動開発の絶対ルールを定義する。
 
 ## 1. SDD / TDD のトレーサビリティ
-- すべての実装は `src/application/spec.md` に定義されたユースケースシナリオ（例: `[SCENARIO-01]`）に基づくこと。
-- すべてのテストコードの関数DocString内には、必ず担保する仕様ID（例: `[SCENARIO-01]`）を記載し、仕様とテストのトレーサビリティを強制する。
+- すべての実装は `src/application/spec.md` に定義されたユースケースシナリオ（例: `[TASK-01]`）に基づくこと。
+- すべてのテストコードの関数DocString内には、必ず担保する仕様ID（例: `[TASK-01]`）を記載し、仕様とテストのトレーサビリティを強制する。
 - （これらは `scripts/validate_sdd.py` のLinterによってCI/CD的に自動検知される）
 
 ## 2. Integration Test (結合テスト) の制約とハーネス

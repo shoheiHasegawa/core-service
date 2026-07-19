@@ -6,9 +6,9 @@ from infrastructure.json_task_repository import JsonTaskRepository
 
 
 def test_json_task_repository_save_and_retrieve_tasks(tmp_path: Path):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-01] JSON Task Repository should save and retrieve tasks properly.
+    [TASK-01] JSON Task Repository should save and retrieve tasks properly.
     """
     repo = JsonTaskRepository(tmp_path)
 
@@ -38,9 +38,9 @@ def test_json_task_repository_save_and_retrieve_tasks(tmp_path: Path):
 
 
 def test_json_task_repository_ignores_completed_tasks(tmp_path: Path):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-02] JSON Task Repository should ignore completed tasks when retrieving ready tasks.
+    [TASK-02] JSON Task Repository should ignore completed tasks when retrieving ready tasks.
     """
     repo = JsonTaskRepository(tmp_path)
 
@@ -64,9 +64,9 @@ def test_json_task_repository_ignores_completed_tasks(tmp_path: Path):
 
 
 def test_json_task_repository_handles_malformed_json(tmp_path: Path):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-03] JSON Task Repository should raise ValueError on malformed JSON files.
+    [TASK-03] JSON Task Repository should raise ValueError on malformed JSON files.
     """
     import pytest
 
@@ -79,9 +79,9 @@ def test_json_task_repository_handles_malformed_json(tmp_path: Path):
 
 
 def test_json_task_repository_filters_by_target_date(tmp_path: Path):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-04] JSON Task Repository must filter out tasks that do not match the target_date.
+    [TASK-04] JSON Task Repository must filter out tasks that do not match the target_date.
     """
     repo = JsonTaskRepository(tmp_path)
 
@@ -116,9 +116,9 @@ def test_json_task_repository_filters_by_target_date(tmp_path: Path):
 
 
 def test_json_task_repository_handles_missing_keys_and_invalid_values(tmp_path: Path):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-05] Missing keys (KeyError) or invalid enum values (ValueError) should raise ValueError.
+    [TASK-05] Missing keys (KeyError) or invalid enum values (ValueError) should raise ValueError.
     """
     import pytest
 
@@ -133,9 +133,9 @@ def test_json_task_repository_handles_missing_keys_and_invalid_values(tmp_path: 
 
 
 def test_json_task_repository_initializes_missing_directory(tmp_path: Path):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-06] The repository should create the target directory if it does not exist.
+    [TASK-06] The repository should create the target directory if it does not exist.
     """
     new_dir = tmp_path / "new_nested_dir"
     assert not new_dir.exists()
@@ -145,9 +145,9 @@ def test_json_task_repository_initializes_missing_directory(tmp_path: Path):
 
 
 def test_json_task_repository_get_tasks_by_ids(tmp_path: Path):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-07] The repository should retrieve tasks by their IDs.
+    [TASK-07] The repository should retrieve tasks by their IDs.
     """
     repo = JsonTaskRepository(tmp_path)
 
@@ -162,7 +162,7 @@ def test_json_task_repository_get_tasks_by_ids(tmp_path: Path):
 
 
 def test_json_task_repository_get_tasks_by_ids_malformed(tmp_path: Path):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     import pytest
 
     repo = JsonTaskRepository(tmp_path)

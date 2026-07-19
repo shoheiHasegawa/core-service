@@ -9,6 +9,7 @@ class LocalFileRepository:
 
     def save(self, file_path: str, content: str) -> None:
         from pathlib import Path
+
         resolved_base = Path(self.base_path).resolve()
         resolved_full = Path(os.path.join(self.base_path, file_path)).resolve()
         if not resolved_full.is_relative_to(resolved_base):
@@ -23,6 +24,7 @@ class LocalFileRepository:
 
     def read(self, file_path: str) -> str:
         from pathlib import Path
+
         resolved_base = Path(self.base_path).resolve()
         resolved_full = Path(os.path.join(self.base_path, file_path)).resolve()
         if not resolved_full.is_relative_to(resolved_base):
@@ -34,6 +36,7 @@ class LocalFileRepository:
 
     def copy_asset(self, source_file: str, dest_path: str) -> str:
         from pathlib import Path
+
         resolved_base = Path(self.base_path).resolve()
         resolved_dest = Path(os.path.join(self.base_path, dest_path)).resolve()
         if not resolved_dest.is_relative_to(resolved_base):

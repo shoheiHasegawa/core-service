@@ -4,9 +4,9 @@ from domain.task_management.task import Task, TaskCategory, TaskStatus
 
 
 def test_task_model_extension():
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-07-01] TaskType Enum exists, and Task has task_type, area_id, cumulative_minutes with default values.
+    [TASK-07-01] TaskType Enum exists, and Task has task_type, area_id, cumulative_minutes with default values.
     """
     from domain.task_management.task import TaskType
 
@@ -32,9 +32,9 @@ def test_task_model_extension():
 
 
 def test_energy_level_removed():
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-07-02] EnergyLevel Enum is deleted, and Task does not use energy_level.
+    [TASK-07-02] EnergyLevel Enum is deleted, and Task does not use energy_level.
     """
     task = Task(
         id="t1",
@@ -52,9 +52,9 @@ def test_energy_level_removed():
 
 
 def test_task_reference_id_extension():
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-07-03] Task has reference_id with default value None.
+    [TASK-07-03] Task has reference_id with default value None.
     """
     task = Task(
         id="t2",

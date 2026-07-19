@@ -44,6 +44,7 @@ class Task:
     dependencies: List[str] = field(default_factory=list)
     reference_id: Optional[str] = None
     last_memo: Optional[str] = None
+    is_deep_work: bool = False
 
     def calculate_lfd(self) -> Optional[date]:
         """依存関係と期限から Latest Finish Date (LFD) を計算する"""

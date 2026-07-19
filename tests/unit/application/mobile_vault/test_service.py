@@ -9,8 +9,8 @@ from domain.mobile_vault.parser import MarkdownImageParser
 
 
 def test_retrieve_unprocessed_packets_scenario_01(tmp_path):
-    """[SCENARIO-01]
-    [SCENARIO-01] Retrieve Unprocessed Packets (未処理パケットの回収)
+    """[VAULT-01]
+    [VAULT-01] Retrieve Unprocessed Packets (未処理パケットの回収)
     DIされたMobileVaultConfigからパスを取得し、Repository経由でファイルを読み込み、
     Domain層のParserを利用して一連の回収処理を行うテスト。
     """
@@ -42,8 +42,8 @@ def test_retrieve_unprocessed_packets_scenario_01(tmp_path):
 
 
 def test_place_dashboard_scenario_02(tmp_path):
-    """[SCENARIO-01]
-    [SCENARIO-02] Place Dashboard (ダッシュボードの配置)
+    """[VAULT-01]
+    [VAULT-02] Place Dashboard (ダッシュボードの配置)
     生成されたダッシュボードのMarkdownを、Mobile Vault上の指定ディレクトリに書き込む処理のテスト。
     """
     config = MobileVaultConfig(

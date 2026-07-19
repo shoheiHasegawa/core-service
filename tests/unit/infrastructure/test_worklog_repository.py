@@ -20,7 +20,7 @@ def session():
 
 
 def test_worklog_save_and_find(session):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     repo = SQLAlchemyWorklogRepository(session)
 
     worklog = Worklog(id="w1", task_id="task-1", minutes=30, target_date=date(2026, 7, 19))
@@ -37,7 +37,7 @@ def test_worklog_save_and_find(session):
 
 
 def test_worklog_update(session):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     repo = SQLAlchemyWorklogRepository(session)
 
     worklog1 = Worklog(id="w1", task_id="task-1", minutes=30, target_date=date(2026, 7, 19))

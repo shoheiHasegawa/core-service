@@ -3,7 +3,7 @@ from infrastructure.mobile_vault.icloud_vault_repository import ICloudVaultRepos
 
 
 def test_icloud_repository_list_markdown_files(tmp_path):
-    """[SCENARIO-01]
+    """[VAULT-01]
     指定ディレクトリ内の .md ファイル一覧を正しく取得できるかのテスト。
     """
     repo = ICloudVaultRepository()
@@ -27,7 +27,7 @@ def test_icloud_repository_list_markdown_files(tmp_path):
 
 
 def test_icloud_repository_file_operations(tmp_path):
-    """[SCENARIO-01]
+    """[VAULT-01]
     ファイルの読み書き、削除、ディレクトリ作成など純粋なファイルI/Oのテスト。
     """
     repo = ICloudVaultRepository()
@@ -56,7 +56,7 @@ def test_icloud_repository_file_operations(tmp_path):
 
 
 def test_icloud_repository_move_file(tmp_path):
-    """[SCENARIO-01]
+    """[VAULT-01]
     ファイルの移動テスト。
     """
     repo = ICloudVaultRepository()
@@ -78,7 +78,7 @@ def test_icloud_repository_move_file(tmp_path):
 
 
 def test_icloud_repository_save_file_path_traversal(tmp_path):
-    """[SCENARIO-02] Path traversal in save_file should raise ValueError"""
+    """[VAULT-02] Path traversal in save_file should raise ValueError"""
     import pytest
 
     repo = ICloudVaultRepository()
@@ -90,7 +90,7 @@ def test_icloud_repository_save_file_path_traversal(tmp_path):
 
 
 def test_icloud_repository_save_file_exists(tmp_path):
-    """[SCENARIO-03] Saving to an existing file should raise FileExistsError"""
+    """[VAULT-03] Saving to an existing file should raise FileExistsError"""
     import pytest
 
     repo = ICloudVaultRepository()
@@ -104,7 +104,7 @@ def test_icloud_repository_save_file_exists(tmp_path):
 
 
 def test_icloud_repository_move_file_exists(tmp_path):
-    """[SCENARIO-04] Moving to an existing file should raise FileExistsError"""
+    """[VAULT-04] Moving to an existing file should raise FileExistsError"""
     import pytest
 
     repo = ICloudVaultRepository()

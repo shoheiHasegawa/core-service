@@ -4,8 +4,8 @@ from infrastructure.second_brain.local_file_repository import LocalFileRepositor
 
 
 def test_save_and_read_note(tmp_path):
-    """[SCENARIO-01]"""
-    """[SCENARIO-01] Auto-generated spec"""
+    """[BRAIN-01]"""
+    """[BRAIN-01] Auto-generated spec"""
     # Arrange
     repo = LocalFileRepository(base_path=str(tmp_path))
     note_content = "Test Note Content"
@@ -20,8 +20,8 @@ def test_save_and_read_note(tmp_path):
 
 
 def test_copy_asset(tmp_path):
-    """[SCENARIO-01]"""
-    """[SCENARIO-01] Auto-generated spec"""
+    """[BRAIN-01]"""
+    """[BRAIN-01] Auto-generated spec"""
     # Arrange
     repo = LocalFileRepository(base_path=str(tmp_path))
     source_file = tmp_path / "source.png"
@@ -37,8 +37,8 @@ def test_copy_asset(tmp_path):
 
 
 def test_search_existing_notes(tmp_path):
-    """[SCENARIO-01]"""
-    """[SCENARIO-01] Auto-generated spec"""
+    """[BRAIN-01]"""
+    """[BRAIN-01] Auto-generated spec"""
     # Arrange
     repo = LocalFileRepository(base_path=str(tmp_path))
     (tmp_path / "note1.md").write_text("Hello World")
@@ -53,7 +53,7 @@ def test_search_existing_notes(tmp_path):
 
 
 def test_save_path_traversal(tmp_path):
-    """[SCENARIO-02] Path traversal attempt in save should raise ValueError"""
+    """[BRAIN-02] Path traversal attempt in save should raise ValueError"""
     import pytest
 
     repo = LocalFileRepository(base_path=str(tmp_path))
@@ -62,7 +62,7 @@ def test_save_path_traversal(tmp_path):
 
 
 def test_save_file_exists(tmp_path):
-    """[SCENARIO-03] Saving to an existing file should raise FileExistsError"""
+    """[BRAIN-03] Saving to an existing file should raise FileExistsError"""
     import pytest
 
     repo = LocalFileRepository(base_path=str(tmp_path))
@@ -73,7 +73,7 @@ def test_save_file_exists(tmp_path):
 
 
 def test_read_path_traversal(tmp_path):
-    """[SCENARIO-04] Path traversal attempt in read should raise ValueError"""
+    """[BRAIN-04] Path traversal attempt in read should raise ValueError"""
     import pytest
 
     repo = LocalFileRepository(base_path=str(tmp_path))
@@ -82,7 +82,7 @@ def test_read_path_traversal(tmp_path):
 
 
 def test_copy_asset_path_traversal(tmp_path):
-    """[SCENARIO-05] Path traversal attempt in copy_asset should raise ValueError"""
+    """[BRAIN-05] Path traversal attempt in copy_asset should raise ValueError"""
     import pytest
 
     repo = LocalFileRepository(base_path=str(tmp_path))
@@ -93,7 +93,7 @@ def test_copy_asset_path_traversal(tmp_path):
 
 
 def test_copy_asset_file_exists(tmp_path):
-    """[SCENARIO-06] Copying to an existing file should raise FileExistsError"""
+    """[BRAIN-06] Copying to an existing file should raise FileExistsError"""
     import pytest
 
     repo = LocalFileRepository(base_path=str(tmp_path))

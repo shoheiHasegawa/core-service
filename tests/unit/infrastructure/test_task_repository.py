@@ -22,9 +22,9 @@ def session():
 
 
 def test_save_and_find_by_target_date(session):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-INFRA-01] TaskRepository can save a task and find it by target_date.
+    [TASK-01] TaskRepository can save a task and find it by target_date.
     """
     repository = TaskRepository(session)
     task = Task(
@@ -56,9 +56,9 @@ def test_save_and_find_by_target_date(session):
 
 
 def test_find_by_id(session):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     """
-    [SCENARIO-INFRA-02] TaskRepository can find a task by id.
+    [TASK-02] TaskRepository can find a task by id.
     """
     repository = TaskRepository(session)
     task = Task(
@@ -83,7 +83,7 @@ def test_find_by_id(session):
 
 
 def test_get_ready_tasks_for_date(session):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     repository = TaskRepository(session)
     task1 = Task(
         id="t-ready-1",
@@ -109,7 +109,7 @@ def test_get_ready_tasks_for_date(session):
 
 
 def test_get_tasks_by_ids(session):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     repository = TaskRepository(session)
     task1 = Task(id="t-id-1", title="Task 1", category=TaskCategory.MUST, estimated_minutes=30)
     task2 = Task(id="t-id-2", title="Task 2", category=TaskCategory.SHOULD, estimated_minutes=30)
@@ -121,7 +121,7 @@ def test_get_tasks_by_ids(session):
 
 
 def test_task_repository_malformed_dependencies_raises_value_error(session):
-    """[SCENARIO-01]"""
+    """[TASK-01]"""
     from infrastructure.db.models import TaskModel
 
     repository = TaskRepository(session)

@@ -14,7 +14,7 @@
 
 ## 3. Scenarios (Use Cases)
 
-### [SCENARIO-01] Retrieve Unprocessed Packets (未処理パケットの回収)
+### [VAULT-01] Retrieve Unprocessed Packets (未処理パケットの回収)
 *   **Input**: (なし。ディレクトリパスは `MobileVaultConfig` からDIされる)
 *   **Process**:
     1. Infrastructure層のRepository経由で、Inbox内の全 `.md` ファイルパスを取得する。
@@ -24,12 +24,18 @@
     5. 移動完了後、元のファイルをMobile Vaultから削除する。
 *   **Output**: 成功裏に回収されたパケットバンドルの数（Int）。
 
-### [SCENARIO-02] Place Dashboard (ダッシュボードの配置)
+### [VAULT-02] Place Dashboard (ダッシュボードの配置)
 *   **Input**: 配置対象のMarkdown文字列 (`content`)、配置先のディレクトリパス (`dashboard_dir`)、ファイル名 (`filename.md`)
 *   **Process**:
     1. 指定されたMobile Vaultのダッシュボード配置用ディレクトリが存在しない場合は作成する。
     2. 指定されたファイル名で、ダッシュボードの内容（Markdown）を上書き保存する。
 *   **Output**: 配置されたファイルの絶対パス（String）。
+
+### [VAULT-03] 異常系: ファイル上書き保存のエラー
+*   **事後条件**: 既存のファイルを上書きしようとした場合、`FileExistsError` が発生すること。
+
+### [VAULT-04] 異常系: ファイル移動先の上書きエラー
+*   **事後条件**: ファイルの移動先に既にファイルが存在する場合、`FileExistsError` が発生すること。
 
 ## 4. Architecture & Layered Rules
 *   **Feature-Driven Packaging**: この機能に関連する `service.py`, `config.py`, `spec.md` はすべて `src/application/mobile_vault/` 配下にまとめる。
