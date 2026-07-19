@@ -41,11 +41,11 @@ class BriefingRepository(ABC):
 
 class WorklogRepository(ABC):
     @abstractmethod
-    def save(self, worklog: 'Worklog') -> None:
+    def save(self, worklog: "Worklog") -> None:
         """ワークログを保存する"""
         pass
 
     @abstractmethod
-    def find_by_task_and_date(self, task_id: str, target_date: date) -> List['Worklog']:
+    def find_by_task_and_date(self, task_id: str, target_date: date) -> List["Worklog"]:
         """指定したタスクと日付のワークログを取得する"""
         pass

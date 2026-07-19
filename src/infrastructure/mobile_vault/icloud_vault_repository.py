@@ -23,8 +23,15 @@ class ICloudVaultRepository(IMobileVaultRepository):
         Path(directory).mkdir(parents=True, exist_ok=True)
 
     def save_file(self, content: str, directory: str, filename: str) -> None:
-        file_path = Path(directory) / filename
+        dir_path = Path(directory).resolve()
+        file_path = (dir_path / filename).resolve()
+        if not file_path.is_relative_to(dir_path):
+            raise ValueError("Path traversal detected")
+        if file_path.exists():
+            raise FileExistsError(f"File already exists: {file_path}")
         file_path.write_text(content, encoding="utf-8")
 
     def move_file(self, source_path: str, dest_path: str) -> None:
+        if Path(dest_path).exists():
+            raise FileExistsError(f"File already exists: {dest_path}")
         shutil.move(source_path, dest_path)

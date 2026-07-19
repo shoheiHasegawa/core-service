@@ -15,6 +15,7 @@ class SecondBrainService:
         self, template_path: str, save_dir: str, title: str, content: str, tags: List[str], **kwargs
     ) -> bool:
         import datetime
+
         template_content = self.repository.read(template_path)
         formatter = ZettelkastenFormatter(template=template_content)
         formatted_content = formatter.format(

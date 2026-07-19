@@ -12,7 +12,7 @@ class DailyActionService:
         task_repo: TaskRepository,
         schedule_gateway: ScheduleGateway,
         briefing_repo: BriefingRepository,
-        worklog_repo: WorklogRepository
+        worklog_repo: WorklogRepository,
     ) -> None:
         self.task_repo = task_repo
         self.schedule_gateway = schedule_gateway

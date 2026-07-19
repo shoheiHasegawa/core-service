@@ -5,6 +5,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 class Base(DeclarativeBase):
     pass
 
+
 class TaskModel(Base):
     __tablename__ = "tasks"
 
@@ -23,6 +24,7 @@ class TaskModel(Base):
     reference_id = Column(String, nullable=True)
     last_memo = Column(String, nullable=True)
 
+
 class WorklogModel(Base):
     __tablename__ = "worklogs"
 
@@ -32,8 +34,10 @@ class WorklogModel(Base):
     minutes = Column(Integer, nullable=False)
     memo = Column(String, nullable=True)
 
+
 # Engine setup
 engine = create_engine("sqlite:///you_inc_ops.db")
+
 
 @event.listens_for(engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -41,5 +45,6 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL;")
     cursor.close()
+
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

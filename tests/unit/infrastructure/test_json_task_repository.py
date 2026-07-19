@@ -66,14 +66,15 @@ def test_json_task_repository_ignores_completed_tasks(tmp_path: Path):
 def test_json_task_repository_handles_malformed_json(tmp_path: Path):
     """[SCENARIO-01]"""
     """
-    [SCENARIO-03] JSON Task Repository should handle malformed JSON files gracefully without crashing.
+    [SCENARIO-03] JSON Task Repository should raise ValueError on malformed JSON files.
     """
+    import pytest
     repo = JsonTaskRepository(tmp_path)
     malformed_file = tmp_path / "malformed.json"
     malformed_file.write_text("{ invalid json ")
 
-    tasks = repo.get_ready_tasks_for_date(date(2026, 7, 6))
-    assert len(tasks) == 0
+    with pytest.raises(ValueError, match="Data corruption"):
+        repo.get_ready_tasks_for_date(date(2026, 7, 6))
 
 
 def test_json_task_repository_filters_by_target_date(tmp_path: Path):
@@ -116,23 +117,17 @@ def test_json_task_repository_filters_by_target_date(tmp_path: Path):
 def test_json_task_repository_handles_missing_keys_and_invalid_values(tmp_path: Path):
     """[SCENARIO-01]"""
     """
-    [SCENARIO-05] Missing keys (KeyError) or invalid enum values (ValueError) should skip the file without crashing.
+    [SCENARIO-05] Missing keys (KeyError) or invalid enum values (ValueError) should raise ValueError.
     """
+    import pytest
     repo = JsonTaskRepository(tmp_path)
 
     # Missing 'title' key (KeyError)
     missing_key_file = tmp_path / "missing.json"
     missing_key_file.write_text('{"id": "t3", "category": "Work", "estimated_minutes": 10}')
 
-    # Invalid enum value (ValueError)
-    invalid_enum_file = tmp_path / "invalid.json"
-    invalid_enum_file.write_text(
-        '{"id": "t4", "title": "Invalid", "category": "UNKNOWN", "estimated_minutes": 10}'
-    )
-
-    # This should skip both and return 0 tasks, not crash
-    tasks = repo.get_ready_tasks_for_date(date(2026, 7, 6))
-    assert len(tasks) == 0
+    with pytest.raises(ValueError, match="Data corruption"):
+        repo.get_ready_tasks_for_date(date(2026, 7, 6))
 
 
 def test_json_task_repository_initializes_missing_directory(tmp_path: Path):
@@ -145,6 +140,7 @@ def test_json_task_repository_initializes_missing_directory(tmp_path: Path):
 
     JsonTaskRepository(new_dir)
     assert new_dir.exists()
+
 
 def test_json_task_repository_get_tasks_by_ids(tmp_path: Path):
     """[SCENARIO-01]"""
@@ -162,11 +158,13 @@ def test_json_task_repository_get_tasks_by_ids(tmp_path: Path):
     assert len(tasks) == 1
     assert tasks[0].id == "t1"
 
+
 def test_json_task_repository_get_tasks_by_ids_malformed(tmp_path: Path):
     """[SCENARIO-01]"""
+    import pytest
     repo = JsonTaskRepository(tmp_path)
     malformed = tmp_path / "t_malformed.json"
     malformed.write_text("{ invalid json")
 
-    tasks = repo.get_tasks_by_ids(["t_malformed"])
-    assert len(tasks) == 0
+    with pytest.raises(ValueError, match="Data corruption"):
+        repo.get_tasks_by_ids(["t_malformed"])

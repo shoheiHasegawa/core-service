@@ -81,22 +81,32 @@ def test_find_by_id(session):
     assert found_task.id == "t-repo-2"
     assert found_task.title == "Repo Test Task 2"
 
+
 def test_get_ready_tasks_for_date(session):
     """[SCENARIO-01]"""
     repository = TaskRepository(session)
     task1 = Task(
-        id="t-ready-1", title="Task 1", category=TaskCategory.MUST,
-        estimated_minutes=30, target_date=date(2026, 7, 19), status=TaskStatus.TODO
+        id="t-ready-1",
+        title="Task 1",
+        category=TaskCategory.MUST,
+        estimated_minutes=30,
+        target_date=date(2026, 7, 19),
+        status=TaskStatus.TODO,
     )
     task2 = Task(
-        id="t-ready-2", title="Task 2", category=TaskCategory.SHOULD,
-        estimated_minutes=30, target_date=date(2026, 7, 19), status=TaskStatus.COMPLETED
+        id="t-ready-2",
+        title="Task 2",
+        category=TaskCategory.SHOULD,
+        estimated_minutes=30,
+        target_date=date(2026, 7, 19),
+        status=TaskStatus.COMPLETED,
     )
     repository.save_tasks([task1, task2])
 
     tasks = repository.get_ready_tasks_for_date(date(2026, 7, 19))
     assert len(tasks) == 1
     assert tasks[0].id == "t-ready-1"
+
 
 def test_get_tasks_by_ids(session):
     """[SCENARIO-01]"""
@@ -108,3 +118,26 @@ def test_get_tasks_by_ids(session):
     tasks = repository.get_tasks_by_ids(["t-id-1"])
     assert len(tasks) == 1
     assert tasks[0].id == "t-id-1"
+
+
+def test_task_repository_malformed_dependencies_raises_value_error(session):
+    """[SCENARIO-01]"""
+    from infrastructure.db.models import TaskModel
+    repository = TaskRepository(session)
+
+    # Directly insert corrupted data
+    model = TaskModel(
+        id="t-corrupt-1",
+        title="Corrupted Task",
+        category="must",
+        estimated_minutes=30,
+        task_type="one-off",
+        status="todo",
+        target_date=date(2026, 7, 19),
+        dependencies="{invalid_json"
+    )
+    session.add(model)
+    session.commit()
+
+    with pytest.raises(ValueError, match="Data corruption detected in dependencies"):
+        repository.find_by_id("t-corrupt-1")

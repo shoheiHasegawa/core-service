@@ -12,6 +12,7 @@ def test_register_task():
     assert task.title == "Test Title"
     repo.save_tasks.assert_called_once_with([task])
 
+
 def test_refine_task():
     """[SCENARIO-01]"""
     repo = Mock()
@@ -23,6 +24,7 @@ def test_refine_task():
     assert refined.id == "task_id_123"
     repo.save_tasks.assert_called_once_with([task])
 
+
 def test_refine_task_not_found():
     """[SCENARIO-01]"""
     repo = Mock()
@@ -31,4 +33,3 @@ def test_refine_task_not_found():
 
     refined = service.refine_task("task_id_456")
     assert refined is None
-

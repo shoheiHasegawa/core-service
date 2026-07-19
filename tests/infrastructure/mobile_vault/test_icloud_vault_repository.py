@@ -75,3 +75,46 @@ def test_icloud_repository_move_file(tmp_path):
     assert not source_file.exists()
     assert dest_file.exists()
     assert dest_file.read_text() == "Move this file"
+
+
+def test_icloud_repository_save_file_path_traversal(tmp_path):
+    """[SCENARIO-02] Path traversal in save_file should raise ValueError"""
+    import pytest
+    repo = ICloudVaultRepository()
+    work_dir = tmp_path / "work"
+    repo.ensure_directory_exists(str(work_dir))
+
+    with pytest.raises(ValueError, match="Path traversal detected"):
+        repo.save_file("content", str(work_dir), "../outside.md")
+
+
+def test_icloud_repository_save_file_exists(tmp_path):
+    """[SCENARIO-03] Saving to an existing file should raise FileExistsError"""
+    import pytest
+    repo = ICloudVaultRepository()
+    work_dir = tmp_path / "work"
+    repo.ensure_directory_exists(str(work_dir))
+
+    filename = "test.md"
+    repo.save_file("content", str(work_dir), filename)
+    with pytest.raises(FileExistsError):
+        repo.save_file("new content", str(work_dir), filename)
+
+
+def test_icloud_repository_move_file_exists(tmp_path):
+    """[SCENARIO-04] Moving to an existing file should raise FileExistsError"""
+    import pytest
+    repo = ICloudVaultRepository()
+    source_dir = tmp_path / "source"
+    dest_dir = tmp_path / "dest"
+    source_dir.mkdir()
+    dest_dir.mkdir()
+
+    source_file = source_dir / "move_me.md"
+    source_file.write_text("Move this file")
+
+    dest_file = dest_dir / "moved.md"
+    dest_file.write_text("Existing file")
+
+    with pytest.raises(FileExistsError):
+        repo.move_file(source_path=str(source_file), dest_path=str(dest_file))

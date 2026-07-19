@@ -47,8 +47,8 @@ class JsonTaskRepository(DomainTaskRepository):
                 )
                 tasks.append(task)
             except (json.JSONDecodeError, KeyError, ValueError) as e:
-                logger.warning("Failed to parse %s: %s. Skipping.", file_path.name, e)
-                continue
+                logger.error("Failed to parse %s: %s", file_path.name, e)
+                raise ValueError(f"Data corruption detected in task {file_path.name}: {e}")
 
         # Filter purely by target_date and incomplete status.
         # Domain logic (like sliding past tasks) should be handled in the Domain/Application layer.
@@ -88,8 +88,8 @@ class JsonTaskRepository(DomainTaskRepository):
                 )
                 tasks.append(task)
             except (json.JSONDecodeError, KeyError, ValueError) as e:
-                logger.warning("Failed to parse %s: %s. Skipping.", file_path.name, e)
-                continue
+                logger.error("Failed to parse %s: %s", file_path.name, e)
+                raise ValueError(f"Data corruption detected in task {file_path.name}: {e}")
         return tasks
 
     def save_tasks(self, tasks: List[Task]) -> None:

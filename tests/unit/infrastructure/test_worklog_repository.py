@@ -18,16 +18,12 @@ def session():
     yield session
     session.close()
 
+
 def test_worklog_save_and_find(session):
     """[SCENARIO-01]"""
     repo = SQLAlchemyWorklogRepository(session)
 
-    worklog = Worklog(
-        id="w1",
-        task_id="task-1",
-        minutes=30,
-        target_date=date(2026, 7, 19)
-    )
+    worklog = Worklog(id="w1", task_id="task-1", minutes=30, target_date=date(2026, 7, 19))
 
     # Save worklog
     repo.save(worklog)
@@ -39,29 +35,19 @@ def test_worklog_save_and_find(session):
     assert found[0].minutes == 30
     assert found[0].target_date == date(2026, 7, 19)
 
+
 def test_worklog_update(session):
     """[SCENARIO-01]"""
     repo = SQLAlchemyWorklogRepository(session)
 
-    worklog1 = Worklog(
-        id="w1",
-        task_id="task-1",
-        minutes=30,
-        target_date=date(2026, 7, 19)
-    )
+    worklog1 = Worklog(id="w1", task_id="task-1", minutes=30, target_date=date(2026, 7, 19))
     repo.save(worklog1)
 
     # Update worklog with same task_id and target_date but no ID
     # Since find_by_task_and_date logic in save does an upsert
-    worklog2 = Worklog(
-        id="w2",
-        task_id="task-1",
-        minutes=50,
-        target_date=date(2026, 7, 19)
-    )
+    worklog2 = Worklog(id="w2", task_id="task-1", minutes=50, target_date=date(2026, 7, 19))
     repo.save(worklog2)
 
     found = repo.find_by_task_and_date("task-1", date(2026, 7, 19))
     assert len(found) == 1
     assert found[0].minutes == 50
-

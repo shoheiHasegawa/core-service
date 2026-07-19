@@ -14,10 +14,11 @@ class TaskRepository(DomainTaskRepository):
         self.session = session
 
     def get_ready_tasks_for_date(self, target_date: date) -> List[Task]:
-        models = self.session.query(TaskModel).filter(
-            TaskModel.target_date == target_date,
-            TaskModel.status != TaskStatus.COMPLETED.value
-        ).all()
+        models = (
+            self.session.query(TaskModel)
+            .filter(TaskModel.target_date == target_date, TaskModel.status != TaskStatus.COMPLETED.value)
+            .all()
+        )
         return [self._to_entity(m) for m in models]
 
     def get_tasks_by_ids(self, task_ids: List[str]) -> List[Task]:
@@ -67,8 +68,10 @@ class TaskRepository(DomainTaskRepository):
         if model.dependencies:
             try:
                 deps = json.loads(model.dependencies)
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                import logging
+                logging.getLogger(__name__).error("Failed to parse dependencies for task %s: %s", model.id, e)
+                raise ValueError(f"Data corruption detected in dependencies for task {model.id}: {e}")
 
         return Task(
             id=model.id,
@@ -83,5 +86,5 @@ class TaskRepository(DomainTaskRepository):
             deadline=model.deadline,
             target_date=model.target_date,
             dependencies=deps,
-            reference_id=model.reference_id
+            reference_id=model.reference_id,
         )

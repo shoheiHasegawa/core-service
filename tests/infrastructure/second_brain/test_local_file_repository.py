@@ -50,3 +50,51 @@ def test_search_existing_notes(tmp_path):
     # Assert
     assert len(results) == 1
     assert "note1.md" in results[0]
+
+
+def test_save_path_traversal(tmp_path):
+    """[SCENARIO-02] Path traversal attempt in save should raise ValueError"""
+    import pytest
+    repo = LocalFileRepository(base_path=str(tmp_path))
+    with pytest.raises(ValueError, match="Path traversal detected"):
+        repo.save("../outside.md", "content")
+
+
+def test_save_file_exists(tmp_path):
+    """[SCENARIO-03] Saving to an existing file should raise FileExistsError"""
+    import pytest
+    repo = LocalFileRepository(base_path=str(tmp_path))
+    file_path = "test.md"
+    repo.save(file_path, "content")
+    with pytest.raises(FileExistsError):
+        repo.save(file_path, "new content")
+
+
+def test_read_path_traversal(tmp_path):
+    """[SCENARIO-04] Path traversal attempt in read should raise ValueError"""
+    import pytest
+    repo = LocalFileRepository(base_path=str(tmp_path))
+    with pytest.raises(ValueError, match="Path traversal detected"):
+        repo.read("../outside.md")
+
+
+def test_copy_asset_path_traversal(tmp_path):
+    """[SCENARIO-05] Path traversal attempt in copy_asset should raise ValueError"""
+    import pytest
+    repo = LocalFileRepository(base_path=str(tmp_path))
+    source_file = tmp_path / "source.png"
+    source_file.write_bytes(b"data")
+    with pytest.raises(ValueError, match="Path traversal detected"):
+        repo.copy_asset(str(source_file), "../outside.png")
+
+
+def test_copy_asset_file_exists(tmp_path):
+    """[SCENARIO-06] Copying to an existing file should raise FileExistsError"""
+    import pytest
+    repo = LocalFileRepository(base_path=str(tmp_path))
+    source_file = tmp_path / "source.png"
+    source_file.write_bytes(b"data")
+    dest_path = "dest.png"
+    repo.copy_asset(str(source_file), dest_path)
+    with pytest.raises(FileExistsError):
+        repo.copy_asset(str(source_file), dest_path)
