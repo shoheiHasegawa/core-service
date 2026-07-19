@@ -40,9 +40,6 @@ class MarkdownParser:
                 # header lines count
                 parts[1].count("\n") + 2
 
-        # 単純に行番号とテキストをDomainに渡す
-        # より厳密にはここで [text](url) のurl部分だけ抽出してもよいが、
-        # 禁止パターン（`/10_Areas/`等の文字列）がどこにあるかのチェックなので全行を渡す
         return [(i + 1, line) for i, line in enumerate(lines)]
 
     def extract_tags_and_aliases(self) -> Tuple[List[str], List[str]]:

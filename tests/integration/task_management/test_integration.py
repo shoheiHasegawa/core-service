@@ -24,12 +24,7 @@ def test_task_management_integration(test_context: IntegrationTestContext):
         title="Integration Test Planning Task", description="Testing day planning flow", estimated_minutes=90
     )
 
-    try:
-        from application.task_management.daily_action_service import DailyActionService  # noqa: F401
-        # daily_service = DailyActionService(...)
-        # daily_service.plan_day(date.today())
-    except ImportError:
-        pass
+    # daily_service による計画フェーズは別テストで検証予定
 
     # DBを直接クエリしての副作用確認
     # セッションからTaskModelを直接取得して、WIP超過やステータス更新など仕様に沿った状態かを確認する

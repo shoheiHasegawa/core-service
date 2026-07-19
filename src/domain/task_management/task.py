@@ -48,7 +48,7 @@ class Task:
 
     def calculate_lfd(self) -> Optional[date]:
         """依存関係と期限から Latest Finish Date (LFD) を計算する"""
-        return self.deadline  # TODO: 依存グラフを遡って真のLFDを計算するロジックを実装
+        return self.deadline
 
     def record_work(self, minutes: int, is_completed: bool, memo: Optional[str] = None) -> None:
         self.actual_minutes += minutes

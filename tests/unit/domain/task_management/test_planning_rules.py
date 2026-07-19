@@ -1,20 +1,16 @@
 from datetime import date, datetime, timedelta
 
-from domain.task_management.planning_rules import ContextBatchingPolicy, SchedulingValidator
+from domain.task_management.planning_rules import (
+    CircadianRhythmPolicy,
+    ContextBatchingPolicy,
+    DependencyPolicy,
+    MorningDeepWorkPolicy,
+    OrphanTaskPolicy,
+    ScheduleBuilder,
+    SchedulingValidator,
+    StrategicInvestmentPolicy,
+)
 from domain.task_management.task import Task, TaskCategory, WarningFlag
-
-# 以下のモジュール・クラスは未実装を想定（テスト実行時にImportErrorまたはAttributeErrorでFailする）
-try:
-    from domain.task_management.planning_rules import (
-        CircadianRhythmPolicy,
-        DependencyPolicy,
-        MorningDeepWorkPolicy,
-        OrphanTaskPolicy,
-        ScheduleBuilder,
-        StrategicInvestmentPolicy,
-    )
-except ImportError:
-    pass
 
 
 def create_task(id: str, category: TaskCategory, estimated_minutes: int, **kwargs) -> Task:

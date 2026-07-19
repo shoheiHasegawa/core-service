@@ -1,10 +1,8 @@
-# 未実装のため ImportError (Red) になる
 from domain.mobile_vault.packet import Packet
 from domain.mobile_vault.parser import MarkdownImageParser
 
 
 def test_markdown_image_parser_extracts_images():
-    """[VAULT-01]"""
     """[VAULT-01]
     MarkdownImageParserがMarkdown文字列から画像リンク（Obsidian形式や標準MD形式）を抽出するテスト。
     """

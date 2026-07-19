@@ -72,9 +72,7 @@ class SecondBrainService:
         aliases: List[str] = None,
         tags: List[str] = None,
     ) -> bool:
-        # Construct body manually or let formatter handle it.
-        # Assuming the Permanent_Note.md has some structure we can inject into.
-        # For now, just append them to the body so it conforms to the basic format.
+
         content = f"## 💡 Claim (核となる主張・知見)\n{claim}\n\n"
         content += f"## 🧭 Context (背景と深掘り)\n{context}\n\n"
         content += f"## 🔗 Connections (関連ノードと関係性)\n{connections}"

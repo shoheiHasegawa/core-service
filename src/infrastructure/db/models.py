@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Date, Integer, String, create_engine, event
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy import Column, Date, Integer, String, event
+from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
@@ -35,16 +35,15 @@ class WorklogModel(Base):
     memo = Column(String, nullable=True)
 
 
-# Engine setup
-engine = create_engine("sqlite:///you_inc_ops.db")
+def setup_sqlite_pragma(engine):
+    """
+    SQLiteエンジンに対してWALモードなどのPRAGMA設定を適用します。
+    DI経由で生成されたエンジンを渡して初期化してください。
+    """
 
-
-@event.listens_for(engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL;")
-    cursor.execute("PRAGMA synchronous=NORMAL;")
-    cursor.close()
-
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    @event.listens_for(engine, "connect")
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA synchronous=NORMAL;")
+        cursor.close()

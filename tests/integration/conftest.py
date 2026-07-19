@@ -29,7 +29,6 @@ class IntegrationTestContext:
 
         # Repositories
         self.task_repo = TaskRepository(self.session)
-        # TODO: Other repositories like BriefingRepository, ScheduleGateway, WorklogRepository
 
         # Services
         # self.daily_action_service = DailyActionService(...)

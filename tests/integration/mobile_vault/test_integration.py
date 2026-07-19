@@ -8,7 +8,7 @@ def test_vault_integration(test_context: IntegrationTestContext):
     [VAULT-03] 異常系: ファイル上書き保存のエラー
     [VAULT-04] 異常系: ファイル移動先の上書きエラー
     """
-    # [VAULT-01] などのシナリオに基づくセットアップ
+    # Arrange
     import os
     import tempfile
 
@@ -30,9 +30,12 @@ def test_vault_integration(test_context: IntegrationTestContext):
     service = MobileVaultService(
         config=config, repository=repository, parser=parser, task_repository=test_context.task_repo
     )
+
+    # Act
     service.retrieve_packets()
 
+    # Assert
     # DBを直接クエリしての副作用確認
     stmt = text("SELECT count(*) FROM tasks")
     result = test_context.session.execute(stmt).scalar()
-    assert result >= 0, "Assertion for SDD linter"
+    assert result == 1  # 1つのパケットがInboxタスクとして生成されることを検証

@@ -1,4 +1,3 @@
-# 未実装のため ImportError (Red) になる
 from infrastructure.mobile_vault.icloud_vault_repository import ICloudVaultRepository
 
 
@@ -26,32 +25,53 @@ def test_icloud_repository_list_markdown_files(tmp_path):
     assert str(file2) not in files
 
 
-def test_icloud_repository_file_operations(tmp_path):
-    """[VAULT-01]
-    ファイルの読み書き、削除、ディレクトリ作成など純粋なファイルI/Oのテスト。
-    """
+def test_icloud_repository_ensure_directory(tmp_path):
+    """[VAULT-01] ディレクトリ作成のテスト。"""
+    # Arrange
     repo = ICloudVaultRepository()
     work_dir = tmp_path / "work"
 
-    # ディレクトリ作成
+    # Act
     repo.ensure_directory_exists(str(work_dir))
+
+    # Assert
     assert work_dir.exists()
     assert work_dir.is_dir()
 
-    # ファイル保存
+
+def test_icloud_repository_save_and_read_file(tmp_path):
+    """[VAULT-01] ファイルの保存と読み込みのテスト。"""
+    # Arrange
+    repo = ICloudVaultRepository()
+    work_dir = tmp_path / "work"
+    repo.ensure_directory_exists(str(work_dir))
     content = "Hello, Mobile Vault!"
     filename = "test.md"
-    repo.save_file(content=content, directory=str(work_dir), filename=filename)
-
     file_path = work_dir / filename
-    assert file_path.exists()
 
-    # ファイル読み込み
+    # Act
+    repo.save_file(content=content, directory=str(work_dir), filename=filename)
     read_content = repo.read_text(str(file_path))
+
+    # Assert
+    assert file_path.exists()
     assert read_content == content
 
-    # ファイル削除
+
+def test_icloud_repository_delete_file(tmp_path):
+    """[VAULT-01] ファイル削除のテスト。"""
+    # Arrange
+    repo = ICloudVaultRepository()
+    work_dir = tmp_path / "work"
+    repo.ensure_directory_exists(str(work_dir))
+    filename = "delete_me.md"
+    file_path = work_dir / filename
+    repo.save_file(content="Delete me", directory=str(work_dir), filename=filename)
+
+    # Act
     repo.delete_file(str(file_path))
+
+    # Assert
     assert not file_path.exists()
 
 

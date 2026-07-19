@@ -2,8 +2,6 @@ from unittest.mock import MagicMock
 
 from application.mobile_vault.config import MobileVaultConfig
 from application.mobile_vault.interfaces import IMobileVaultRepository
-
-# 未実装のため ImportError (Red) になる
 from application.mobile_vault.service import MobileVaultService
 from domain.mobile_vault.parser import MarkdownImageParser
 

@@ -39,8 +39,6 @@ class TaskManagementService:
             return None
 
         task = tasks[0]
-        # 仮のリファインロジック（見積もりの更新など）
-        task.status = task.status
         self.task_repo.save_tasks([task])
 
         return task

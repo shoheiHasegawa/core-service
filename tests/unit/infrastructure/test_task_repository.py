@@ -4,7 +4,6 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Assuming we have these in infrastructure
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
 from infrastructure.db.models import Base
 from infrastructure.task_management.task_repository import TaskRepository

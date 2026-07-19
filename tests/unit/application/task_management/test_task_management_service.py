@@ -1,12 +1,13 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock
 
 from application.task_management.task_management_service import TaskManagementService
+from domain.task_management.repository import TaskRepository
 from domain.task_management.task import Task, TaskCategory
 
 
 def test_register_task():
     """[TASK-01]"""
-    repo = Mock()
+    repo = MagicMock(spec=TaskRepository)
     service = TaskManagementService(repo)
     task = service.register_task("Test Title", "Test Description")
     assert task.title == "Test Title"
@@ -15,7 +16,7 @@ def test_register_task():
 
 def test_refine_task():
     """[TASK-01]"""
-    repo = Mock()
+    repo = MagicMock(spec=TaskRepository)
     service = TaskManagementService(repo)
     task = Task(id="task_id_123", title="Mock", category=TaskCategory.MUST, estimated_minutes=30)
     repo.get_tasks_by_ids.return_value = [task]
@@ -27,7 +28,7 @@ def test_refine_task():
 
 def test_refine_task_not_found():
     """[TASK-01]"""
-    repo = Mock()
+    repo = MagicMock(spec=TaskRepository)
     service = TaskManagementService(repo)
     repo.get_tasks_by_ids.return_value = []
 
