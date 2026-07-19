@@ -7,10 +7,20 @@
 - すべてのテストコードの関数DocString内には、必ず担保する仕様ID（例: `[SCENARIO-01]`）を記載し、仕様とテストのトレーサビリティを強制する。
 - （これらは `scripts/validate_sdd.py` のLinterによってCI/CD的に自動検知される）
 
-## 2. Integration Test (結合テスト) の制約
-- `tests/integration/` では、システムの層間（Application層とDomain層など）における**Mock（モック化）を一切禁止**する。
-- Mockが許されるのは、外部システム（DBや外部APIなど `infrastructure/` の外側の通信先）のみとする。
-- これにより、本番同様の確実な振る舞いを保証する。
+## 2. Integration Test (結合テスト) の制約とハーネス
+- `tests/integration/` は、**AIの暴走（ハルシネーションや不適切なリファクタリング）を防ぐ最終的な防波堤（ハーネス）**である。
+- **配置**: `tests/integration/` 配下には、`application/` などのレイヤー階層は作らず、直接ドメイン名（機能名）のディレクトリ（例: `task_management/`）を配置すること。結合テストの起点は常に Application層（ユースケース）であるため、レイヤー分類は不要である。
+- **境界とDB接続の厳格化**: テストの境界は「Application層からインフラ実体（DB等）まで」とする。システムの層間における**Mock（モック化）を一切禁止**する。とくに `unittest.mock` 等を用いてRepositoryやDB接続をモックすることは厳禁であり、**必ずテスト用DB（インメモリSQLite等）へ接続させること**。
+- **許容されるMock (Fakeの注入)**: Mockが許されるのは、外部API通信のみとする。ただし、現在時刻やUUIDなどの非決定的な値については、DIコンテナ経由で `FakeClock` や `FakeUUIDGenerator` などのテスト用スタブを注入することを例外として許可する。
+
+## 2.5. Integration Test の Helper 実装ルール (共通の型)
+- `tests/integration/helpers/` に、結合テスト専用の「共通の型」を配置することを義務化する。
+  - **`IntegrationTestContext`**: `agent-core` の振る舞い（DI組み立て）を模倣し、テストDBの初期化や具象Repositoryの注入を担う「実行環境の型」。
+    - ⚠️ **State Leakage（状態汚染）の防止**: テスト間のデータ汚染を防ぐため、`IntegrationTestContext` は各テスト終了時に必ず「トランザクションのロールバック」またはDBの初期化を行う責務を持つこと。
+  - **`TestDataBuilder`**: テストデータを生成しDBに事前投入するための「データ生成の型」。
+
+## 2.6. アサーションの空洞化防止
+- AIがカバレッジ目標を達成するためだけに中身の無いテストを書くことを防ぐため、結合テストの最後には必ず「**DBを直接クエリして副作用（データ状態の変更）をアサーションすること**」を義務付ける。
 
 ## 3. Application層のアーキテクチャ制約 (Feature-Driven Packaging)
 - `src/application/` 配下は、機能（Feature）ごとにディレクトリを分割すること。
@@ -24,13 +34,17 @@
 - `scripts/` に配置された開発補助ツールやLinter等に対しても、品質担保のためにテストを書くこと。
 - その場合のテストコードは、`tests/unit/scripts/` 配下に配置すること。
 
-## 5. AI Pair Programming Protocol (AI分業制)
-- エージェントがタスクを実行する際、TDDにおける確証バイアス（実装に合わせてテストを書き換える等）を防ぐため、1体のAIがテストと実装を兼務してはならない。
-- **Testerフェーズ**: `Tester Agent` を起動し、Failするテストのみを書かせる（`src/` への書き込み禁止）。
-- **Implementer (Red -> Green) フェーズ**: `Engineer Agent` がテストをパスさせるための実装を行う。
-- **Refactor (Green -> Clean) フェーズ【重要】**: テストがパスした後、Implementer は**直ちに**自身でDDDとSOLID原則に基づくリファクタリングを行わなければならない（Application層からDomain層へのビジネスロジックの抽出など）。これをスキップして Reviewer に提出することは禁止する。
-- **CI Verificationフェーズ**: レビューを開始する前に、必ず機械的な検証ツール（`pytest`やカバレッジ計測など）を実行し、そのログ結果を確認しなければならない。AIの「目視」によるテスト網羅性の判断はハルシネーション（見落とし）を引き起こすため、絶対に信用してはならない。
-- **Specialized Reviewフェーズ**: 単一の「汎用Reviewer」に査読を任せると、コンテキストの希薄化（Attention Dilution）により重大な構造的欠陥を見落とす。レビューは必ず「QA Engineer（品質保証）」「Domain Architect（DDD設計）」「Code Quality Reviewer（SOLID・保守性）」のように、複数の専門特化ペルソナ（サブエージェント）に分割して並列で実行させること。
+- **AI Pair Programming Protocol (Double-Loop TDD)**:
+  - エージェントがタスクを実行する際、確証バイアスを防ぐため、1体のAIがテストと実装を兼務してはならない。
+  - **Testerフェーズ**: `Tester Agent` を起動し、Failするテストを作成させる（`src/` への書き込み禁止）。
+    - ⚠️ **Double-Loop TDDの強制**: Tester Agent は、必ず Outer Loop（`tests/integration/` の結合テスト）から書き始め、その後に Inner Loop（`tests/unit/` の単体テスト）を書くこと。「外側から内側へ固定していくフロー」を厳守する。
+    - ⚠️ **ドキュメントとの関係と要求ID (Traceability)**: 結合テスト用の独自仕様書は作成しない。必ず `src/application/spec.md` を正本とし、Unitテストと同様に、Integrationテストの各関数のDocStringにも必ず `[SCENARIO-XX]` という仕様IDを記載し、トレーサビリティを担保すること。
+  - **Implementer (Red -> Green) フェーズ**: `Engineer Agent` がテストをパスさせるための実装を行う。
+  - **Refactor (Green -> Clean) フェーズ【重要】**: テストがパスした後、Implementer は**直ちに**自身でDDDとSOLID原則に基づくリファクタリングを行う。
+  - **Gate (関所の強制)**:
+    - レビュー前に必ず `scripts/validate_sdd.py` を実行し、**UnitとIntegrationの両方に `[SCENARIO-XX]` が付与され、仕様とテストが紐づいていること**を機械的に証明しなければならない。
+    - これを通過しない限り、レビューへの提出およびリファクタリング完了を認めない。
+  - **Specialized Reviewフェーズ**: 複数の専門特化ペルソナ（QA Engineer、Domain Architect等）に分割して並列でレビューを実行させる。
 
 ## 6. テスト品質とエッジケース制約
 - **カバレッジの絶対閾値**: `make test` 時のカバレッジは常に 90% 以上を維持しなければならない。下回る場合はCI/Linterレベルでブロックされる。

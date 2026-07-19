@@ -123,6 +123,7 @@ def test_get_tasks_by_ids(session):
 def test_task_repository_malformed_dependencies_raises_value_error(session):
     """[SCENARIO-01]"""
     from infrastructure.db.models import TaskModel
+
     repository = TaskRepository(session)
 
     # Directly insert corrupted data
@@ -134,7 +135,7 @@ def test_task_repository_malformed_dependencies_raises_value_error(session):
         task_type="one-off",
         status="todo",
         target_date=date(2026, 7, 19),
-        dependencies="{invalid_json"
+        dependencies="{invalid_json",
     )
     session.add(model)
     session.commit()

@@ -80,6 +80,7 @@ def test_icloud_repository_move_file(tmp_path):
 def test_icloud_repository_save_file_path_traversal(tmp_path):
     """[SCENARIO-02] Path traversal in save_file should raise ValueError"""
     import pytest
+
     repo = ICloudVaultRepository()
     work_dir = tmp_path / "work"
     repo.ensure_directory_exists(str(work_dir))
@@ -91,6 +92,7 @@ def test_icloud_repository_save_file_path_traversal(tmp_path):
 def test_icloud_repository_save_file_exists(tmp_path):
     """[SCENARIO-03] Saving to an existing file should raise FileExistsError"""
     import pytest
+
     repo = ICloudVaultRepository()
     work_dir = tmp_path / "work"
     repo.ensure_directory_exists(str(work_dir))
@@ -104,6 +106,7 @@ def test_icloud_repository_save_file_exists(tmp_path):
 def test_icloud_repository_move_file_exists(tmp_path):
     """[SCENARIO-04] Moving to an existing file should raise FileExistsError"""
     import pytest
+
     repo = ICloudVaultRepository()
     source_dir = tmp_path / "source"
     dest_dir = tmp_path / "dest"

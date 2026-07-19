@@ -69,6 +69,7 @@ def test_json_task_repository_handles_malformed_json(tmp_path: Path):
     [SCENARIO-03] JSON Task Repository should raise ValueError on malformed JSON files.
     """
     import pytest
+
     repo = JsonTaskRepository(tmp_path)
     malformed_file = tmp_path / "malformed.json"
     malformed_file.write_text("{ invalid json ")
@@ -120,6 +121,7 @@ def test_json_task_repository_handles_missing_keys_and_invalid_values(tmp_path: 
     [SCENARIO-05] Missing keys (KeyError) or invalid enum values (ValueError) should raise ValueError.
     """
     import pytest
+
     repo = JsonTaskRepository(tmp_path)
 
     # Missing 'title' key (KeyError)
@@ -162,6 +164,7 @@ def test_json_task_repository_get_tasks_by_ids(tmp_path: Path):
 def test_json_task_repository_get_tasks_by_ids_malformed(tmp_path: Path):
     """[SCENARIO-01]"""
     import pytest
+
     repo = JsonTaskRepository(tmp_path)
     malformed = tmp_path / "t_malformed.json"
     malformed.write_text("{ invalid json")
