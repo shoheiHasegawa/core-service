@@ -17,10 +17,12 @@ def session():
     session = Session()
     yield session
     session.close()
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 def test_worklog_save_and_find(session):
-    """[TASK-01]"""
+    """[TM-PLAN-01]"""
     repo = SQLAlchemyWorklogRepository(session)
 
     worklog = Worklog(id="w1", task_id="task-1", minutes=30, target_date=date(2026, 7, 19))
@@ -37,7 +39,7 @@ def test_worklog_save_and_find(session):
 
 
 def test_worklog_update(session):
-    """[TASK-01]"""
+    """[TM-PLAN-01]"""
     repo = SQLAlchemyWorklogRepository(session)
 
     worklog1 = Worklog(id="w1", task_id="task-1", minutes=30, target_date=date(2026, 7, 19))

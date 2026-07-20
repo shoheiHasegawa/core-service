@@ -7,16 +7,11 @@ from domain.task_management.task import Task, TaskCategory, TaskStatus, WarningF
 
 
 def test_scenario_02_wip_limit_exceeded():
-    """[TASK-02] WIP制限（3つ）を超過するMUSTタスクは弾かれること"""
+    """[TM-PLAN-02] WIP制限（3つ）を超過するMUSTタスクは弾かれること"""
 
     task_repo = MagicMock(spec=TaskRepository)
     tasks = [
-        Task(
-            id=f"t{i}",
-            title=f"Must Task {i}",
-            category=TaskCategory.MUST,
-            estimated_minutes=30,
-        )
+        Task(id=f"t{i}", title=f"Must Task {i}", category=TaskCategory.MUST, estimated_minutes=30, area_id="01_Work")
         for i in range(5)  # 5 MUST tasks
     ]
     task_repo.get_ready_tasks_for_date.return_value = tasks
@@ -28,13 +23,13 @@ def test_scenario_02_wip_limit_exceeded():
     )
 
     briefing = service.plan_day(date.today())
-    must_scheduled = [t for t in briefing.scheduled_tasks if t.category == TaskCategory.MUST]
+    must_scheduled = [t for t in briefing.scheduled_tasks if t.category == TaskCategory.MUST and t.id != "sleep"]
 
     assert len(must_scheduled) == 3
 
 
 def test_scenario_03_w_ratio_low():
-    """[TASK-03] Wタスクの割合が20%未満の場合、W_ratio_lowフラグが立つこと"""
+    """[TM-PLAN-03] Wタスクの割合が20%未満の場合、W_ratio_lowフラグが立つこと"""
     task_repo = MagicMock(spec=TaskRepository)
     tasks = [
         Task(id="t1", title="Must 1", category=TaskCategory.MUST, estimated_minutes=60),
@@ -53,7 +48,7 @@ def test_scenario_03_w_ratio_low():
 
 
 def test_record_worklogs():
-    """[TASK-01] record_worklogsが既存のWorklogを考慮して冪等に動作すること"""
+    """[TM-PLAN-01] record_worklogsが既存のWorklogを考慮して冪等に動作すること"""
     task_repo = MagicMock(spec=TaskRepository)
     worklog_repo = MagicMock(spec=WorklogRepository)
     service = DailyActionService(

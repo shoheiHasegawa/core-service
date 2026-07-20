@@ -3,12 +3,13 @@
 `core-service` におけるテスト設計およびAIエージェントによるテスト駆動開発の絶対ルールを定義する。
 
 ## 1. SDD / TDD のトレーサビリティ
-- すべての実装は `src/application/spec.md` に定義されたユースケースシナリオ（例: `[TASK-01]`）に基づくこと。
-- すべてのテストコードの関数DocString内には、必ず担保する仕様ID（例: `[TASK-01]`）を記載し、仕様とテストのトレーサビリティを強制する。
+- **仕様IDの採番ルール**: `[ドメイン略称]-[機能群]-[連番]`（例: `[TM-PLAN-01]`, `[MV-RECV-01]`, `[SB-NOTE-01]`）という普遍的な命名規則を使用すること。Epic依存の命名は禁止。
+- すべての実装は `src/application/*/spec.md` に定義されたユースケースシナリオに基づくこと。
+- すべてのテストコードの関数DocString内には、必ず担保する仕様ID（例: `[TM-PLAN-01]`）を記載し、仕様とテストのトレーサビリティを強制する。
 - （これらは `scripts/validate_sdd.py` のLinterによってCI/CD的に自動検知される）
 
-## 2. Integration Test (結合テスト) の制約とハーネス
-- `tests/integration/` は、**AIの暴走（ハルシネーションや不適切なリファクタリング）を防ぐ最終的な防波堤（ハーネス）**である。
+## 2. Integration Test (結合テスト) の制約と責務
+- `tests/integration/` は、**公開Service仕様（In-Out）を固定し、要求シナリオの100%を網羅する**ための防波堤（ハーネス）である。
 - **配置**: `tests/integration/` 配下には、`application/` などのレイヤー階層は作らず、直接ドメイン名（機能名）のディレクトリ（例: `task_management/`）を配置すること。結合テストの起点は常に Application層（ユースケース）であるため、レイヤー分類は不要である。
 - **境界とDB接続の厳格化**: テストの境界は「Application層からインフラ実体（DB等）まで」とする。システムの層間における**Mock（モック化）を一切禁止**する。とくに `unittest.mock` 等を用いてRepositoryやDB接続をモックすることは厳禁であり、**必ずテスト用DB（インメモリSQLite等）へ接続させること**。
 - **許容されるMock (Fakeの注入)**: Mockが許されるのは、外部API通信のみとする。ただし、現在時刻やUUIDなどの非決定的な値については、DIコンテナ経由で `FakeClock` や `FakeUUIDGenerator` などのテスト用スタブを注入することを例外として許可する。
@@ -47,15 +48,16 @@
 - `scripts/` に配置された開発補助ツールやLinter等に対しても、品質担保のためにテストを書くこと。
 - その場合のテストコードは、`tests/unit/scripts/` 配下に配置すること。
 
-- **AI Pair Programming Protocol (Double-Loop TDD)**:
+- **AI Pair Programming Protocol (Outside-in TDD)**:
   - エージェントがタスクを実行する際、確証バイアスを防ぐため、1体のAIがテストと実装を兼務してはならない。
-  - **Testerフェーズ**: `Tester Agent` を起動し、Failするテストを作成させる（`src/` への書き込み禁止）。
-    - ⚠️ **Double-Loop TDDの強制**: Tester Agent は、必ず Outer Loop（`tests/integration/` の結合テスト）から書き始め、その後に Inner Loop（`tests/unit/` の単体テスト）を書くこと。「外側から内側へ固定していくフロー」を厳守する。
-    - ⚠️ **ドキュメントとの関係と要求ID (Traceability)**: 結合テスト用の独自仕様書は作成しない。必ず `src/application/spec.md` を正本とし、Unitテストと同様に、Integrationテストの各関数のDocStringにも必ず `[SCENARIO-XX]` という仕様IDを記載し、トレーサビリティを担保すること。
+  - **Testerフェーズ (仕様固定とエスカレーション)**: `Tester Agent` を起動し、Failするテストを作成させる（`src/` への書き込み禁止）。
+    - ⚠️ **Outside-in TDDの強制**: Tester Agent は、必ず Outer Loop（`tests/integration/` の結合テスト）から書き始めること。ここで「テストが書けない（In-Outが不明確）」場合は、`spec.md` の仕様が粗い証拠である。**Agentが独断で仕様を決定してはならない。必ずユーザーにエスカレーション（質問・確認）し、意思決定を仰いでから `spec.md` を詳細化すること。**
+    - ⚠️ **ドキュメントとの関係と要求ID (Traceability)**: 結合テスト用の独自仕様書は作成しない。必ず `src/application/*/spec.md` を正本とし、Integrationテストの各関数のDocStringにも必ず `[SCENARIO-XX]` という仕様IDを記載してトレーサビリティを担保すること。
   - **Implementer (Red -> Green) フェーズ**: `Engineer Agent` がテストをパスさせるための実装を行う。
   - **Refactor (Green -> Clean) フェーズ【重要】**: テストがパスした後、Implementer は**直ちに**自身でDDDとSOLID原則に基づくリファクタリングを行う。
+  - **Unit Test (内部エッジケース検証)**: 実装詳細（ドメインモデル等のエッジケース、境界値、状態遷移）はUnit Testで網羅的に固める。Unit Testは内部実装検証が目的であるため、`spec.md`の全シナリオ網羅は必須ではない。
   - **Gate (関所の強制)**:
-    - レビュー前に必ず `scripts/validate_sdd.py` を実行し、**UnitとIntegrationの両方に `[SCENARIO-XX]` が付与され、仕様とテストが紐づいていること**を機械的に証明しなければならない。
+    - レビュー前に必ず `scripts/validate_sdd.py` を実行すること。Integration Testが `spec.md` の要求仕様IDを100%網羅していること、また全テストでFake IDが使用されていないことを機械的に証明しなければならない。
     - これを通過しない限り、レビューへの提出およびリファクタリング完了を認めない。
   - **Specialized Reviewフェーズ**: 複数の専門特化ペルソナ（QA Engineer、Domain Architect等）に分割して並列でレビューを実行させる。
 

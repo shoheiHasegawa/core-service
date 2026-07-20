@@ -4,14 +4,14 @@ from sqlalchemy import text
 
 def test_second_brain_integration(test_context: IntegrationTestContext):
     """
-    [BRAIN-01] アイデアの取り込み (Register Knowledge)
-    [BRAIN-02] 知識の検索 (Search Notes)
-    [BRAIN-03] 監査 (Audit Rules)
-    [BRAIN-04] 異常系: ディレクトリトラバーサル攻撃防御（Read）
-    [BRAIN-05] 異常系: ディレクトリトラバーサル攻撃防御（Copy Asset）
-    [BRAIN-06] 異常系: コピー先の上書きエラー
+    [SB-NOTE-01] アイデアの取り込み (Register Knowledge)
+    [SB-NOTE-02] 知識の検索 (Search Notes)
+    [SB-NOTE-03] 監査 (Audit Rules)
+    [SB-NOTE-04] 異常系: ディレクトリトラバーサル攻撃防御（Read）
+    [SB-NOTE-05] 異常系: ディレクトリトラバーサル攻撃防御（Copy Asset）
+    [SB-NOTE-06] 異常系: コピー先の上書きエラー
     """
-    # [BRAIN-01] などのシナリオに基づくセットアップ
+    # [SB-NOTE-01] などのシナリオに基づくセットアップ
     # 実際の実装に合わせてServiceを呼び出し、DBへの副作用を引き起こす
     import os
     import tempfile

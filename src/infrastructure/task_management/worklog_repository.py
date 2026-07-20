@@ -35,6 +35,11 @@ class SQLAlchemyWorklogRepository(WorklogRepository):
         if worklog.target_date:
             model.target_date = worklog.target_date
         model.minutes = worklog.minutes
+        model.memo = worklog.memo
+        model.area_id = worklog.area_id
+        model.category = worklog.category
+        model.task_type = worklog.task_type
+        model.is_completed = worklog.is_completed
         self.session.commit()
 
     def find_by_task_and_date(self, task_id: str, target_date: date) -> List[Worklog]:
@@ -44,6 +49,16 @@ class SQLAlchemyWorklogRepository(WorklogRepository):
             .all()
         )
         return [
-            Worklog(id=m.id, task_id=m.task_id, minutes=m.minutes, target_date=m.target_date, memo=m.memo)
+            Worklog(
+                id=m.id,
+                task_id=m.task_id,
+                minutes=m.minutes,
+                is_completed=m.is_completed,
+                target_date=m.target_date,
+                memo=m.memo,
+                area_id=m.area_id,
+                category=m.category,
+                task_type=m.task_type,
+            )
             for m in models
         ]

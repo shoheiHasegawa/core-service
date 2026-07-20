@@ -18,7 +18,7 @@ def create_task(id: str, category: TaskCategory, estimated_minutes: int, **kwarg
 
 
 def test_task_04_deadline_exceeded_warning():
-    """[TASK-04] LFD（限界期限）の超過警告"""
+    """[TM-PLAN-04] LFD（限界期限）の超過警告"""
     yesterday = date.today() - timedelta(days=1)
     task = create_task("t1", TaskCategory.MUST, 30, deadline=yesterday)
 
@@ -27,7 +27,7 @@ def test_task_04_deadline_exceeded_warning():
 
 
 def test_task_05_context_switch_limit():
-    """[TASK-05] コンテキストスイッチの超過: 深い⇔浅い作業の往復が最大3回以内に収まること"""
+    """[TM-PLAN-05] コンテキストスイッチの超過: 深い⇔浅い作業の往復が最大3回以内に収まること"""
     # is_deep_work属性があると仮定
     tasks = []
     for i in range(10):
@@ -47,7 +47,7 @@ def test_task_05_context_switch_limit():
 
 
 def test_task_06_unready_task_invisible():
-    """[TASK-06] 未Readyタスクの自動不可視化: 依存先タスクが未完了のタスクは完全に除外される"""
+    """[TM-PLAN-06] 未Readyタスクの自動不可視化: 依存先タスクが未完了のタスクは完全に除外される"""
     task_a = create_task("t_a", TaskCategory.MUST, 30)  # TODO state
     task_b = create_task("t_b", TaskCategory.MUST, 30, dependencies=["t_a"])
 
@@ -58,7 +58,7 @@ def test_task_06_unready_task_invisible():
 
 
 def test_task_07_strategic_investment_block():
-    """[TASK-07] 戦略的投資枠の強制ブロック: 空き時間の20%が[S]タスクに強制ブロックされる"""
+    """[TM-PLAN-07] 戦略的投資枠の強制ブロック: 空き時間の20%が[S]タスクに強制ブロックされる"""
     s_task1 = create_task("s1", TaskCategory.SHOULD, 120)
     s_task2 = create_task("s2", TaskCategory.SHOULD, 60)
 
@@ -70,7 +70,7 @@ def test_task_07_strategic_investment_block():
 
 
 def test_task_08_orphan_task_exclusion():
-    """[TASK-08] 孤立タスクの排除: 目的(Areas)に紐付いていないタスクは除外される"""
+    """[TM-PLAN-08] 孤立タスクの排除: 目的(Areas)に紐付いていないタスクは除外される"""
     task_valid = create_task("t1", TaskCategory.MUST, 30, area_id="Area_1")
     task_orphan1 = create_task("t2", TaskCategory.MUST, 30, area_id=None)
     task_orphan2 = create_task("t3", TaskCategory.MUST, 30, area_id="00_Unknown")
@@ -82,7 +82,7 @@ def test_task_08_orphan_task_exclusion():
 
 
 def test_task_09_deep_work_continuous_limit():
-    """[TASK-09] ディープワーク連続稼働リミット到達: 90分で強制的にブレイク等が挿入されること"""
+    """[TM-PLAN-09] ディープワーク連続稼働リミット到達: 90分で強制的にブレイク等が挿入されること"""
     task = create_task("t1", TaskCategory.MUST, 120)
     task.is_deep_work = True
 
@@ -98,7 +98,7 @@ def test_task_09_deep_work_continuous_limit():
 
 
 def test_task_10_circadian_dip_handling():
-    """[TASK-10] サーカディアン・ディップの自動処理: 午後(13:00〜15:00)には[Energy: Low]または[W]のみ"""
+    """[TM-PLAN-10] サーカディアン・ディップの自動処理: 午後(13:00〜15:00)には[Energy: Low]または[W]のみ"""
     task = create_task("t1", TaskCategory.MUST, 60)
     task.is_deep_work = True  # High Energyを想定
 
@@ -111,7 +111,7 @@ def test_task_10_circadian_dip_handling():
 
 
 def test_task_11_shutdown_ritual_fixed_placement():
-    """[TASK-11] シャットダウン・リチュアルの固定配置: 最後の30分間は固定ブロック"""
+    """[TM-PLAN-11] シャットダウン・リチュアルの固定配置: 最後の30分間は固定ブロック"""
     start_time = datetime(2026, 7, 19, 9, 0)
     end_time = datetime(2026, 7, 19, 18, 0)
 
@@ -124,7 +124,7 @@ def test_task_11_shutdown_ritual_fixed_placement():
 
 
 def test_task_12_morning_shallow_work_error():
-    """[TASK-12] 午前中の浅い作業ブロックエラー: 午前中の Shallow Work は拒絶される"""
+    """[TM-PLAN-12] 午前中の浅い作業ブロックエラー: 午前中の Shallow Work は拒絶される"""
     task = create_task("t1", TaskCategory.MUST, 60)
     task.is_deep_work = False  # Shallow
 

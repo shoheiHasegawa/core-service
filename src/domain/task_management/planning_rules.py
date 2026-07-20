@@ -4,6 +4,23 @@ from typing import Any, Dict, List, Protocol
 from .task import Task, TaskCategory, WarningFlag
 
 
+class RecoveryFirstPolicy:
+    @staticmethod
+    def apply(tasks: List[Task], target_date: date) -> List[Task]:
+        """[TASK-EPIC03-04] リカバリー・ファースト: 睡眠と1時間以上のWANTを最優先"""
+        sleep_task = Task(
+            id="sleep",
+            title="Sleep",
+            category=TaskCategory.MUST,
+            estimated_minutes=480,
+            area_id="02_Life",
+            target_date=target_date,
+        )
+        want_tasks = [t for t in tasks if t.category == TaskCategory.WANT and t.estimated_minutes >= 60]
+        other_tasks = [t for t in tasks if not (t.category == TaskCategory.WANT and t.estimated_minutes >= 60)]
+        return [sleep_task] + want_tasks + other_tasks
+
+
 class WIPAllocationPolicy:
     MAX_MUST_WIP = 3
 
@@ -152,6 +169,51 @@ class ScheduleBuilder:
         schedule.append({"task": shutdown_task, "start": shutdown_start, "end": end_time})
         return schedule
 
+    @staticmethod
+    def assign_times(
+        start_time: datetime,
+        tasks: List[Task],
+        end_time: datetime,
+        fixed_tasks: List[Task] = None
+    ) -> tuple[List[Task], List[Task]]:
+        """15分のバッファを設けながらタスクをスケジュールする（固定タスクを避ける）"""
+        fixed_tasks = fixed_tasks or []
+        fixed_tasks = sorted(fixed_tasks, key=lambda t: getattr(t, "start_time", datetime.max))
+
+        scheduled = []
+        deferred = []
+
+        scheduled.extend(fixed_tasks)
+
+        current_time = start_time
+
+        for t in tasks:
+            while True:
+                task_end_time = current_time + timedelta(minutes=t.estimated_minutes)
+                if task_end_time > end_time:
+                    deferred.append(t)
+                    break
+
+                overlap = False
+                for ft in fixed_tasks:
+                    ft_start = getattr(ft, "start_time", None)
+                    ft_end = getattr(ft, "end_time", None)
+                    if ft_start and ft_end:
+                        if max(current_time, ft_start) < min(task_end_time, ft_end):
+                            overlap = True
+                            current_time = ft_end
+                            break
+
+                if not overlap:
+                    t.start_time = current_time
+                    t.end_time = task_end_time
+                    scheduled.append(t)
+                    current_time = t.end_time + timedelta(minutes=15)
+                    break
+
+        scheduled.sort(key=lambda x: getattr(x, "start_time", datetime.max))
+        return scheduled, deferred
+
 
 class CircadianRhythmPolicy:
     DIP_START_HOUR = 13
@@ -188,3 +250,10 @@ class MorningDeepWorkPolicy:
                 if not getattr(task, "is_deep_work", False):
                     return False
         return True
+
+    @staticmethod
+    def prioritize(tasks: List[Task]) -> List[Task]:
+        """[TASK-EPIC03-04] energy_level='HIGH' のタスクを優先"""
+        high_energy = [t for t in tasks if getattr(t, "energy_level", "") == "HIGH"]
+        others = [t for t in tasks if getattr(t, "energy_level", "") != "HIGH"]
+        return high_energy + others

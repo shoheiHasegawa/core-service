@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 from typing import List, Optional
 
@@ -45,6 +45,9 @@ class Task:
     reference_id: Optional[str] = None
     last_memo: Optional[str] = None
     is_deep_work: bool = False
+    energy_level: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
 
     def calculate_lfd(self) -> Optional[date]:
         """依存関係と期限から Latest Finish Date (LFD) を計算する"""
@@ -64,6 +67,7 @@ class Task:
 class DailyBriefing:
     target_date: date
     scheduled_tasks: List[Task]
+    deferred_tasks: List[Task] = field(default_factory=list)
     warning_flags: List[WarningFlag] = field(default_factory=list)
     motivation_message: str = ""
 
@@ -76,3 +80,6 @@ class Worklog:
     is_completed: bool = False
     target_date: Optional[date] = None
     memo: Optional[str] = None
+    area_id: str = "00_Unknown"
+    category: str = "M"
+    task_type: str = "ONE_OFF"

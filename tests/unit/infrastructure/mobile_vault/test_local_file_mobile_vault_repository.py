@@ -2,7 +2,7 @@ from infrastructure.mobile_vault.local_file_mobile_vault_repository import Local
 
 
 def test_local_file_mobile_vault_repository_list_markdown_files(tmp_path):
-    """[VAULT-01]
+    """[MV-FILE-01]
     指定ディレクトリ内の .md ファイル一覧を正しく取得できるかのテスト。
     """
     repo = LocalFileMobileVaultRepository()
@@ -26,7 +26,7 @@ def test_local_file_mobile_vault_repository_list_markdown_files(tmp_path):
 
 
 def test_local_file_mobile_vault_repository_ensure_directory(tmp_path):
-    """[VAULT-01] ディレクトリ作成のテスト。"""
+    """[MV-FILE-01] ディレクトリ作成のテスト。"""
     # Arrange
     repo = LocalFileMobileVaultRepository()
     work_dir = tmp_path / "work"
@@ -40,7 +40,7 @@ def test_local_file_mobile_vault_repository_ensure_directory(tmp_path):
 
 
 def test_local_file_mobile_vault_repository_save_and_read_file(tmp_path):
-    """[VAULT-01] ファイルの保存と読み込みのテスト。"""
+    """[MV-FILE-01] ファイルの保存と読み込みのテスト。"""
     # Arrange
     repo = LocalFileMobileVaultRepository()
     work_dir = tmp_path / "work"
@@ -59,7 +59,7 @@ def test_local_file_mobile_vault_repository_save_and_read_file(tmp_path):
 
 
 def test_local_file_mobile_vault_repository_delete_file(tmp_path):
-    """[VAULT-01] ファイル削除のテスト。"""
+    """[MV-FILE-01] ファイル削除のテスト。"""
     # Arrange
     repo = LocalFileMobileVaultRepository()
     work_dir = tmp_path / "work"
@@ -76,7 +76,7 @@ def test_local_file_mobile_vault_repository_delete_file(tmp_path):
 
 
 def test_local_file_mobile_vault_repository_move_file(tmp_path):
-    """[VAULT-01]
+    """[MV-FILE-01]
     ファイルの移動テスト。
     """
     repo = LocalFileMobileVaultRepository()
@@ -98,7 +98,7 @@ def test_local_file_mobile_vault_repository_move_file(tmp_path):
 
 
 def test_local_file_mobile_vault_repository_save_file_path_traversal(tmp_path):
-    """[VAULT-02] Path traversal in save_file should raise ValueError"""
+    """[MV-FILE-02] Path traversal in save_file should raise ValueError"""
     import pytest
 
     repo = LocalFileMobileVaultRepository()
@@ -111,7 +111,7 @@ def test_local_file_mobile_vault_repository_save_file_path_traversal(tmp_path):
 
 
 def test_local_file_mobile_vault_repository_save_file_exists(tmp_path):
-    """[VAULT-03] Saving to an existing file should raise FileExistsError"""
+    """[MV-FILE-03] Saving to an existing file should raise FileExistsError"""
     import pytest
 
     repo = LocalFileMobileVaultRepository()
@@ -126,7 +126,7 @@ def test_local_file_mobile_vault_repository_save_file_exists(tmp_path):
 
 
 def test_local_file_mobile_vault_repository_move_file_exists(tmp_path):
-    """[VAULT-04] Moving to an existing file should raise FileExistsError"""
+    """[MV-FILE-04] Moving to an existing file should raise FileExistsError"""
     import pytest
 
     repo = LocalFileMobileVaultRepository()

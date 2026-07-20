@@ -4,7 +4,7 @@ from domain.second_brain.zettelkasten_formatter import ZettelkastenFormatter
 
 
 def test_format_template():
-    """[BRAIN-01] Auto-generated spec"""
+    """[SB-NOTE-01] Auto-generated spec"""
     # Arrange
     template = "# {{TITLE}}\n\n{{BODY}}\n\n{{date}}"
     formatter = ZettelkastenFormatter(template=template)

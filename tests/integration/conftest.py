@@ -38,6 +38,7 @@ class IntegrationTestContext:
         self.session.rollback()
         self.session.close()
         Base.metadata.drop_all(self.engine)
+        self.engine.dispose()
 
 
 @pytest.fixture
