@@ -54,3 +54,8 @@
 ## [TM-SYNC-02] 制約: System of Record (SoR) の分離
 - **事後条件**: 外部イベント（会議、ゴミの日等）はGoogle CalendarをSoRとしてRead-Onlyで扱い、内部ルーティン（自己投資等）は `recurring_tasks` テーブルをSoRとしてWrite権限で動的配置されること。
 - **事後条件**: DB側の内部ルーティンは `valid_from` と `valid_until` の期間内のみカレンダーに配置（同期）されること。
+
+## [TM-SYNC-03] 正常系: DailyBriefingのMarkdown連携 (Mobile Vault同期)
+- **事前条件**: `plan_day` によって `DailyBriefing` が生成される。
+- **事後条件**: `BriefingRepository` (Mobile Vault) を通じて、計画されたタスク一覧と警告フラグが所定のInboxディレクトリにMarkdown形式（例: `Briefing_2026-07-22.md`）で冪等性を持って保存（上書き）されること。
+

@@ -31,14 +31,18 @@ class FakeScheduleGateway(ScheduleGateway):
 
 
 class FakeBriefingRepository(BriefingRepository):
+    def __init__(self):
+        self.saved_briefing = None
+
     def save(self, briefing) -> None:
-        pass
+        self.saved_briefing = briefing
 
 
 def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestContext):
     """
     [TM-SYNC-01] 正常系: 決定されたスケジュールを外部SoR（カレンダー）に同期する
     [TM-PLAN-06] アーキテクチャ原則: SoR分離と終日予定のメタデータ化
+    [TM-SYNC-03] 正常系: DailyBriefingのMarkdown連携 (Mobile Vault同期)
     """
     task_repo = test_context.task_repo
     worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
@@ -74,3 +78,7 @@ def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestCon
     # Assert (ここでRedになるか検証)
     assert calendar_repo.synced_tasks is not None, "カレンダーへの同期が呼び出されること"
     assert len(calendar_repo.synced_tasks) == len(briefing.scheduled_tasks)
+    
+    # [TM-SYNC-03] Mobile Vaultへの同期が呼び出されること
+    assert briefing_repo.saved_briefing is not None, "BriefingRepositoryが呼び出されること"
+    assert briefing_repo.saved_briefing.target_date == target_date
