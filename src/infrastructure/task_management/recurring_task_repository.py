@@ -35,7 +35,7 @@ class SqlRecurringTaskRepository:
         # かつ valid_until が null または target_date 以上
         query = self.session.query(RecurringTaskModel).filter(
             or_(RecurringTaskModel.valid_from.is_(None), RecurringTaskModel.valid_from <= target_date),
-            or_(RecurringTaskModel.valid_until.is_(None), RecurringTaskModel.valid_until >= target_date)
+            or_(RecurringTaskModel.valid_until.is_(None), RecurringTaskModel.valid_until >= target_date),
         )
 
         models = query.all()
@@ -52,7 +52,7 @@ class SqlRecurringTaskRepository:
                 category=TaskCategory(model.category),
                 valid_from=model.valid_from,
                 valid_until=model.valid_until,
-                day_context=model.day_context
+                day_context=model.day_context,
             )
             tasks.append(task)
 

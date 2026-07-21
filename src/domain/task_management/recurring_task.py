@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from domain.task_management.task import Task
@@ -70,10 +70,10 @@ class RecurringTask:
             target_date=target_date,
         )
         if self.start_time:
-            hour, minute = map(int, self.start_time.split(':'))
+            hour, minute = map(int, self.start_time.split(":"))
             task.start_time = datetime.combine(target_date, datetime.min.time().replace(hour=hour, minute=minute))
         if self.end_time:
-            hour, minute = map(int, self.end_time.split(':'))
+            hour, minute = map(int, self.end_time.split(":"))
             task.end_time = datetime.combine(target_date, datetime.min.time().replace(hour=hour, minute=minute))
 
         return task

@@ -26,7 +26,7 @@ class DailyActionService:
         briefing_repo: BriefingRepository,
         worklog_repo: WorklogRepository,
         calendar_repo: CalendarRepository = None,
-        recurring_task_repo = None,
+        recurring_task_repo=None,
     ) -> None:
         self.task_repo = task_repo
         self.schedule_gateway = schedule_gateway

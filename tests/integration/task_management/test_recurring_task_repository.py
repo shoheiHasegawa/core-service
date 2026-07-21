@@ -19,7 +19,7 @@ def test_save_and_restore_recurring_task(test_context):
         duration_minutes=120,
         category=TaskCategory.MUST,
         valid_from=date(2026, 7, 1),
-        valid_until=date(2026, 12, 31)
+        valid_until=date(2026, 12, 31),
     )
     repo.save(task)
 
@@ -56,7 +56,7 @@ def test_find_active_by_date(test_context):
         duration_minutes=120,
         category=TaskCategory.SHOULD,
         valid_from=date(2026, 7, 1),
-        valid_until=date(2026, 7, 31)
+        valid_until=date(2026, 7, 31),
     )
 
     task_expired = RecurringTask(
@@ -69,7 +69,7 @@ def test_find_active_by_date(test_context):
         duration_minutes=120,
         category=TaskCategory.SHOULD,
         valid_from=date(2026, 1, 1),
-        valid_until=date(2026, 6, 30)
+        valid_until=date(2026, 6, 30),
     )
 
     task_always = RecurringTask(
@@ -82,7 +82,7 @@ def test_find_active_by_date(test_context):
         duration_minutes=60,
         category=TaskCategory.SHOULD,
         valid_from=None,
-        valid_until=None
+        valid_until=None,
     )
 
     repo.save(task_active)
@@ -116,7 +116,7 @@ def test_save_and_restore_recurring_task_with_day_context(test_context):
         category=TaskCategory.MUST,
         valid_from=date(2026, 7, 1),
         valid_until=date(2026, 12, 31),
-        day_context="WORKDAY"
+        day_context="WORKDAY",
     )
     repo.save(task)
 
@@ -128,4 +128,3 @@ def test_save_and_restore_recurring_task_with_day_context(test_context):
 
     assert restored_task is not None
     assert restored_task.day_context == "WORKDAY"
-

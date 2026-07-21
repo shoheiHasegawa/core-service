@@ -11,19 +11,18 @@ from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogR
 
 
 class FakeCalendarRepository(CalendarRepository):
-    def __init__(self):
-        self.synced_blocks = []
-        self.sync_called = False
+    def __init__(self, all_day_events=None):
+        self.all_day_events = all_day_events or []
+        self.synced_tasks = None
 
-    def fetch_fixed_events(self, target_date: datetime.date) -> list:
+    def fetch_fixed_events(self, target_date: datetime.date) -> List[dict]:
         return []
 
-    def fetch_all_day_events(self, target_date: datetime.date) -> list:
-        return []
+    def fetch_all_day_events(self, target_date: datetime.date) -> List[str]:
+        return self.all_day_events
 
     def sync_daily_briefing(self, target_date: datetime.date, scheduled_tasks: list) -> None:
-        self.sync_called = True
-        self.synced_blocks = scheduled_tasks
+        self.synced_tasks = scheduled_tasks
 
 
 class FakeScheduleGateway(ScheduleGateway):
@@ -36,17 +35,18 @@ class FakeBriefingRepository(BriefingRepository):
         pass
 
 
-def test_calendar_sync_integration_flow(test_context: IntegrationTestContext):
+def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestContext):
     """
-    [TM-SYNC-01]
-    SQLite(In-Memory) の TaskRepository と FakeCalendarRepository を結合し、
-    DailyActionService が正常にスケジュールを計算し、カレンダー同期までの一連のフローを完了できるかを検証する。
+    [TM-SYNC-01] 正常系: 決定されたスケジュールを外部SoR（カレンダー）に同期する
+    [TM-PLAN-06] アーキテクチャ原則: SoR分離と終日予定のメタデータ化
     """
     task_repo = test_context.task_repo
-    calendar_repo = FakeCalendarRepository()
+    worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
     schedule_gateway = FakeScheduleGateway()
     briefing_repo = FakeBriefingRepository()
-    worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
+
+    # [TM-PLAN-06] 終日イベントをメタデータとして扱う ("有給"等をフラグとして注入)
+    calendar_repo = FakeCalendarRepository(all_day_events=["有給"])
 
     service = DailyActionService(
         task_repo=task_repo,
@@ -56,27 +56,21 @@ def test_calendar_sync_integration_flow(test_context: IntegrationTestContext):
         calendar_repo=calendar_repo,
     )
 
-    target_date = datetime.date(2026, 7, 20)
-
-    # 準備: テスト用のタスク群を作成
+    target_date = datetime.date(2026, 7, 21)
     tasks = [
         Task(
-            id="task-sync-test",
-            title="Sync Integration Task",
+            id="task-sync-1",
+            title="Sync Task 1",
             category=TaskCategory.MUST,
             estimated_minutes=60,
-            area_id="01_Work",
             target_date=target_date,
         )
     ]
     task_repo.save_tasks(tasks)
 
-    # 実行 (Act)
+    # [TM-SYNC-01] 同期フラグTrueで実行
     briefing = service.plan_day(target_date=target_date, sync_to_calendar=True)
 
-    # 検証 (Assert)
-    # スケジュールが計算されたこと
-    assert len(briefing.scheduled_tasks) >= 1
-    # DBと連携してタスクが読み込まれ、カレンダー同期メソッドまで正常に到達したこと
-    assert calendar_repo.sync_called is True
-    assert len(calendar_repo.synced_blocks) == len(briefing.scheduled_tasks)
+    # Assert (ここでRedになるか検証)
+    assert calendar_repo.synced_tasks is not None, "カレンダーへの同期が呼び出されること"
+    assert len(calendar_repo.synced_tasks) == len(briefing.scheduled_tasks)

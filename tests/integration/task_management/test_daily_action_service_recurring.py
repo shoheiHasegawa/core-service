@@ -43,7 +43,7 @@ def test_daily_action_service_recurring_tasks(test_context: IntegrationTestConte
         duration_minutes=120,
         category=TaskCategory.SHOULD,
         valid_from=None,
-        valid_until=None
+        valid_until=None,
     )
 
     # 平日 5:00-7:00 のDeep Work (MUST)
@@ -57,7 +57,7 @@ def test_daily_action_service_recurring_tasks(test_context: IntegrationTestConte
         duration_minutes=120,
         category=TaskCategory.MUST,
         valid_from=None,
-        valid_until=None
+        valid_until=None,
     )
 
     recurring_task_repo.save(muscle_training)
@@ -81,7 +81,7 @@ def test_daily_action_service_recurring_tasks(test_context: IntegrationTestConte
         schedule_gateway=schedule_gateway,
         briefing_repo=briefing_repo,
         worklog_repo=worklog_repo,
-        recurring_task_repo=recurring_task_repo
+        recurring_task_repo=recurring_task_repo,
     )
 
     # 実行
@@ -102,7 +102,9 @@ def test_daily_action_service_recurring_tasks(test_context: IntegrationTestConte
     assert muscle_task.start_time.hour == 7, "筋トレは7:00に開始すること"
     assert muscle_task.start_time.minute == 0, "筋トレは7:00に開始すること"
 
-    deep_work_task = next((t for t in scheduled_tasks if "Deep Work" in getattr(t, "title", getattr(t, "name", ""))), None)
+    deep_work_task = next(
+        (t for t in scheduled_tasks if "Deep Work" in getattr(t, "title", getattr(t, "name", ""))), None
+    )
     assert deep_work_task is not None
     assert deep_work_task.start_time.hour == 5, "Deep Workは5:00に開始すること"
     assert deep_work_task.start_time.minute == 0, "Deep Workは5:00に開始すること"

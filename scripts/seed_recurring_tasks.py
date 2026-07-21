@@ -18,6 +18,7 @@ DATABASE_URL = "sqlite:///you_inc_ops.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 def seed_recurring_tasks():
     # 万が一テーブルが存在しない場合は作成
     Base.metadata.create_all(bind=engine)
@@ -38,7 +39,7 @@ def seed_recurring_tasks():
                 category=TaskCategory.SHOULD,
                 valid_from=date(2026, 7, 1),
                 valid_until=None,
-                day_context="WORKDAY"
+                day_context="WORKDAY",
             ),
             RecurringTask(
                 id="rt-fixed-02",
@@ -51,7 +52,7 @@ def seed_recurring_tasks():
                 category=TaskCategory.MUST,
                 valid_from=date(2026, 7, 1),
                 valid_until=None,
-                day_context="ANY"
+                day_context="ANY",
             ),
             RecurringTask(
                 id="rt-fixed-03",
@@ -64,9 +65,8 @@ def seed_recurring_tasks():
                 category=TaskCategory.MUST,
                 valid_from=date(2026, 7, 1),
                 valid_until=None,
-                day_context="WORKDAY"
+                day_context="WORKDAY",
             ),
-
             # 2. 流動的な定期タスク
             RecurringTask(
                 id="rt-flex-01",
@@ -79,7 +79,7 @@ def seed_recurring_tasks():
                 category=TaskCategory.MUST,
                 valid_from=date(2026, 7, 1),
                 valid_until=None,
-                day_context="WORKDAY"
+                day_context="WORKDAY",
             ),
             RecurringTask(
                 id="rt-flex-02",
@@ -92,7 +92,7 @@ def seed_recurring_tasks():
                 category=TaskCategory.MUST,
                 valid_from=date(2026, 7, 1),
                 valid_until=None,
-                day_context="WORKDAY"
+                day_context="WORKDAY",
             ),
             RecurringTask(
                 id="rt-flex-03",
@@ -105,7 +105,7 @@ def seed_recurring_tasks():
                 category=TaskCategory.SHOULD,
                 valid_from=date(2026, 7, 1),
                 valid_until=None,
-                day_context="WORKDAY"
+                day_context="WORKDAY",
             ),
             RecurringTask(
                 id="rt-flex-04",
@@ -118,7 +118,7 @@ def seed_recurring_tasks():
                 category=TaskCategory.MUST,
                 valid_from=date(2026, 7, 1),
                 valid_until=None,
-                day_context="HOLIDAY"
+                day_context="HOLIDAY",
             ),
             RecurringTask(
                 id="rt-flex-05",
@@ -131,7 +131,7 @@ def seed_recurring_tasks():
                 category=TaskCategory.WANT,
                 valid_from=date(2026, 7, 1),
                 valid_until=None,
-                day_context="ANY"
+                day_context="ANY",
             ),
             RecurringTask(
                 id="rt-flex-06",
@@ -144,7 +144,7 @@ def seed_recurring_tasks():
                 category=TaskCategory.MUST,
                 valid_from=date(2026, 7, 1),
                 valid_until=None,
-                day_context="WORKDAY"
+                day_context="WORKDAY",
             ),
         ]
 
@@ -160,6 +160,7 @@ def seed_recurring_tasks():
 
         session.commit()
         print("\n🎉 Seeding of recurring_tasks completed successfully!")
+
 
 if __name__ == "__main__":
     seed_recurring_tasks()

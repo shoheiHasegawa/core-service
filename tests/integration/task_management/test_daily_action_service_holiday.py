@@ -47,9 +47,7 @@ def test_daily_action_service_holiday_context(test_context: IntegrationTestConte
     recurring_task_repo = SqlRecurringTaskRepository(test_context.session)
 
     # 2026-07-21 (火) に有給イベントを設定
-    calendar_repo = FakeCalendarRepository(events_map={
-        datetime.date(2026, 7, 21): ["有給休暇", "ゴミの日"]
-    })
+    calendar_repo = FakeCalendarRepository(events_map={datetime.date(2026, 7, 21): ["有給休暇", "ゴミの日"]})
 
     service = DailyActionService(
         task_repo=task_repo,
@@ -57,7 +55,7 @@ def test_daily_action_service_holiday_context(test_context: IntegrationTestConte
         briefing_repo=briefing_repo,
         worklog_repo=worklog_repo,
         calendar_repo=calendar_repo,
-        recurring_task_repo=recurring_task_repo
+        recurring_task_repo=recurring_task_repo,
     )
 
     # テスト用の RecurringTask をセットアップ (毎日実行される設定にしておく: * * * * *)
@@ -72,7 +70,7 @@ def test_daily_action_service_holiday_context(test_context: IntegrationTestConte
         category=TaskCategory.MUST,
         valid_from=None,
         valid_until=None,
-        day_context="WORKDAY"
+        day_context="WORKDAY",
     )
 
     any_task = RecurringTask(
@@ -86,7 +84,7 @@ def test_daily_action_service_holiday_context(test_context: IntegrationTestConte
         category=TaskCategory.SHOULD,
         valid_from=None,
         valid_until=None,
-        day_context="ANY"
+        day_context="ANY",
     )
 
     recurring_task_repo.save(workday_task)

@@ -55,7 +55,7 @@ def test_daily_action_service_sync_to_calendar():
         schedule_gateway=FakeScheduleGateway(),
         briefing_repo=FakeBriefingRepository(),
         worklog_repo=FakeWorklogRepository(),
-        calendar_repo=fake_calendar_repo
+        calendar_repo=fake_calendar_repo,
     )
 
     # 同期フラグを立てて実行

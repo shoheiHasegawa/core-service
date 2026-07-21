@@ -16,8 +16,9 @@ def create_recurring_task(day_context="ANY", cron_schedule="* * * * *"):
         category=TaskCategory.MUST,
         valid_from=None,
         valid_until=None,
-        day_context=day_context
+        day_context=day_context,
     )
+
 
 def test_is_scheduled_on_workday_fails_on_holiday():
     """
@@ -30,6 +31,7 @@ def test_is_scheduled_on_workday_fails_on_holiday():
     target_date = date(2026, 7, 20)  # 2026-07-20 is Monday
     assert not task.is_scheduled_on(target_date, is_holiday=True)
 
+
 def test_is_scheduled_on_holiday_fails_on_workday():
     """
     [TM-PLAN-04] [TASK-EPIC05-PHASE2]
@@ -40,6 +42,7 @@ def test_is_scheduled_on_holiday_fails_on_workday():
     # target_date is a Monday, which matches cron, but it's a workday
     target_date = date(2026, 7, 13)  # 2026-07-13 is Monday
     assert not task.is_scheduled_on(target_date, is_holiday=False)
+
 
 def test_is_scheduled_on_any_returns_true_regardless_of_holiday():
     """

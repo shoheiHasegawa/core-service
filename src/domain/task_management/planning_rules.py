@@ -171,10 +171,7 @@ class ScheduleBuilder:
 
     @staticmethod
     def assign_times(
-        start_time: datetime,
-        tasks: List[Task],
-        end_time: datetime,
-        fixed_tasks: List[Task] = None
+        start_time: datetime, tasks: List[Task], end_time: datetime, fixed_tasks: List[Task] = None
     ) -> tuple[List[Task], List[Task]]:
         """15分のバッファを設けながらタスクをスケジュールする（固定タスクを避ける）"""
         fixed_tasks = fixed_tasks or []
