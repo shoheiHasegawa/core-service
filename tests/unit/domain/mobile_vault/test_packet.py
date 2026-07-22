@@ -3,7 +3,7 @@ from domain.mobile_vault.parser import MarkdownImageParser
 
 
 def test_markdown_image_parser_extracts_images():
-    """[MV-FILE-01]
+    """[MV-RETRIEVE-01]
     MarkdownImageParserがMarkdown文字列から画像リンク（Obsidian形式や標準MD形式）を抽出するテスト。
     """
     parser = MarkdownImageParser()
@@ -17,8 +17,8 @@ def test_markdown_image_parser_extracts_images():
 
 
 def test_packet_generation_assigns_unique_id():
-    """[MV-FILE-01]"""
-    """[MV-FILE-01]
+    """[MV-RETRIEVE-01]"""
+    """[MV-RETRIEVE-01]
     Packetエンティティ生成時、インフラ層に依存せず一意のIDが採番されることのテスト。
     """
     content = "Some note content"

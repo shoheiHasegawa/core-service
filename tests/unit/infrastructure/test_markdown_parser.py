@@ -5,7 +5,7 @@ from infrastructure.markdown_parser import MarkdownParser
 
 class TestMarkdownParser(unittest.TestCase):
     def test_parse_frontmatter_keys_no_match(self):
-        """[MV-FILE-01]"""
+        """[MV-RETRIEVE-01]"""
         """[MV-FILE-04] Frontmatterがない場合のキー抽出"""
         content = "# No frontmatter here\nJust text."
         parser = MarkdownParser(content)
@@ -13,7 +13,7 @@ class TestMarkdownParser(unittest.TestCase):
         assert len(keys) == 0
 
     def test_parse_frontmatter_keys_invalid_format(self):
-        """[MV-FILE-01]"""
+        """[MV-RETRIEVE-01]"""
         """[MV-FILE-05] 不正なFrontmatterフォーマット時の耐性"""
         content = "---\njust some text without colon\n---\n"
         parser = MarkdownParser(content)
@@ -21,7 +21,7 @@ class TestMarkdownParser(unittest.TestCase):
         assert len(keys) == 0
 
     def test_extract_tags_and_aliases_valid(self):
-        """[MV-FILE-01]"""
+        """[MV-RETRIEVE-01]"""
         """[MV-FILE-06] TagsとAliasesの抽出"""
         content = """---
 tags: [#test]
@@ -37,7 +37,7 @@ other: value
         assert "aliases: [TestAlias]" in aliases[0]
 
     def test_extract_tags_and_aliases_no_frontmatter(self):
-        """[MV-FILE-01]"""
+        """[MV-RETRIEVE-01]"""
         """[MV-FILE-07] Frontmatterがない場合のTags抽出エッジケース"""
         content = "tags: [#test]\nBut not in frontmatter!"
         parser = MarkdownParser(content)

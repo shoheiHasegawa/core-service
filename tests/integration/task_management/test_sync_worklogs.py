@@ -2,54 +2,37 @@
 
 from datetime import date
 
+from freezegun import freeze_time
 from integration.conftest import IntegrationTestContext
 
-from application.mobile_vault.interfaces import MobileVaultGateway
 from application.task_management.sync_worklogs_service import SyncWorklogsService
-from domain.task_management.task import Task, TaskCategory
+from domain.task_management.repository import BriefingGateway
+from domain.task_management.task import DailyBriefing, Task, TaskCategory
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
 
 
-class FakeMobileVaultGateway(MobileVaultGateway):
+class FakeBriefingGateway(BriefingGateway):
     def __init__(self):
-        self.files = {
-            "Briefing_2026-07-22.md": "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n"
-        }
-        self.moved = []
+        self.contents = [
+            "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n",
+            "# Daily Briefing (2026-07-21)\n- [x] Task Old (予定: 10m) <!-- id: t_old -->\n",
+        ]
+        self.get_recent_briefing_contents_called = 0
 
-    def save_file(self, content: str, filename: str) -> None:
+    def save(self, briefing: DailyBriefing) -> None:
         pass
 
-    def save_inbox_file(self, content: str, filename: str) -> None:
-        pass
-
-    def save_dashboard_file(self, content: str, filename: str) -> None:
-        pass
-
-    def read_text(self, filepath: str) -> str:
-        return self.files.get(filepath, "")
-
-    def ensure_directory_exists(self, directory: str) -> None:
-        pass
-
-    def list_markdown_files(self) -> list[str]:
-        return ["Briefing_2026-07-22.md"]
-
-    def move_file(self, old_path: str, new_path: str) -> None:
-        self.moved.append((old_path, new_path))
-        if old_path in self.files:
-            self.files[new_path] = self.files.pop(old_path)
-
-    def delete_file(self, filepath: str) -> None:
-        if filepath in self.files:
-            del self.files[filepath]
+    def get_recent_briefing_contents(self) -> list[str]:
+        self.get_recent_briefing_contents_called += 1
+        return self.contents
 
 
+@freeze_time("2026-07-22")
 def test_sync_worklogs_integration(test_context: IntegrationTestContext):
     """[TM-SYNC-04] InboxディレクトリのBriefingファイルを読み込み、Worklogを作成する"""
     task_repo = test_context.task_repo
     worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
-    fake_vault = FakeMobileVaultGateway()
+    fake_gateway = FakeBriefingGateway()
 
     # 準備：DBにタスクを登録
     target_date = date(2026, 7, 22)
@@ -59,7 +42,7 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
 
     # サービス初期化
     service = SyncWorklogsService(
-        mobile_vault_gateway=fake_vault,
+        briefing_gateway=fake_gateway,
         task_repository=task_repo,
         worklog_repository=worklog_repo,
     )
@@ -69,6 +52,13 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
     test_context.session.commit()
 
     # 検証：WorklogがDBに保存されているか
-    worklogs = worklog_repo.find_by_task_and_date("t1", date.today())
+    worklogs = worklog_repo.find_by_task_and_date("t1", date(2026, 7, 22))
     assert len(worklogs) == 1
     assert worklogs[0].task_id == "t1"
+
+    # get_recent_briefing_contents が呼ばれたか検証
+    assert fake_gateway.get_recent_briefing_contents_called == 1, "ダッシュボード内容を取得するメソッドが呼ばれるべき"
+
+    # 昨日のファイルや無関係のファイルがパースされたり異常動作を引き起こしていないことの検証
+    worklogs_old = worklog_repo.find_by_task_and_date("t_old", date(2026, 7, 21))
+    assert len(worklogs_old) == 0, "昨日のタスク(未DB登録)が無理にパース・保存されていてはいけない"

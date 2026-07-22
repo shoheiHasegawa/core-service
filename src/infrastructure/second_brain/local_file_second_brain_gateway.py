@@ -3,7 +3,7 @@ import os
 from typing import List
 
 
-class LocalFileSecondBrainRepository:
+class LocalFileSecondBrainGateway:
     def __init__(self, base_path: str):
         self.base_path = base_path
 

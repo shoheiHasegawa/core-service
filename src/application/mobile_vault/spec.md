@@ -1,44 +1,43 @@
-# Specification: MobileVaultService
+# Specification: Mobile Vault Context
 
 ## 1. Domain Overview
 *   **Domain**: `you_inc` (Personal Agentic OS)
 *   **Context**: Mobile Vault Integration
-*   **Service Name**: `MobileVaultService`
-*   **Responsibility**: ユーザーがモバイル端末（iPhone等）で利用している「Mobile Vault（iCloud/Obsidian等）」と、Agentic OS間のデータのやり取り（回収および配置）を抽象化して管理する単一の窓口。
+*   **Responsibility**: ユーザーがモバイル端末（iPhone等）で利用している「Vault（iCloud/Obsidian等）」と、Agentic OS間のデータの非同期なやり取りを管理する。
 
 ## 2. Ubiquitous Language (ユビキタス言語)
-*   **Mobile Vault**: モバイル端末からアクセス可能なMarkdownノート群の保存領域。
-*   **Packet**: ユーザーがMobile Vaultに雑多に入力した未処理のメモと、それに関連する画像などのまとまり。
-*   **Retrieve (回収する)**: Mobile Vaultに存在する未処理のPacketをPC側（Agent側）のQueueに取り込むこと。二重処理を防ぐため、取り込みと同時に元のファイルはMobile Vaultから削除される。
-*   **Place (配置する)**: Agentが生成したMarkdown等（ダッシュボードやノート）を、Mobile Vault上の指定されたパスに書き込むこと。
+*   **Vault (保管庫)**: モバイル端末とAgentic OSを繋ぐ非同期のファイル連携領域。
+*   **Packet (パケット)**: ユーザーがモバイルからVaultに投げ込んだ未処理の思考の断片（Markdownメモ＋画像等）。
+*   **Dashboard (ダッシュボード)**: Agent側からユーザーに向けてVaultへ書き出す、読み取り専用のサマリ画面。
+*   **Briefing (ブリーフィング)**: Task ManagementコンテキストにおいてVaultへ配置される特定のダッシュボード。
 
 ## 3. Scenarios (Use Cases)
 
-### [MV-FILE-01] Retrieve Unprocessed Packets (未処理パケットの回収)
-*   **Input**: (なし。ディレクトリパスは `MobileVaultConfig` からDIされる)
+### [MV-RETRIEVE-01] Retrieve Unprocessed Packets (未処理パケットの回収)
+*   **Target**: `RetrievePacketsUseCase`
 *   **Process**:
-    1. Infrastructure層のRepository経由で、Inbox内の全 `.md` ファイルパスを取得する。
-    2. Domain層の `MarkdownImageParser` 等を用いて、Markdown文字列から画像リンクを抽出する。
-    3. `Packet` エンティティとして生成し、一意なID（UUID等）を採番する。
-    4. Infrastructure層にパケットと画像の移動（Queueへのバンドル作成）を指示する。
-    5. 移動完了後、元のファイルをMobile Vaultから削除する。
-*   **Output**: 成功裏に回収されたパケットバンドルの数（Int）。
+    1. `PacketReceiver` 経由で、Vault内の未処理の `Packet` のリストを取得する。
+    2. 取得した `Packet` ごとに以下を実行する:
+       a. `MarkdownImageParser` 等を用いて画像リンクを抽出・処理する。
+       b. 処理後、`TaskRepository` を用いて、パケットの処理タスク（Task）を生成・保存する。
+       c. `PacketReceiver.delete_packet(packet)` で、回収完了したパケットをVaultから削除する。
+*   **Output**: 成功裏に回収されたパケットの数（Int）。
 
-### [MV-FILE-02] Place Dashboard (ダッシュボードの配置)
-*   **Input**: 配置対象のMarkdown文字列 (`content`)、配置先のディレクトリパス (`dashboard_dir`)、ファイル名 (`filename.md`)
+### [MV-PLACE-01] Place Dashboard (ダッシュボードの配置)
+*   **Target**: `PlaceDashboardUseCase`
+*   **Input**: 配置対象のダッシュボードタイトル (`title: str`)、内容のMarkdown文字列 (`content: str`)
 *   **Process**:
-    1. 指定されたMobile Vaultのダッシュボード配置用ディレクトリが存在しない場合は作成する。
-    2. 指定されたファイル名で、ダッシュボードの内容（Markdown）を上書き保存する。
-*   **Output**: 配置されたファイルの絶対パス（String）。
+    1. `DashboardPublisher.publish(title, content)` を呼び出し、Vaultへダッシュボードを配置する。
+*   **Output**: 配置されたファイルの絶対パスなど、インフラが決定した識別子（String）。
 
-### [MV-FILE-03] 異常系: ファイル上書き保存のエラー
-*   **事後条件**: 既存のファイルを上書きしようとした場合、`FileExistsError` が発生すること。
-
-### [MV-FILE-04] 異常系: ファイル移動先の上書きエラー
-*   **事後条件**: ファイルの移動先に既にファイルが存在する場合、`FileExistsError` が発生すること。
+### [MV-PLACE-02] 異常系: Dashboard配置の上書き処理
+*   **事後条件**: ダッシュボードの性質上、既存のファイルが存在する場合は安全に上書き保存されること。（※旧仕様ではエラーにしていましたが、ダッシュボードは定期更新されるため上書きを許容します）
 
 ## 4. Architecture & Layered Rules
-*   **Feature-Driven Packaging**: この機能に関連する `service.py`, `config.py`, `spec.md` はすべて `src/application/mobile_vault/` 配下にまとめる。
-*   **Service-Config Pattern**: 環境依存のディレクトリパス（`inbox_dir`, `attachments_dir`, `queue_dir`）は `MobileVaultConfig` データクラスに定義し、`MobileVaultService` のコンストラクタで Inject すること。メソッド引数には渡さない。
-*   **Domain Separation**: MarkdownのパースロジックやパケットIDの採番処理は、Infrastructure層（Repository）ではなく、Domain層のサービス（例: `MarkdownImageParser`）やエンティティで行うこと。
-*   **Infrastructure Adapter**: `icloud_vault_repository.py` は純粋なファイルI/O（読み込み、書き込み、削除、移動）のみを行うこと。
+*   **Domain Separation (Port)**:
+    *   `src/domain/mobile_vault/gateway.py` に `PacketReceiver` および `DashboardPublisher` を定義する。ファイルI/Oの概念（filename, read_text）を極力排除する。
+*   **Application (Use Cases)**:
+    *   `src/application/mobile_vault/usecases/` 配下に `retrieve_packets_usecase.py` と `place_dashboard_usecase.py` を独立して実装し、SRPを満たす。
+*   **Infrastructure (Adapter)**:
+    *   `src/infrastructure/mobile_vault/local_file_mobile_vault_gateway.py` は、Domain層のインターフェースを実装する。
+    *   `src/infrastructure/task_management/briefing_gateway.py` は `DashboardPublisher` を利用してブリーフィングを書き出す。

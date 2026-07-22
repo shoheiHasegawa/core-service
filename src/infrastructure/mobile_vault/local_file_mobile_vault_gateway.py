@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from application.mobile_vault.interfaces import MobileVaultGateway
+from domain.mobile_vault.gateway import DashboardPublisher, DashboardReader, PacketReceiver
+from domain.mobile_vault.packet import Packet
 
 
-class LocalFileMobileVaultGateway(MobileVaultGateway):
+class LocalFileMobileVaultGateway(PacketReceiver, DashboardPublisher, DashboardReader):
     def __init__(self, inbox_dir: str, dashboard_dir: str = ""):
         self.inbox_dir = Path(inbox_dir).resolve() if inbox_dir else Path().resolve()
         self.dashboard_dir = Path(dashboard_dir).resolve() if dashboard_dir else Path().resolve()
@@ -11,32 +12,48 @@ class LocalFileMobileVaultGateway(MobileVaultGateway):
         if dashboard_dir:
             self.dashboard_dir.mkdir(parents=True, exist_ok=True)
 
-    def list_markdown_files(self) -> list[str]:
+    def fetch_unprocessed_packets(self) -> list[Packet]:
         if not self.inbox_dir.exists() or not self.inbox_dir.is_dir():
             return []
-        return [p.name for p in self.inbox_dir.iterdir() if p.is_file() and p.suffix == ".md"]
+        packets = []
+        for p in self.inbox_dir.iterdir():
+            if p.is_file() and p.suffix == ".md":
+                content = p.read_text(encoding="utf-8")
+                # Use the filename as packet_id
+                packets.append(Packet(packet_id=p.name, content=content, images=[]))
+        return packets
 
-    def read_text(self, filename: str) -> str:
-        file_path = (self.inbox_dir / filename).resolve()
+    def delete_packet(self, packet: Packet) -> None:
+        file_path = (self.inbox_dir / packet.packet_id).resolve()
         if not file_path.is_relative_to(self.inbox_dir):
-            raise ValueError("Path traversal detected")
-        return file_path.read_text(encoding="utf-8")
-
-    def delete_file(self, filename: str) -> None:
-        file_path = (self.inbox_dir / filename).resolve()
-        if not file_path.is_relative_to(self.inbox_dir):
-            raise ValueError("Path traversal detected")
+            raise ValueError("ディレクトリトラバーサル攻撃を検知しました")
         if file_path.exists():
             file_path.unlink()
 
-    def save_inbox_file(self, content: str, filename: str) -> None:
-        file_path = (self.inbox_dir / filename).resolve()
-        if not file_path.is_relative_to(self.inbox_dir):
-            raise ValueError("Path traversal detected")
-        file_path.write_text(content, encoding="utf-8")
-
-    def save_dashboard_file(self, content: str, filename: str) -> None:
-        file_path = (self.dashboard_dir / filename).resolve()
+    def publish(self, title: str, content: str) -> str:
+        file_path = (self.dashboard_dir / title).resolve()
         if not file_path.is_relative_to(self.dashboard_dir):
-            raise ValueError("Path traversal detected")
+            raise ValueError("ディレクトリトラバーサル攻撃を検知しました")
         file_path.write_text(content, encoding="utf-8")
+        return str(file_path)
+
+    def get_recent_dashboards(self) -> list[str]:
+        from datetime import datetime, timedelta
+
+        today = datetime.now().date()
+        yesterday = today - timedelta(days=1)
+        target_filenames = [
+            f"Briefing_{yesterday.strftime('%Y-%m-%d')}.md",
+            f"Briefing_{today.strftime('%Y-%m-%d')}.md",
+        ]
+
+        contents = []
+        if not self.dashboard_dir.exists() or not self.dashboard_dir.is_dir():
+            return contents
+
+        for filename in target_filenames:
+            file_path = (self.dashboard_dir / filename).resolve()
+            if file_path.exists() and file_path.is_file():
+                contents.append(file_path.read_text(encoding="utf-8"))
+
+        return contents

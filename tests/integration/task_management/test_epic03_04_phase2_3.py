@@ -18,6 +18,9 @@ class FakeBriefingGateway(BriefingGateway):
     def save(self, briefing) -> None:
         pass
 
+    def get_recent_briefing_contents(self) -> list[str]:
+        return []
+
 
 def test_daily_action_service_plan_day_constraints(test_context: IntegrationTestContext):
     """[TM-PLAN-03]
@@ -120,11 +123,11 @@ def test_daily_action_service_plan_day_constraints(test_context: IntegrationTest
     ), "睡眠ブロックが確保されていること"
     assert "task-want" in scheduled_task_ids, "1時間以上のWantブロックが最優先で確保されていること"
 
-    # 5. 視覚的強調(UX): Wantタスクの予定名に 👑 や 🛡️ などの絵文字が付与されていること
+    # 5. 視覚的強調(UX): 削除 (Formatterに移譲したため、Coreでは絵文字が付与されないことを確認)
     want_task_scheduled = next((t for t in briefing.scheduled_tasks if t.id == "task-want"), None)
     assert want_task_scheduled is not None
-    assert "👑" in want_task_scheduled.title or "🛡️" in want_task_scheduled.title, (
-        "Wantタスクに視覚的強調の絵文字が付与されていること"
+    assert "👑" not in want_task_scheduled.title and "🛡️" not in want_task_scheduled.title, (
+        "CoreではWantタスクに絵文字が付与されないこと(Formatterに移譲)"
     )
 
     # 3. Morning Deep Work 制約: energy_level='High' のタスクは午前中 (start_time の時間が 12未満) に配置されること

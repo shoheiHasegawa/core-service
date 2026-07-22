@@ -1,7 +1,7 @@
 from typing import List, Protocol
 
 
-class SecondBrainRepository(Protocol):
+class SecondBrainGateway(Protocol):
     def save(self, file_path: str, content: str) -> None: ...
 
     def search(self, query: str, extension: str) -> List[str]: ...

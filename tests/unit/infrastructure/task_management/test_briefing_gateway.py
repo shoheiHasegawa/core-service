@@ -3,15 +3,14 @@
 from datetime import date
 from unittest.mock import Mock
 
-from application.mobile_vault.interfaces import MobileVaultGateway
 from domain.task_management.task import DailyBriefing, Task, WarningFlag
 from infrastructure.task_management.briefing_gateway import MobileVaultBriefingGateway
 
 
 def test_save_briefing_generates_markdown():
     """[TM-SYNC-03] DailyBriefingがMarkdown文字列に変換され、MobileVaultに保存されることを確認する"""
-    mock_mobile_vault = Mock(spec=MobileVaultGateway)
-    repo = MobileVaultBriefingGateway(mock_mobile_vault)
+    mock_mobile_vault = Mock(spec=["publish", "get_recent_dashboards"])
+    repo = MobileVaultBriefingGateway(mobile_vault_publisher=mock_mobile_vault, mobile_vault_reader=mock_mobile_vault)
 
     # 準備
     target_date = date(2026, 7, 22)
@@ -31,9 +30,9 @@ def test_save_briefing_generates_markdown():
 
     expected_filename = "Briefing_2026-07-22.md"
 
-    mock_mobile_vault.save_inbox_file.assert_called_once()
-    call_args = mock_mobile_vault.save_inbox_file.call_args
-    content, filename = call_args[0]
+    mock_mobile_vault.publish.assert_called_once()
+    call_args = mock_mobile_vault.publish.call_args
+    filename, content = call_args[0]
 
     assert filename == expected_filename
     assert "# Daily Briefing (2026-07-22)" in content
@@ -46,9 +45,9 @@ def test_save_briefing_generates_markdown():
 
 def test_save_briefing_protection():
     """[TM-SYNC-03] ファイルが既に存在してもバックアップを取得せず、無条件で上書きを行う"""
-    mock_mobile_vault = Mock(spec=MobileVaultGateway)
+    mock_mobile_vault = Mock(spec=["publish", "get_recent_dashboards"])
 
-    repo = MobileVaultBriefingGateway(mock_mobile_vault)
+    repo = MobileVaultBriefingGateway(mobile_vault_publisher=mock_mobile_vault, mobile_vault_reader=mock_mobile_vault)
 
     target_date = date(2026, 7, 22)
     briefing = DailyBriefing(target_date=target_date, scheduled_tasks=[], deferred_tasks=[], warning_flags=[])
@@ -56,5 +55,5 @@ def test_save_briefing_protection():
     # 実行
     repo.save(briefing)
 
-    # 検証: save_fileが1回だけ呼ばれること
-    assert mock_mobile_vault.save_inbox_file.call_count == 1
+    # 検証: publishが1回だけ呼ばれること
+    assert mock_mobile_vault.publish.call_count == 1

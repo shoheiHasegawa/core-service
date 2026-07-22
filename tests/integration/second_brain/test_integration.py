@@ -18,7 +18,7 @@ def test_second_brain_integration(test_context: IntegrationTestContext):
 
     from application.second_brain.config import SecondBrainConfig
     from application.second_brain.service import SecondBrainService
-    from infrastructure.second_brain.local_file_second_brain_repository import LocalFileSecondBrainRepository
+    from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
 
     base_dir = tempfile.mkdtemp()
     sb_dir = os.path.join(base_dir, "sb")
@@ -36,7 +36,7 @@ def test_second_brain_integration(test_context: IntegrationTestContext):
     with open(config.inbox_template_path, "w") as f:
         f.write("{title}\n{body}")
 
-    repository = LocalFileSecondBrainRepository(base_path=sb_dir)
+    repository = LocalFileSecondBrainGateway(base_path=sb_dir)
     service = SecondBrainService(config=config, repository=repository, task_repository=test_context.task_repo)
     service.register_inbox_note("Integration Idea", "Content of the idea")
 

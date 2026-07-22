@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "s
 
 
 def main():
-    print("Starting Daily Scheduler Batch...")
+    print("デイリースケジューラーのバッチ処理を開始します...")
     today = date.today()
 
     try:
@@ -37,11 +37,11 @@ def main():
 
             # 計画とカレンダー同期の実行
             briefing = service.plan_day(target_date=today, sync_to_calendar=True)
-            print(f"Schedule planned and synced successfully for {today}.")
-            print(f"Scheduled tasks: {len(briefing.scheduled_blocks)}")
+            print(f"{today} のスケジュール計画およびカレンダー同期が正常に完了しました。")
+            print(f"スケジュールされたタスク数: {len(briefing.scheduled_blocks)}")
 
     except Exception as e:
-        print(f"Error occurred during batch execution: {e}")
+        print(f"バッチ実行中にエラーが発生しました: {e}")
         sys.exit(1)
 
 

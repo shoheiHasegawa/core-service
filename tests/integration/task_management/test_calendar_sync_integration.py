@@ -35,6 +35,9 @@ class FakeBriefingGateway(BriefingGateway):
     def save(self, briefing) -> None:
         pass
 
+    def get_recent_briefing_contents(self) -> list[str]:
+        return []
+
 
 def test_calendar_sync_integration_flow(test_context: IntegrationTestContext):
     """

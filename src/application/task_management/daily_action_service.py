@@ -15,7 +15,7 @@ from domain.task_management.planning_rules import (
     WIPAllocationPolicy,
 )
 from domain.task_management.repository import BriefingGateway, ScheduleGateway, TaskRepository, WorklogRepository
-from domain.task_management.task import DailyBriefing, TaskCategory, Worklog
+from domain.task_management.task import DailyBriefing, Worklog
 
 
 class DailyActionService:
@@ -52,11 +52,6 @@ class DailyActionService:
         # 未Readyタスク・孤立タスクの除外
         tasks = OrphanTaskPolicy.filter(ready_tasks)
         tasks = DependencyPolicy.filter_ready(tasks, [])
-
-        # 視覚的強調(UX)
-        for t in tasks:
-            if t.category == TaskCategory.WANT and "👑" not in t.title and "🛡️" not in t.title:
-                t.title = f"👑 {t.title}"
 
         # WIP制限
         tasks = WIPAllocationPolicy.apply(tasks)

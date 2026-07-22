@@ -4,12 +4,12 @@ import pytest
 
 from application.second_brain.config import SecondBrainConfig
 from application.second_brain.service import SecondBrainService
-from domain.second_brain.repository import SecondBrainRepository
+from domain.second_brain.repository import SecondBrainGateway
 
 
 @pytest.fixture
 def mock_repo():
-    return MagicMock(spec=SecondBrainRepository)
+    return MagicMock(spec=SecondBrainGateway)
 
 
 def test_second_brain_service_di():
@@ -26,7 +26,7 @@ def test_second_brain_service_di():
         permanent_note_template_path="/path/to/permanent_template.md",
         forbidden_patterns=["draft", "temp"],
     )
-    repo = MagicMock(spec=SecondBrainRepository)
+    repo = MagicMock(spec=SecondBrainGateway)
 
     # Act
     service = SecondBrainService(config=config, repository=repo)
@@ -54,7 +54,7 @@ def test_register_inbox_note():
     """[SB-NOTE-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
-    repo = MagicMock(spec=SecondBrainRepository)
+    repo = MagicMock(spec=SecondBrainGateway)
     service = SecondBrainService(config=config, repository=repo)
 
     # Act
@@ -73,7 +73,7 @@ def test_register_sense_making_note():
     """[SB-NOTE-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
-    repo = MagicMock(spec=SecondBrainRepository)
+    repo = MagicMock(spec=SecondBrainGateway)
     service = SecondBrainService(config=config, repository=repo)
 
     # Act
@@ -94,7 +94,7 @@ def test_search_notes():
     """[SB-NOTE-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
-    repo = MagicMock(spec=SecondBrainRepository)
+    repo = MagicMock(spec=SecondBrainGateway)
     repo.search.return_value = ["note1.md", "note2.md"]
     service = SecondBrainService(config=config, repository=repo)
 
@@ -111,7 +111,7 @@ def test_audit_zettelkasten_rules():
     """[SB-NOTE-01] Auto-generated spec"""
     # Arrange
     config = _create_mock_config()
-    repo = MagicMock(spec=SecondBrainRepository)
+    repo = MagicMock(spec=SecondBrainGateway)
     repo.get_all_notes.return_value = ["note1.md", "note2.md"]
     service = SecondBrainService(config=config, repository=repo)
 

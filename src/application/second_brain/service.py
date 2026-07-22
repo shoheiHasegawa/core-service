@@ -2,7 +2,7 @@ import uuid
 from typing import List
 
 from application.second_brain.config import SecondBrainConfig
-from domain.second_brain.repository import SecondBrainRepository
+from domain.second_brain.repository import SecondBrainGateway
 from domain.second_brain.zettelkasten_formatter import ZettelkastenFormatter
 from domain.second_brain.zettelkasten_validator import ZettelkastenValidator
 from domain.task_management.repository import TaskRepository
@@ -11,7 +11,7 @@ from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
 
 class SecondBrainService:
     def __init__(
-        self, config: SecondBrainConfig, repository: SecondBrainRepository, task_repository: TaskRepository = None
+        self, config: SecondBrainConfig, repository: SecondBrainGateway, task_repository: TaskRepository = None
     ):
         self.config = config
         self.repository = repository

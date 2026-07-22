@@ -21,6 +21,9 @@ class FakeBriefingGateway(BriefingGateway):
     def save(self, briefing) -> None:
         pass
 
+    def get_recent_briefing_contents(self) -> list[str]:
+        return []
+
 
 class FakeCalendarGateway(CalendarGateway):
     def __init__(self, events_map=None):

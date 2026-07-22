@@ -1,9 +1,9 @@
 from infrastructure.mobile_vault.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
 
 
-def test_local_file_mobile_vault_gateway_list_markdown_files(tmp_path):
-    """[MV-FILE-01]
-    指定ディレクトリ内の .md ファイル一覧を正しく取得できるかのテスト。
+def test_local_file_mobile_vault_gateway_fetch_unprocessed_packets(tmp_path):
+    """[MV-RETRIEVE-01]
+    指定ディレクトリ内の .md ファイル一覧をPacketとして正しく取得できるかのテスト。
     """
     inbox_dir = tmp_path / "inbox"
     repo = LocalFileMobileVaultGateway(inbox_dir=str(inbox_dir), dashboard_dir=str(tmp_path))
@@ -17,57 +17,101 @@ def test_local_file_mobile_vault_gateway_list_markdown_files(tmp_path):
     file2.touch()
     file3.touch()
 
-    files = repo.list_markdown_files()
+    packets = repo.fetch_unprocessed_packets()
 
-    assert len(files) == 2
-    assert "note1.md" in files
-    assert "note3.md" in files
-    assert "note2.txt" not in files
+    assert len(packets) == 2
+    packet_ids = {p.packet_id for p in packets}
+    assert "note1.md" in packet_ids
+    assert "note3.md" in packet_ids
 
 
-def test_local_file_mobile_vault_gateway_save_and_read_file(tmp_path):
-    """[MV-FILE-01] ファイルの保存と読み込みのテスト。"""
+def test_local_file_mobile_vault_gateway_publish_dashboard(tmp_path):
+    """[MV-PLACE-01] ダッシュボードの保存のテスト。"""
     # Arrange
     work_dir = tmp_path / "work"
-    repo = LocalFileMobileVaultGateway(inbox_dir=str(work_dir), dashboard_dir=str(tmp_path))
+    repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path), dashboard_dir=str(work_dir))
 
-    content = "Hello, Mobile Vault!"
-    filename = "test.md"
+    content = "Hello, Mobile Vault Dashboard!"
+    filename = "dashboard.md"
     file_path = work_dir / filename
 
     # Act
-    repo.save_inbox_file(content=content, filename=filename)
-    read_content = repo.read_text(filename)
+    returned_path = repo.publish(title=filename, content=content)
 
     # Assert
     assert file_path.exists()
-    assert read_content == content
+    assert file_path.read_text(encoding="utf-8") == content
+    assert returned_path == str(file_path)
 
 
-def test_local_file_mobile_vault_gateway_delete_file(tmp_path):
-    """[MV-FILE-01] ファイル削除のテスト。"""
+def test_local_file_mobile_vault_gateway_delete_packet(tmp_path):
+    """[MV-RETRIEVE-01] ファイル削除のテスト。"""
     # Arrange
     work_dir = tmp_path / "work"
     repo = LocalFileMobileVaultGateway(inbox_dir=str(work_dir), dashboard_dir=str(tmp_path))
 
     filename = "delete_me.md"
     file_path = work_dir / filename
-    repo.save_inbox_file(content="Delete me", filename=filename)
+
+    # First create it normally
+    work_dir.mkdir(exist_ok=True)
+    file_path.write_text("Delete me")
+
+    from domain.mobile_vault.packet import Packet
+
+    packet = Packet(packet_id=filename, content="Delete me", images=[])
 
     # Act
-    repo.delete_file(filename)
+    repo.delete_packet(packet)
 
     # Assert
     assert not file_path.exists()
 
 
 def test_local_file_mobile_vault_gateway_save_file_path_traversal(tmp_path):
-    """[MV-FILE-02] Path traversal in save_file should raise ValueError"""
+    """[MV-PLACE-01] Path traversal in publish should raise ValueError"""
     import pytest
 
     work_dir = tmp_path / "work"
-    repo = LocalFileMobileVaultGateway(inbox_dir=str(work_dir), dashboard_dir=str(tmp_path))
+    repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path), dashboard_dir=str(work_dir))
 
-    with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
-        repo.save_inbox_file("content", "../outside.md")
-    assert "Path traversal" in str(exc_info.value)
+    with pytest.raises(ValueError, match="ディレクトリトラバーサル攻撃を検知しました") as exc_info:
+        repo.publish("../outside.md", "content")
+    assert "ディレクトリトラバーサル攻撃を検知しました" in str(exc_info.value)
+
+
+def test_local_file_mobile_vault_gateway_get_recent_dashboards(tmp_path):
+    """[MV-PLACE-01] 直近のダッシュボードファイルの内容が取得できることのテスト。"""
+    from datetime import datetime
+
+    work_dir = tmp_path / "work"
+    work_dir.mkdir(parents=True, exist_ok=True)
+    repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path), dashboard_dir=str(work_dir))
+
+    today = datetime.now().date()
+
+    today_file = work_dir / f"Briefing_{today.strftime('%Y-%m-%d')}.md"
+    # yesterday_file does not exist (not created)
+    other_file = work_dir / "Briefing_2020-01-01.md"
+
+    today_file.write_text("today's content")
+    other_file.write_text("old content")
+    # yesterday_file does not exist
+
+    contents = repo.get_recent_dashboards()
+
+    assert len(contents) == 1
+    assert "today's content" in contents
+
+
+def test_local_file_mobile_vault_gateway_get_recent_dashboards_empty_dir(tmp_path):
+    """[MV-PLACE-01] 空ディレクトリの場合は空リストを返す。"""
+    repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path), dashboard_dir=str(tmp_path / "nonexistent"))
+    contents = repo.get_recent_dashboards()
+    assert len(contents) == 0
+
+
+def test_local_file_mobile_vault_gateway_fetch_empty_dir(tmp_path):
+    """[MV-RETRIEVE-01] 空ディレクトリの場合は空リストを返す。"""
+    repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path / "nonexistent"))
+    assert repo.fetch_unprocessed_packets() == []

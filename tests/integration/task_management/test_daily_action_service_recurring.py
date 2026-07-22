@@ -20,6 +20,9 @@ class FakeBriefingGateway(BriefingGateway):
     def save(self, briefing) -> None:
         pass
 
+    def get_recent_briefing_contents(self) -> list[str]:
+        return []
+
 
 def test_daily_action_service_recurring_tasks(test_context: IntegrationTestContext):
     """
