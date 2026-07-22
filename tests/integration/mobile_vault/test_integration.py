@@ -25,7 +25,7 @@ def test_vault_integration(test_context: IntegrationTestContext):
         f.write("Test Packet")
 
     config = MobileVaultConfig(inbox_dir=inbox_dir, dashboard_dir=db_dir, attachments_dir=db_dir, queue_dir=db_dir)
-    repository = LocalFileMobileVaultGateway()
+    repository = LocalFileMobileVaultGateway(inbox_dir=str(inbox_dir), dashboard_dir=str(db_dir))
     parser = MarkdownImageParser()
     service = MobileVaultService(
         config=config, repository=repository, parser=parser, task_repository=test_context.task_repo

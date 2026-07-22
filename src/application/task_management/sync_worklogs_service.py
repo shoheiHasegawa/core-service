@@ -1,6 +1,5 @@
-import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from application.mobile_vault.interfaces import MobileVaultGateway
 from domain.mobile_vault.parser import BriefingMarkdownParser
@@ -14,22 +13,27 @@ class SyncWorklogsService:
         mobile_vault_gateway: MobileVaultGateway,
         task_repository: TaskRepository,
         worklog_repository: WorklogRepository,
-        inbox_dir: str,
-        archive_dir: str,
     ):
         self.mobile_vault_gateway = mobile_vault_gateway
         self.task_repository = task_repository
         self.worklog_repository = worklog_repository
-        self.inbox_dir = inbox_dir
-        self.archive_dir = archive_dir
         self.parser = BriefingMarkdownParser()
 
     def sync(self) -> None:
-        files = self.mobile_vault_gateway.list_markdown_files(self.inbox_dir)
-        for filename in files:
-            file_path = os.path.join(self.inbox_dir, filename)
-            content = self.mobile_vault_gateway.read_text(file_path)
+        today = datetime.now().date()
+        yesterday = today - timedelta(days=1)
 
+        target_filenames = {
+            f"Briefing_{yesterday.strftime('%Y-%m-%d')}.md",
+            f"Briefing_{today.strftime('%Y-%m-%d')}.md",
+        }
+
+        files = self.mobile_vault_gateway.list_markdown_files()
+        for filename in files:
+            if filename not in target_filenames:
+                continue
+
+            content = self.mobile_vault_gateway.read_text(filename)
             completed_task_ids = self.parser.parse_completed_task_ids(content)
 
             for task_id in completed_task_ids:
@@ -45,12 +49,9 @@ class SyncWorklogsService:
                     task_id=task_id,
                     minutes=task.estimated_minutes,
                     is_completed=True,
-                    target_date=datetime.now().date(),
+                    target_date=today,
                     area_id=task.area_id,
                     category=category,
                     task_type=task_type,
                 )
                 self.worklog_repository.save(worklog)
-
-            archive_path = os.path.join(self.archive_dir, filename)
-            self.mobile_vault_gateway.move_file(file_path, archive_path)

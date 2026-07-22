@@ -13,11 +13,17 @@ from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogR
 class FakeMobileVaultGateway(MobileVaultGateway):
     def __init__(self):
         self.files = {
-            "/fake/inbox/Briefing_2026-07-22.md": "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n"
+            "Briefing_2026-07-22.md": "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n"
         }
         self.moved = []
 
-    def save_file(self, content: str, directory: str, filename: str) -> None:
+    def save_file(self, content: str, filename: str) -> None:
+        pass
+
+    def save_inbox_file(self, content: str, filename: str) -> None:
+        pass
+
+    def save_dashboard_file(self, content: str, filename: str) -> None:
         pass
 
     def read_text(self, filepath: str) -> str:
@@ -26,7 +32,7 @@ class FakeMobileVaultGateway(MobileVaultGateway):
     def ensure_directory_exists(self, directory: str) -> None:
         pass
 
-    def list_markdown_files(self, directory: str) -> list[str]:
+    def list_markdown_files(self) -> list[str]:
         return ["Briefing_2026-07-22.md"]
 
     def move_file(self, old_path: str, new_path: str) -> None:
@@ -56,8 +62,6 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
         mobile_vault_gateway=fake_vault,
         task_repository=task_repo,
         worklog_repository=worklog_repo,
-        inbox_dir="/fake/inbox",
-        archive_dir="/fake/archive",
     )
 
     # 実行

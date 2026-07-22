@@ -11,7 +11,7 @@ from infrastructure.task_management.briefing_gateway import MobileVaultBriefingG
 def test_save_briefing_generates_markdown():
     """[TM-SYNC-03] DailyBriefingがMarkdown文字列に変換され、MobileVaultに保存されることを確認する"""
     mock_mobile_vault = Mock(spec=MobileVaultGateway)
-    repo = MobileVaultBriefingGateway(mock_mobile_vault, "/fake/inbox")
+    repo = MobileVaultBriefingGateway(mock_mobile_vault)
 
     # 準備
     target_date = date(2026, 7, 22)
@@ -28,15 +28,13 @@ def test_save_briefing_generates_markdown():
     repo.save(briefing)
 
     # 検証
-    mock_mobile_vault.ensure_directory_exists.assert_called_with("/fake/inbox")
 
     expected_filename = "Briefing_2026-07-22.md"
 
-    mock_mobile_vault.save_file.assert_called_once()
-    call_args = mock_mobile_vault.save_file.call_args
-    content, directory, filename = call_args[0]
+    mock_mobile_vault.save_inbox_file.assert_called_once()
+    call_args = mock_mobile_vault.save_inbox_file.call_args
+    content, filename = call_args[0]
 
-    assert directory == "/fake/inbox"
     assert filename == expected_filename
     assert "# Daily Briefing (2026-07-22)" in content
     assert "## ⚠️ Warnings" in content
@@ -50,7 +48,7 @@ def test_save_briefing_protection():
     """[TM-SYNC-03] ファイルが既に存在してもバックアップを取得せず、無条件で上書きを行う"""
     mock_mobile_vault = Mock(spec=MobileVaultGateway)
 
-    repo = MobileVaultBriefingGateway(mock_mobile_vault, "/fake/inbox")
+    repo = MobileVaultBriefingGateway(mock_mobile_vault)
 
     target_date = date(2026, 7, 22)
     briefing = DailyBriefing(target_date=target_date, scheduled_tasks=[], deferred_tasks=[], warning_flags=[])
@@ -59,4 +57,4 @@ def test_save_briefing_protection():
     repo.save(briefing)
 
     # 検証: save_fileが1回だけ呼ばれること
-    assert mock_mobile_vault.save_file.call_count == 1
+    assert mock_mobile_vault.save_inbox_file.call_count == 1

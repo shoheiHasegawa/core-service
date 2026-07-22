@@ -22,7 +22,7 @@ class MobileVaultService:
         self.task_repository = task_repository
 
     def retrieve_packets(self) -> int:
-        files = self.repository.list_markdown_files(str(self.config.inbox_dir))
+        files = self.repository.list_markdown_files()
         processed_count = 0
         for file_path in files:
             content = self.repository.read_text(file_path)
@@ -45,6 +45,5 @@ class MobileVaultService:
         return processed_count
 
     def place_dashboard(self, content: str, filename: str) -> str:
-        self.repository.ensure_directory_exists(str(self.config.dashboard_dir))
-        self.repository.save_file(content=content, directory=str(self.config.dashboard_dir), filename=filename)
+        self.repository.save_dashboard_file(content=content, filename=filename)
         return str(self.config.dashboard_dir / filename)
