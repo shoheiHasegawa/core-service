@@ -56,12 +56,7 @@ def test_save_briefing_protection():
     repo = MobileVaultBriefingRepository(mock_mobile_vault, "/fake/inbox")
 
     target_date = date(2026, 7, 22)
-    briefing = DailyBriefing(
-        target_date=target_date,
-        scheduled_tasks=[],
-        deferred_tasks=[],
-        warning_flags=[]
-    )
+    briefing = DailyBriefing(target_date=target_date, scheduled_tasks=[], deferred_tasks=[], warning_flags=[])
 
     # 実行
     repo.save(briefing)

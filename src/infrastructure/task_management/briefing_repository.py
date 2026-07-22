@@ -36,6 +36,7 @@ class MobileVaultBriefingRepository(BriefingRepository):
             self.mobile_vault_repo.save_file(content, self.inbox_dir, filename)
         except FileExistsError:
             from datetime import datetime
+
             now = datetime.now()
             backup_filename = f"Briefing_{target_date.strftime('%Y-%m-%d')}_backup_{now.strftime('%H%M%S')}.md"
             old_path = os.path.join(self.inbox_dir, filename)

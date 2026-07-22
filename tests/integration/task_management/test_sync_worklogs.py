@@ -1,9 +1,9 @@
 """[TM-SYNC-04] 日次同期と実績（Worklog）作成のIntegration Test"""
 
-import pytest
 from datetime import date
 
 from integration.conftest import IntegrationTestContext
+
 from application.mobile_vault.interfaces import MobileVaultRepository
 from application.task_management.sync_worklogs_service import SyncWorklogsService
 from domain.task_management.task import Task, TaskCategory
@@ -12,7 +12,9 @@ from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogR
 
 class FakeMobileVaultRepository(MobileVaultRepository):
     def __init__(self):
-        self.files = {"/fake/inbox/Briefing_2026-07-22.md": "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n"}
+        self.files = {
+            "/fake/inbox/Briefing_2026-07-22.md": "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n"
+        }
         self.moved = []
 
     def save_file(self, content: str, directory: str, filename: str) -> None:
@@ -55,7 +57,7 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
         task_repository=task_repo,
         worklog_repository=worklog_repo,
         inbox_dir="/fake/inbox",
-        archive_dir="/fake/archive"
+        archive_dir="/fake/archive",
     )
 
     # 実行
