@@ -32,7 +32,7 @@ class ScheduleGateway(ABC):
         pass
 
 
-class BriefingRepository(ABC):
+class BriefingGateway(ABC):
     @abstractmethod
     def save(self, briefing: DailyBriefing) -> None:
         """生成されたDailyBriefing（1日の計画結果）を永続化する"""

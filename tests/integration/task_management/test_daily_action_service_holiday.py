@@ -4,9 +4,9 @@ from typing import List
 from integration.conftest import IntegrationTestContext
 
 from application.task_management.daily_action_service import DailyActionService
-from domain.interfaces.calendar_repository import CalendarRepository
+from domain.interfaces.calendar_gateway import CalendarGateway
 from domain.task_management.recurring_task import RecurringTask
-from domain.task_management.repository import BriefingRepository, ScheduleGateway
+from domain.task_management.repository import BriefingGateway, ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
 from infrastructure.task_management.recurring_task_repository import SqlRecurringTaskRepository
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
@@ -17,12 +17,12 @@ class FakeScheduleGateway(ScheduleGateway):
         pass
 
 
-class FakeBriefingRepository(BriefingRepository):
+class FakeBriefingGateway(BriefingGateway):
     def save(self, briefing) -> None:
         pass
 
 
-class FakeCalendarRepository(CalendarRepository):
+class FakeCalendarGateway(CalendarGateway):
     def __init__(self, events_map=None):
         self.events_map = events_map or {}
 
@@ -42,19 +42,19 @@ def test_daily_action_service_holiday_context(test_context: IntegrationTestConte
     """
     task_repo = test_context.task_repo
     schedule_gateway = FakeScheduleGateway()
-    briefing_repo = FakeBriefingRepository()
+    briefing_gateway = FakeBriefingGateway()
     worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
     recurring_task_repo = SqlRecurringTaskRepository(test_context.session)
 
     # 2026-07-21 (火) に有給イベントを設定
-    calendar_repo = FakeCalendarRepository(events_map={datetime.date(2026, 7, 21): ["有給休暇", "ゴミの日"]})
+    calendar_gateway = FakeCalendarGateway(events_map={datetime.date(2026, 7, 21): ["有給休暇", "ゴミの日"]})
 
     service = DailyActionService(
         task_repo=task_repo,
         schedule_gateway=schedule_gateway,
-        briefing_repo=briefing_repo,
+        briefing_repo=briefing_gateway,
         worklog_repo=worklog_repo,
-        calendar_repo=calendar_repo,
+        calendar_repo=calendar_gateway,
         recurring_task_repo=recurring_task_repo,
     )
 

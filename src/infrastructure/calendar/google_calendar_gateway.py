@@ -4,11 +4,11 @@ from typing import List
 import googleapiclient.discovery
 from google.oauth2 import service_account
 
-from domain.interfaces.calendar_repository import CalendarRepository
+from domain.interfaces.calendar_gateway import CalendarGateway
 from infrastructure.calendar.config import CalendarConfig
 
 
-class GoogleCalendarRepository(CalendarRepository):
+class GoogleCalendarGateway(CalendarGateway):
     def __init__(self, config: CalendarConfig) -> None:
         self.config = config
 

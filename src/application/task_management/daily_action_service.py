@@ -3,7 +3,7 @@ from typing import List
 
 import holidays
 
-from domain.interfaces.calendar_repository import CalendarRepository
+from domain.interfaces.calendar_gateway import CalendarGateway
 from domain.task_management.planning_rules import (
     ContextBatchingPolicy,
     DependencyPolicy,
@@ -14,7 +14,7 @@ from domain.task_management.planning_rules import (
     SchedulingValidator,
     WIPAllocationPolicy,
 )
-from domain.task_management.repository import BriefingRepository, ScheduleGateway, TaskRepository, WorklogRepository
+from domain.task_management.repository import BriefingGateway, ScheduleGateway, TaskRepository, WorklogRepository
 from domain.task_management.task import DailyBriefing, TaskCategory, Worklog
 
 
@@ -23,9 +23,9 @@ class DailyActionService:
         self,
         task_repo: TaskRepository,
         schedule_gateway: ScheduleGateway,
-        briefing_repo: BriefingRepository,
+        briefing_repo: BriefingGateway,
         worklog_repo: WorklogRepository,
-        calendar_repo: CalendarRepository = None,
+        calendar_repo: CalendarGateway = None,
         recurring_task_repo=None,
     ) -> None:
         self.task_repo = task_repo

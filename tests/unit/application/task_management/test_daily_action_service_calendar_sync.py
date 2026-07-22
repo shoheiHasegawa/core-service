@@ -4,11 +4,11 @@ from typing import List
 from application.task_management.daily_action_service import DailyActionService
 
 # 以下のimportは現在は存在しないためImportErrorになります（Red状態）
-from domain.interfaces.calendar_repository import CalendarRepository
+from domain.interfaces.calendar_gateway import CalendarGateway
 from domain.task_management.task import Task, TaskCategory
 
 
-class FakeCalendarRepository(CalendarRepository):
+class FakeCalendarGateway(CalendarGateway):
     def __init__(self):
         self.fetch_fixed_events_called = 0
         self.sync_daily_briefing_called = 0
@@ -36,7 +36,7 @@ class FakeScheduleGateway:
         pass
 
 
-class FakeBriefingRepository:
+class FakeBriefingGateway:
     def save(self, briefing):
         pass
 
@@ -46,21 +46,21 @@ class FakeWorklogRepository:
 
 
 def test_daily_action_service_sync_to_calendar():
-    """[TM-SYNC-01] plan_day実行時に同期フラグがTrueなら、計算されたスケジュールがcalendar_repositoryに同期されること"""
+    """[TM-SYNC-01] plan_day実行時に同期フラグがTrueなら、計算されたスケジュールがcalendar_gatewayに同期されること"""
     task_repo = FakeTaskRepository()
-    fake_calendar_repo = FakeCalendarRepository()
+    fake_calendar_gateway = FakeCalendarGateway()
 
     service = DailyActionService(
         task_repo=task_repo,
         schedule_gateway=FakeScheduleGateway(),
-        briefing_repo=FakeBriefingRepository(),
+        briefing_repo=FakeBriefingGateway(),
         worklog_repo=FakeWorklogRepository(),
-        calendar_repo=fake_calendar_repo,
+        calendar_repo=fake_calendar_gateway,
     )
 
     # 同期フラグを立てて実行
     briefing = service.plan_day(date.today(), sync_to_calendar=True)
 
     # 同期メソッドが呼ばれたことをアサート
-    assert fake_calendar_repo.sync_daily_briefing_called == 1
-    assert fake_calendar_repo.last_sync_tasks == briefing.scheduled_tasks
+    assert fake_calendar_gateway.sync_daily_briefing_called == 1
+    assert fake_calendar_gateway.last_sync_tasks == briefing.scheduled_tasks

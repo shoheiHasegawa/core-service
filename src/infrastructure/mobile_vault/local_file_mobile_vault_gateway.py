@@ -1,10 +1,10 @@
 import shutil
 from pathlib import Path
 
-from application.mobile_vault.interfaces import MobileVaultRepository
+from application.mobile_vault.interfaces import MobileVaultGateway
 
 
-class LocalFileMobileVaultRepository(MobileVaultRepository):
+class LocalFileMobileVaultGateway(MobileVaultGateway):
     def list_markdown_files(self, directory: str) -> list[str]:
         dir_path = Path(directory)
         if not dir_path.exists() or not dir_path.is_dir():

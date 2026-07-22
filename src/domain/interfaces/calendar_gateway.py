@@ -3,7 +3,7 @@ from datetime import date
 from typing import List
 
 
-class CalendarRepository(ABC):
+class CalendarGateway(ABC):
     @abstractmethod
     def fetch_fixed_events(self, target_date: date) -> List[dict]:
         """指定日の固定イベントを外部カレンダーから取得する"""

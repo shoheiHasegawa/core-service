@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class MobileVaultRepository(ABC):
+class MobileVaultGateway(ABC):
     @abstractmethod
     def list_markdown_files(self, directory: str) -> list[str]:
         pass

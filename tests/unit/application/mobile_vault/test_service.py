@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from application.mobile_vault.config import MobileVaultConfig
-from application.mobile_vault.interfaces import MobileVaultRepository
+from application.mobile_vault.interfaces import MobileVaultGateway
 from application.mobile_vault.service import MobileVaultService
 from domain.mobile_vault.parser import MarkdownImageParser
 
@@ -19,7 +19,7 @@ def test_retrieve_unprocessed_packets_scenario_01(tmp_path):
         dashboard_dir=tmp_path / "dashboard",
     )
 
-    mock_repo = MagicMock(spec=MobileVaultRepository)
+    mock_repo = MagicMock(spec=MobileVaultGateway)
     mock_parser = MagicMock(spec=MarkdownImageParser)
 
     mock_repo.list_markdown_files.return_value = [str(config.inbox_dir / "note1.md")]
@@ -50,7 +50,7 @@ def test_place_dashboard_scenario_02(tmp_path):
         queue_dir=tmp_path / "queue",
         dashboard_dir=tmp_path / "dashboard",
     )
-    mock_repo = MagicMock(spec=MobileVaultRepository)
+    mock_repo = MagicMock(spec=MobileVaultGateway)
 
     service = MobileVaultService(config=config, repository=mock_repo, parser=MagicMock(spec=MarkdownImageParser))
 

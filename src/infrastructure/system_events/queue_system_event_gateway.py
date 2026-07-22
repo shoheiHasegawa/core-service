@@ -38,8 +38,18 @@ class QueueSystemEventGateway(SystemEventGateway):
             title = f"Agent-Core Error: {job_name}"
             msg = f"A fatal error occurred. Check queue for {packet_name}"
             subprocess.run(
-                ["osascript", "-e", "on run argv", "-e", 'display notification (item 1 of argv) with title (item 2 of argv) sound name "Basso"', "-e", "end run", msg, title],
-                check=False
+                [
+                    "osascript",
+                    "-e",
+                    "on run argv",
+                    "-e",
+                    'display notification (item 1 of argv) with title (item 2 of argv) sound name "Basso"',
+                    "-e",
+                    "end run",
+                    msg,
+                    title,
+                ],
+                check=False,
             )
         except Exception:
             # 通知失敗は無視（メインのイベント発行を阻害しない）

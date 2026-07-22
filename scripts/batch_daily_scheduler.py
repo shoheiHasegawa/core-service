@@ -21,7 +21,7 @@ def main():
         from sqlalchemy.orm import sessionmaker
 
         from application.task_management.daily_action_service import DailyActionService
-        from infrastructure.calendar.google_calendar_repository import GoogleCalendarRepository
+        from infrastructure.calendar.google_calendar_gateway import GoogleCalendarGateway
         from infrastructure.task_management.task_repository import SqlTaskRepository
 
         # NOTE: 実際のパスに合わせて要修正
@@ -31,7 +31,7 @@ def main():
 
         with SessionLocal() as session:
             task_repo = SqlTaskRepository(session)
-            calendar_repo = GoogleCalendarRepository()
+            calendar_repo = GoogleCalendarGateway()
 
             service = DailyActionService(task_repo=task_repo, calendar_repo=calendar_repo)
 

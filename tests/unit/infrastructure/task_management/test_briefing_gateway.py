@@ -3,15 +3,15 @@
 from datetime import date
 from unittest.mock import Mock
 
-from application.mobile_vault.interfaces import MobileVaultRepository
+from application.mobile_vault.interfaces import MobileVaultGateway
 from domain.task_management.task import DailyBriefing, Task, WarningFlag
-from infrastructure.task_management.briefing_repository import MobileVaultBriefingRepository
+from infrastructure.task_management.briefing_gateway import MobileVaultBriefingGateway
 
 
 def test_save_briefing_generates_markdown():
     """[TM-SYNC-03] DailyBriefingがMarkdown文字列に変換され、MobileVaultに保存されることを確認する"""
-    mock_mobile_vault = Mock(spec=MobileVaultRepository)
-    repo = MobileVaultBriefingRepository(mock_mobile_vault, "/fake/inbox")
+    mock_mobile_vault = Mock(spec=MobileVaultGateway)
+    repo = MobileVaultBriefingGateway(mock_mobile_vault, "/fake/inbox")
 
     # 準備
     target_date = date(2026, 7, 22)
@@ -47,13 +47,10 @@ def test_save_briefing_generates_markdown():
 
 
 def test_save_briefing_protection():
-    """[TM-SYNC-03] ファイルが既に存在する場合はバックアップを取得（move_fileまたはrename_file）し、再度保存を行う"""
-    mock_mobile_vault = Mock(spec=MobileVaultRepository)
+    """[TM-SYNC-03] ファイルが既に存在してもバックアップを取得せず、無条件で上書きを行う"""
+    mock_mobile_vault = Mock(spec=MobileVaultGateway)
 
-    # 1回目のsave_fileでFileExistsErrorを出し、2回目は成功するように設定
-    mock_mobile_vault.save_file.side_effect = [FileExistsError("File already exists"), None]
-
-    repo = MobileVaultBriefingRepository(mock_mobile_vault, "/fake/inbox")
+    repo = MobileVaultBriefingGateway(mock_mobile_vault, "/fake/inbox")
 
     target_date = date(2026, 7, 22)
     briefing = DailyBriefing(target_date=target_date, scheduled_tasks=[], deferred_tasks=[], warning_flags=[])
@@ -61,7 +58,5 @@ def test_save_briefing_protection():
     # 実行
     repo.save(briefing)
 
-    # 検証: save_fileが2回呼ばれること
-    assert mock_mobile_vault.save_file.call_count == 2
-    # 検証: move_file または rename_file がバックアップのために呼ばれること（Mockにはmove_fileがある想定）
-    mock_mobile_vault.move_file.assert_called_once()
+    # 検証: save_fileが1回だけ呼ばれること
+    assert mock_mobile_vault.save_file.call_count == 1

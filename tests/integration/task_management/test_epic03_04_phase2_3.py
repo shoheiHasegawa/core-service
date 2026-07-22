@@ -4,7 +4,7 @@ from typing import List
 from integration.conftest import IntegrationTestContext
 
 from application.task_management.daily_action_service import DailyActionService
-from domain.task_management.repository import BriefingRepository, ScheduleGateway
+from domain.task_management.repository import BriefingGateway, ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
 
@@ -14,7 +14,7 @@ class FakeScheduleGateway(ScheduleGateway):
         pass
 
 
-class FakeBriefingRepository(BriefingRepository):
+class FakeBriefingGateway(BriefingGateway):
     def save(self, briefing) -> None:
         pass
 
@@ -30,7 +30,7 @@ def test_daily_action_service_plan_day_constraints(test_context: IntegrationTest
     """
     task_repo = test_context.task_repo
     schedule_gateway = FakeScheduleGateway()
-    briefing_repo = FakeBriefingRepository()
+    briefing_repo = FakeBriefingGateway()
     worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
 
     service = DailyActionService(

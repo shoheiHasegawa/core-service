@@ -2,7 +2,7 @@ from datetime import date
 from unittest.mock import MagicMock
 
 from application.task_management.daily_action_service import DailyActionService
-from domain.task_management.repository import BriefingRepository, ScheduleGateway, TaskRepository, WorklogRepository
+from domain.task_management.repository import BriefingGateway, ScheduleGateway, TaskRepository, WorklogRepository
 from domain.task_management.task import Task, TaskCategory, TaskStatus, WarningFlag, Worklog
 
 
@@ -18,7 +18,7 @@ def test_scenario_02_wip_limit_exceeded():
     service = DailyActionService(
         task_repo,
         MagicMock(spec=ScheduleGateway),
-        MagicMock(spec=BriefingRepository),
+        MagicMock(spec=BriefingGateway),
         MagicMock(spec=WorklogRepository),
     )
 
@@ -39,7 +39,7 @@ def test_scenario_03_w_ratio_low():
     service = DailyActionService(
         task_repo,
         MagicMock(spec=ScheduleGateway),
-        MagicMock(spec=BriefingRepository),
+        MagicMock(spec=BriefingGateway),
         MagicMock(spec=WorklogRepository),
     )
 
@@ -52,7 +52,7 @@ def test_record_worklogs():
     task_repo = MagicMock(spec=TaskRepository)
     worklog_repo = MagicMock(spec=WorklogRepository)
     service = DailyActionService(
-        task_repo, MagicMock(spec=ScheduleGateway), MagicMock(spec=BriefingRepository), worklog_repo
+        task_repo, MagicMock(spec=ScheduleGateway), MagicMock(spec=BriefingGateway), worklog_repo
     )
 
     task = Task(id="t1", title="Must 1", category=TaskCategory.MUST, estimated_minutes=60, actual_minutes=10)

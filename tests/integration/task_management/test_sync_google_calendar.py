@@ -4,13 +4,13 @@ from typing import List
 from integration.conftest import IntegrationTestContext
 
 from application.task_management.daily_action_service import DailyActionService
-from domain.interfaces.calendar_repository import CalendarRepository
-from domain.task_management.repository import BriefingRepository, ScheduleGateway
+from domain.interfaces.calendar_gateway import CalendarGateway
+from domain.task_management.repository import BriefingGateway, ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
 
 
-class FakeCalendarRepository(CalendarRepository):
+class FakeCalendarGateway(CalendarGateway):
     def __init__(self, all_day_events=None):
         self.all_day_events = all_day_events or []
         self.synced_tasks = None
@@ -30,7 +30,7 @@ class FakeScheduleGateway(ScheduleGateway):
         pass
 
 
-class FakeBriefingRepository(BriefingRepository):
+class FakeBriefingGateway(BriefingGateway):
     def __init__(self):
         self.saved_briefing = None
 
@@ -47,17 +47,17 @@ def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestCon
     task_repo = test_context.task_repo
     worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
     schedule_gateway = FakeScheduleGateway()
-    briefing_repo = FakeBriefingRepository()
+    briefing_gateway = FakeBriefingGateway()
 
     # [TM-PLAN-06] 終日イベントをメタデータとして扱う ("有給"等をフラグとして注入)
-    calendar_repo = FakeCalendarRepository(all_day_events=["有給"])
+    calendar_gateway = FakeCalendarGateway(all_day_events=["有給"])
 
     service = DailyActionService(
         task_repo=task_repo,
         schedule_gateway=schedule_gateway,
-        briefing_repo=briefing_repo,
+        briefing_repo=briefing_gateway,
         worklog_repo=worklog_repo,
-        calendar_repo=calendar_repo,
+        calendar_repo=calendar_gateway,
     )
 
     target_date = datetime.date(2026, 7, 21)
@@ -76,9 +76,9 @@ def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestCon
     briefing = service.plan_day(target_date=target_date, sync_to_calendar=True)
 
     # Assert (ここでRedになるか検証)
-    assert calendar_repo.synced_tasks is not None, "カレンダーへの同期が呼び出されること"
-    assert len(calendar_repo.synced_tasks) == len(briefing.scheduled_tasks)
+    assert calendar_gateway.synced_tasks is not None, "カレンダーへの同期が呼び出されること"
+    assert len(calendar_gateway.synced_tasks) == len(briefing.scheduled_tasks)
 
     # [TM-SYNC-03] Mobile Vaultへの同期が呼び出されること
-    assert briefing_repo.saved_briefing is not None, "BriefingRepositoryが呼び出されること"
-    assert briefing_repo.saved_briefing.target_date == target_date
+    assert briefing_gateway.saved_briefing is not None, "BriefingGatewayが呼び出されること"
+    assert briefing_gateway.saved_briefing.target_date == target_date

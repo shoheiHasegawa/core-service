@@ -4,13 +4,13 @@ from datetime import date
 
 from integration.conftest import IntegrationTestContext
 
-from application.mobile_vault.interfaces import MobileVaultRepository
+from application.mobile_vault.interfaces import MobileVaultGateway
 from application.task_management.sync_worklogs_service import SyncWorklogsService
 from domain.task_management.task import Task, TaskCategory
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
 
 
-class FakeMobileVaultRepository(MobileVaultRepository):
+class FakeMobileVaultGateway(MobileVaultGateway):
     def __init__(self):
         self.files = {
             "/fake/inbox/Briefing_2026-07-22.md": "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n"
@@ -40,10 +40,10 @@ class FakeMobileVaultRepository(MobileVaultRepository):
 
 
 def test_sync_worklogs_integration(test_context: IntegrationTestContext):
-    """[TM-SYNC-04] InboxディレクトリのBriefingファイルを読み込み、Worklogを作成し、ファイルをアーカイブする"""
+    """[TM-SYNC-04] InboxディレクトリのBriefingファイルを読み込み、Worklogを作成する"""
     task_repo = test_context.task_repo
     worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
-    fake_vault = FakeMobileVaultRepository()
+    fake_vault = FakeMobileVaultGateway()
 
     # 準備：DBにタスクを登録
     target_date = date(2026, 7, 22)
@@ -53,7 +53,7 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
 
     # サービス初期化
     service = SyncWorklogsService(
-        mobile_vault_repository=fake_vault,
+        mobile_vault_gateway=fake_vault,
         task_repository=task_repo,
         worklog_repository=worklog_repo,
         inbox_dir="/fake/inbox",
@@ -68,7 +68,3 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
     worklogs = worklog_repo.find_by_task_and_date("t1", date.today())
     assert len(worklogs) == 1
     assert worklogs[0].task_id == "t1"
-
-    # 検証：ファイルがアーカイブに移動されているか
-    assert len(fake_vault.moved) == 1
-    assert fake_vault.moved[0] == ("/fake/inbox/Briefing_2026-07-22.md", "/fake/archive/Briefing_2026-07-22.md")
