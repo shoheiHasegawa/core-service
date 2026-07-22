@@ -55,7 +55,12 @@
 - **事後条件**: 外部イベント（会議、ゴミの日等）はGoogle CalendarをSoRとしてRead-Onlyで扱い、内部ルーティン（自己投資等）は `recurring_tasks` テーブルをSoRとしてWrite権限で動的配置されること。
 - **事後条件**: DB側の内部ルーティンは `valid_from` と `valid_until` の期間内のみカレンダーに配置（同期）されること。
 
-## [TM-SYNC-03] 正常系: DailyBriefingのMarkdown連携 (Mobile Vault同期)
+## [TM-SYNC-03] 正常系/異常系: DailyBriefingのMarkdown連携とフェイルセーフ (Mobile Vault同期)
 - **事前条件**: `plan_day` によって `DailyBriefing` が生成される。
-- **事後条件**: `BriefingRepository` (Mobile Vault) を通じて、計画されたタスク一覧と警告フラグが所定のInboxディレクトリにMarkdown形式（例: `Briefing_2026-07-22.md`）で冪等性を持って保存（上書き）されること。
+- **事後条件 (正常)**: `BriefingRepository` を通じて、計画されたタスク一覧が所定のInboxディレクトリにMarkdown形式（例: `Briefing_2026-07-22.md`）で保存されること。
+- **事後条件 (既存ファイルあり)**: すでに同日のファイルが存在する場合（洗い替え時）、既存ファイル内の完了実績消失を防ぐため、物理的に `Briefing_YYYY-MM-DD_backup_HHMMSS.md` にリネーム（退避）した上で、最新の計画ファイルを配置（上書き）すること。
+
+## [TM-SYNC-04] 正常系: 完了実績の回収とDB反映 (Worklog Sync)
+- **事前条件**: Inboxディレクトリに `Briefing_YYYY-MM-DD.md` や `_backup` ファイルが存在する。
+- **事後条件**: `sync_worklogs` 処理により、ファイル内から `- [x]` のマークがついたタスクIDを抽出し、該当タスクの `TaskStatus` を `COMPLETED` に更新、または実績として `Worklog` に記録すること。パース完了後のファイルは Archive 等に移動されること。
 

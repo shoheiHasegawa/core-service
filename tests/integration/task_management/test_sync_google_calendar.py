@@ -78,7 +78,7 @@ def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestCon
     # Assert (ここでRedになるか検証)
     assert calendar_repo.synced_tasks is not None, "カレンダーへの同期が呼び出されること"
     assert len(calendar_repo.synced_tasks) == len(briefing.scheduled_tasks)
-    
+
     # [TM-SYNC-03] Mobile Vaultへの同期が呼び出されること
     assert briefing_repo.saved_briefing is not None, "BriefingRepositoryが呼び出されること"
     assert briefing_repo.saved_briefing.target_date == target_date

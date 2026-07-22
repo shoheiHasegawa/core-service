@@ -32,10 +32,13 @@ class MobileVaultBriefingRepository(BriefingRepository):
 
         content = "\n".join(lines) + "\n"
 
-        # 既存のファイルがあれば削除して上書き（冪等性）
-        # MobileVaultRepositoryのsave_fileはFileExistsErrorを投げるため、事前に削除するかハンドリングする
         try:
             self.mobile_vault_repo.save_file(content, self.inbox_dir, filename)
         except FileExistsError:
-            self.mobile_vault_repo.delete_file(os.path.join(self.inbox_dir, filename))
+            from datetime import datetime
+            now = datetime.now()
+            backup_filename = f"Briefing_{target_date.strftime('%Y-%m-%d')}_backup_{now.strftime('%H%M%S')}.md"
+            old_path = os.path.join(self.inbox_dir, filename)
+            new_path = os.path.join(self.inbox_dir, backup_filename)
+            self.mobile_vault_repo.move_file(old_path, new_path)
             self.mobile_vault_repo.save_file(content, self.inbox_dir, filename)
