@@ -29,7 +29,8 @@ class ExampleService:
 ```
 
 ## Composition Root
-`core-service` 内にすべての依存関係を組み立てる `main.py` やDIコンテナの設定ファイルは置きません。その責務は上位の実行レイヤー（Composition Root）が担います。
+依存関係の構築（DIコンテナの組み立て）は、`core-service/src/di/container.py` に集約します。
+`core-service` は単独では実行環境（設定ファイルやDB接続情報）を持たないため、利用側（`agent-core` 等）が起動時に `CoreServiceContainer` の初期化引数として環境情報や設定を渡し、コンテナ経由で Service（Facade）を取得して実行します。
 
 ## Naming Conventions (命名規則)
 DIを適用する上で、ドメイン層（インターフェース）とインフラ層（実装クラス）の関心事を分離するため、以下の命名規則を厳守してください。
