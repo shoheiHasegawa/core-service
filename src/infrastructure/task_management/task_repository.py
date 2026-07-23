@@ -1,12 +1,13 @@
 import json
+import logging
 from datetime import date
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from domain.task_management.repository import TaskRepository
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
-from infrastructure.db.models import TaskModel
+from domain.task_management.task_repository import TaskRepository
+from infrastructure.db.task_model import TaskModel
 
 
 class SqlTaskRepository(TaskRepository):
@@ -69,8 +70,6 @@ class SqlTaskRepository(TaskRepository):
             try:
                 deps = json.loads(model.dependencies)
             except json.JSONDecodeError as e:
-                import logging
-
                 logging.getLogger(__name__).error("Failed to parse dependencies for task %s: %s", model.id, e)
                 raise ValueError(f"Data corruption detected in dependencies for task {model.id}: {e}")
 

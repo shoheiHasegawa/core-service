@@ -5,7 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
-from infrastructure.db.models import Base
+from infrastructure.db.base import Base
+from infrastructure.db.task_model import TaskModel
 from infrastructure.task_management.task_repository import SqlTaskRepository
 
 
@@ -122,7 +123,6 @@ def test_get_tasks_by_ids(session):
 
 def test_task_repository_malformed_dependencies_raises_value_error(session):
     """[TM-PLAN-01]"""
-    from infrastructure.db.models import TaskModel
 
     repository = SqlTaskRepository(session)
 

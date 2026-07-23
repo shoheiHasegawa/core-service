@@ -3,9 +3,9 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from domain.task_management.repository import WorklogRepository
 from domain.task_management.task import Worklog
-from infrastructure.db.models import WorklogModel
+from domain.task_management.worklog_repository import WorklogRepository
+from infrastructure.db.worklog_model import WorklogModel
 
 
 class SQLAlchemyWorklogRepository(WorklogRepository):

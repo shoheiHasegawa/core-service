@@ -11,5 +11,5 @@ class MobileVaultService:
     def retrieve_packets(self):
         return self.retrieve_packets_usecase.execute()
 
-    def place_dashboard(self, dashboard_data):
-        return self.place_dashboard_usecase.execute(dashboard_data)
+    def place_dashboard(self, title: str, content: str):
+        return self.place_dashboard_usecase.execute(title, content)

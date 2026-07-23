@@ -1,7 +1,7 @@
 from typing import Optional
 
-from domain.task_management.repository import TaskRepository
 from domain.task_management.task import Task
+from domain.task_management.task_repository import TaskRepository
 
 
 class RefineTaskUseCase:

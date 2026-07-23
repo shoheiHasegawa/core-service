@@ -1,9 +1,11 @@
 import uuid
 from datetime import datetime
 
-from domain.mobile_vault.parser import BriefingMarkdownParser
-from domain.task_management.repository import BriefingGateway, TaskRepository, WorklogRepository
+from domain.task_management.briefing_gateway import BriefingGateway
+from domain.task_management.briefing_markdown_parser import BriefingMarkdownParser
 from domain.task_management.task import Worklog
+from domain.task_management.task_repository import TaskRepository
+from domain.task_management.worklog_repository import WorklogRepository
 
 
 class SyncWorklogsUseCase:

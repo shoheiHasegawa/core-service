@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from domain.task_management.task import Worklog
-from infrastructure.db.models import Base
+from infrastructure.db.base import Base
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
 
 

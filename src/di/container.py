@@ -14,10 +14,12 @@ from application.mobile_vault.place_dashboard_usecase import PlaceDashboardUseCa
 # UseCases (Mobile Vault)
 from application.mobile_vault.retrieve_packets_usecase import RetrievePacketsUseCase
 from application.second_brain.audit_zettelkasten_rules_usecase import AuditZettelkastenRulesUseCase
+from application.second_brain.config import SecondBrainConfig
 
 # UseCases (Second Brain)
 from application.second_brain.register_inbox_note_usecase import RegisterInboxNoteUseCase
 from application.second_brain.register_permanent_note_usecase import RegisterPermanentNoteUseCase
+from application.second_brain.register_sense_making_note_usecase import RegisterSenseMakingNoteUseCase
 from application.second_brain.search_notes_usecase import SearchNotesUseCase
 from application.second_brain.second_brain_service import SecondBrainService
 from application.task_operations.refine_task_usecase import RefineTaskUseCase
@@ -26,14 +28,17 @@ from application.task_operations.refine_task_usecase import RefineTaskUseCase
 from application.task_operations.register_task_usecase import RegisterTaskUseCase
 from application.task_operations.task_operations_service import TaskOperationsService
 from di.config import CoreServiceConfig
+from domain.mobile_vault.markdown_image_parser import MarkdownImageParser
 
 # Domain Interfaces
-from domain.task_management.repository import ScheduleGateway
+from domain.task_management.schedule_gateway import ScheduleGateway
 from infrastructure.calendar.config import CalendarConfig
 from infrastructure.calendar.google_calendar_gateway import GoogleCalendarGateway
 from infrastructure.mobile_vault.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
+from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
 from infrastructure.system_events.queue_system_event_gateway import QueueSystemEventGateway
 from infrastructure.task_management.briefing_gateway import MobileVaultBriefingGateway
+from infrastructure.task_management.recurring_task_repository import SqlRecurringTaskRepository
 
 # Infrastructure & Adapters
 from infrastructure.task_management.task_repository import SqlTaskRepository
@@ -76,7 +81,6 @@ class CoreServiceContainer:
 
     def get_daily_planning_service(self) -> DailyPlanningService:
         # Assemble UseCases
-        from infrastructure.task_management.recurring_task_repository import SqlRecurringTaskRepository
 
         plan_day_uc = PlanDayUseCase(
             task_repo=self.task_repo,
@@ -100,8 +104,6 @@ class CoreServiceContainer:
         return TaskOperationsService(register_task_uc, refine_task_uc)
 
     def get_second_brain_service(self) -> SecondBrainService:
-        from application.second_brain.config import SecondBrainConfig
-        from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
 
         sb_config = SecondBrainConfig(
             inbox_dir=self.config.sb_inbox_dir,
@@ -113,19 +115,32 @@ class CoreServiceContainer:
             permanent_note_template_path=self.config.sb_permanent_note_template_path,
             forbidden_patterns=self.config.sb_forbidden_patterns,
         )
-        # 実際には、対象となる全ディレクトリをルートとしたGatewayを作成するか、個別に作成します
-        # ひとまずinbox_dirをベースとする等の実装になりますが、今回は仮でinbox_dirを渡します
-        sb_gateway = LocalFileSecondBrainGateway(base_path=str(Path(self.config.sb_inbox_dir).parent))
+
+        # SecondBrain全体をルートとする共有Gateway
+        root_gateway = LocalFileSecondBrainGateway(base_path=str(Path(self.config.sb_inbox_dir).parent))
 
         return SecondBrainService(
-            RegisterInboxNoteUseCase(sb_config, sb_gateway, self.task_repo),
-            RegisterPermanentNoteUseCase(sb_config, sb_gateway),
-            SearchNotesUseCase(sb_gateway),
-            AuditZettelkastenRulesUseCase(sb_config, sb_gateway),
+            RegisterInboxNoteUseCase(
+                save_dir=self.config.sb_inbox_dir,
+                template_path=self.config.sb_inbox_template_path,
+                repository=root_gateway,
+                task_repository=self.task_repo,
+            ),
+            RegisterPermanentNoteUseCase(
+                save_dir=self.config.sb_permanent_notes_dir,
+                template_path=self.config.sb_permanent_note_template_path,
+                repository=root_gateway,
+            ),
+            RegisterSenseMakingNoteUseCase(
+                save_dir=self.config.sb_sense_making_dir,
+                template_path=self.config.sb_sense_making_template_path,
+                repository=root_gateway,
+            ),
+            SearchNotesUseCase(root_gateway),
+            AuditZettelkastenRulesUseCase(sb_config, root_gateway),
         )
 
     def get_mobile_vault_service(self) -> MobileVaultService:
-        from domain.mobile_vault.parser import MarkdownImageParser
 
         return MobileVaultService(
             RetrievePacketsUseCase(

@@ -10,7 +10,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src"
 
 from domain.task_management.recurring_task import RecurringTask
 from domain.task_management.task import TaskCategory
-from infrastructure.db.models import Base, RecurringTaskModel
+from infrastructure.db.base import Base
+from infrastructure.db.recurring_task_model import RecurringTaskModel
 from infrastructure.task_management.recurring_task_repository import SqlRecurringTaskRepository
 
 # DB接続設定

@@ -1,8 +1,9 @@
 from typing import List
 
-from domain.mobile_vault.gateway import DashboardPublisher, DashboardReader
+from domain.mobile_vault.dashboard_publisher import DashboardPublisher
+from domain.mobile_vault.dashboard_reader import DashboardReader
 from domain.task_management.briefing_formatter import BriefingMarkdownFormatter
-from domain.task_management.repository import BriefingGateway
+from domain.task_management.briefing_gateway import BriefingGateway
 from domain.task_management.task import DailyBriefing
 
 

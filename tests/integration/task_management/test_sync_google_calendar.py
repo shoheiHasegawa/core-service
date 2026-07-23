@@ -5,7 +5,8 @@ from integration.conftest import IntegrationTestContext
 
 from application.daily_planning.plan_day_usecase import PlanDayUseCase
 from domain.interfaces.calendar_gateway import CalendarGateway
-from domain.task_management.repository import BriefingGateway, ScheduleGateway
+from domain.task_management.briefing_gateway import BriefingGateway
+from domain.task_management.schedule_gateway import ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
 

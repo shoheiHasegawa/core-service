@@ -1,8 +1,9 @@
 from datetime import date
 from typing import List
 
-from domain.task_management.repository import TaskRepository, WorklogRepository
 from domain.task_management.task import Worklog
+from domain.task_management.task_repository import TaskRepository
+from domain.task_management.worklog_repository import WorklogRepository
 
 
 class RecordWorklogsUseCase:

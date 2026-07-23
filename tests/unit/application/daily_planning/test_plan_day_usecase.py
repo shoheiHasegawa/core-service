@@ -2,8 +2,10 @@ from datetime import date
 from unittest.mock import MagicMock
 
 from application.daily_planning.plan_day_usecase import PlanDayUseCase
-from domain.task_management.repository import BriefingGateway, ScheduleGateway, TaskRepository
+from domain.task_management.briefing_gateway import BriefingGateway
+from domain.task_management.schedule_gateway import ScheduleGateway
 from domain.task_management.task import Task, TaskCategory, WarningFlag
+from domain.task_management.task_repository import TaskRepository
 
 
 def test_scenario_02_wip_limit_exceeded():

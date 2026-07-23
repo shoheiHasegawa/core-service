@@ -1,48 +1,45 @@
+import datetime
+import os
 import uuid
-from typing import List
 
-from application.second_brain.config import SecondBrainConfig
+from application.second_brain.register_inbox_note_dto import RegisterInboxNoteDto
 from domain.second_brain.repository import SecondBrainGateway
 from domain.second_brain.zettelkasten_formatter import ZettelkastenFormatter
-from domain.task_management.repository import TaskRepository
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
+from domain.task_management.task_repository import TaskRepository
 
 
 class RegisterInboxNoteUseCase:
     def __init__(
-        self, config: SecondBrainConfig, repository: SecondBrainGateway, task_repository: TaskRepository = None
+        self, save_dir: str, template_path: str, repository: SecondBrainGateway, task_repository: TaskRepository = None
     ):
-        self.config = config
+        self.save_dir = save_dir
+        self.template_path = template_path
         self.repository = repository
         self.task_repository = task_repository
 
-    def _save_formatted_note(
-        self, template_path: str, save_dir: str, title: str, content: str, tags: List[str], **kwargs
-    ) -> bool:
-        import datetime
+    def _save_formatted_note(self, title: str, content: str, tags: list[str]) -> bool:
 
-        template_content = self.repository.read(template_path)
+        template_content = self.repository.read(self.template_path)
         formatter = ZettelkastenFormatter(template=template_content)
-        formatted_content = formatter.format(
-            title=title, body=content, current_time=datetime.datetime.now(), tags=tags, **kwargs
-        )
+        formatted_content = formatter.format(title=title, body=content, current_time=datetime.datetime.now(), tags=tags)
         filename = self.repository.generate_safe_filename(title)
-        save_path = f"{save_dir}/{filename}"
+
+        save_path = os.path.join(self.save_dir, filename)
+
         self.repository.save(save_path, formatted_content)
         return True
 
-    def execute(self, title: str, content: str, tags: List[str] = None) -> bool:
+    def execute(self, dto: RegisterInboxNoteDto) -> bool:
         success = self._save_formatted_note(
-            template_path=self.config.inbox_template_path,
-            save_dir=self.config.inbox_dir,
-            title=title,
-            content=content,
-            tags=tags or [],
+            title=dto.title,
+            content=dto.content,
+            tags=dto.tags or [],
         )
         if success and self.task_repository:
             task = Task(
                 id=str(uuid.uuid4()),
-                title=f"Process idea: {title}",
+                title=f"Process idea: {dto.title}",
                 category=TaskCategory.MUST,
                 estimated_minutes=15,
                 task_type=TaskType.ONE_OFF,

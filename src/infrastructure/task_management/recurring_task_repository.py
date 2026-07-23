@@ -5,11 +5,12 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from domain.task_management.recurring_task import RecurringTask
+from domain.task_management.recurring_task_repository import RecurringTaskRepository
 from domain.task_management.task import TaskCategory
-from infrastructure.db.models import RecurringTaskModel
+from infrastructure.db.recurring_task_model import RecurringTaskModel
 
 
-class SqlRecurringTaskRepository:
+class SqlRecurringTaskRepository(RecurringTaskRepository):
     def __init__(self, session: Session):
         self.session = session
 

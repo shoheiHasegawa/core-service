@@ -6,7 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from domain.task_management.task import Worklog
-from infrastructure.db.models import TaskModel, WorklogModel
+from infrastructure.db.task_model import TaskModel
+from infrastructure.db.worklog_model import WorklogModel
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
 
 

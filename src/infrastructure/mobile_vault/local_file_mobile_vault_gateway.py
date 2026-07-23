@@ -1,7 +1,10 @@
+from datetime import datetime, timedelta
 from pathlib import Path
 
-from domain.mobile_vault.gateway import DashboardPublisher, DashboardReader, PacketReceiver
+from domain.mobile_vault.dashboard_publisher import DashboardPublisher
+from domain.mobile_vault.dashboard_reader import DashboardReader
 from domain.mobile_vault.packet import Packet
+from domain.mobile_vault.packet_receiver import PacketReceiver
 
 
 class LocalFileMobileVaultGateway(PacketReceiver, DashboardPublisher, DashboardReader):
@@ -38,7 +41,6 @@ class LocalFileMobileVaultGateway(PacketReceiver, DashboardPublisher, DashboardR
         return str(file_path)
 
     def get_recent_dashboards(self) -> list[str]:
-        from datetime import datetime, timedelta
 
         today = datetime.now().date()
         yesterday = today - timedelta(days=1)

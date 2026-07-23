@@ -36,7 +36,12 @@
 - 過去のアンチパターン（ドメインモデルの貧血）は、「Service層のテストばかりを書き、Domainエンティティのテストを怠ったこと」が根本原因である。
 - **必ずDomain層（エンティティやポリシー）に対する独立したUnitテスト（Inner Loop）を書くこと**。これにより、Implementer AgentがService層に全ての手続き的ロジックを詰め込むことを防ぐ。
 
-## 3. Application層のアーキテクチャ制約 (Feature-Driven Packaging)
+## 3. Unit Test (単体テスト) の制約と配置ルール (Context Engineering)
+- Unitテストは、ドメインモデルの詳細な境界値やエッジケース、パーサーの挙動、そして各UseCaseのロジック分岐を網羅するために記述する（インナーループの検証）。
+- **1 Concept = 1 File の原則**: Unitテストのファイル名は、対象となる実装ファイル名に `test_` をプレフィックスとして付与した名称（例: `test_register_task_usecase.py`）にすること。
+- **配置（ディレクトリの一致）**: Unitテストのディレクトリ構造は、実装コードの `src/` 配下の構造と完全に一致させること。（例: `src/application/task_operations/` のテストは `tests/unit/application/task_operations/` に配置する）。これにより、Context Engineering（変更時のコンテキストノイズの排除と発見容易性）をテストコードにも適用する。
+
+## 4. Application層のアーキテクチャ制約 (Feature-Driven Packaging)
 - `src/application/` 配下は、機能（Feature）ごとにディレクトリを分割すること。
 - 各ディレクトリには、AIエージェントがコンテキストを自己完結できるよう、必ず以下の3点セットを配置すること。
   - `README.md`: 機能の概要とデータフロー図
@@ -44,11 +49,11 @@
   - `*.py`: 実装コード
 - （この制約は `scripts/validate_sdd.py` によって自動検証される）
 
-## 4. スクリプト群 (`scripts/`) のテスト制約
+## 5. スクリプト群 (`scripts/`) のテスト制約
 - `scripts/` に配置された開発補助ツールやLinter等に対しても、品質担保のためにテストを書くこと。
 - その場合のテストコードは、`tests/unit/scripts/` 配下に配置すること。
 
-- **AI Pair Programming Protocol (Outside-in TDD)**:
+## 6. AI Pair Programming Protocol (Outside-in TDD)
   - エージェントがタスクを実行する際、確証バイアスを防ぐため、1体のAIがテストと実装を兼務してはならない。
   - **Testerフェーズ (仕様固定とエスカレーション)**: `Tester Agent` を起動し、Failするテストを作成させる（`src/` への書き込み禁止）。
     - ⚠️ **Outside-in TDDの強制**: Tester Agent は、必ず Outer Loop（`tests/integration/` の結合テスト）から書き始めること。ここで「テストが書けない（In-Outが不明確）」場合は、`spec.md` の仕様が粗い証拠である。**Agentが独断で仕様を決定してはならない。必ずユーザーにエスカレーション（質問・確認）し、意思決定を仰いでから `spec.md` を詳細化すること。**

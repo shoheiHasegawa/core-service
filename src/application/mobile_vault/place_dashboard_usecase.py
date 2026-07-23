@@ -1,4 +1,4 @@
-from domain.mobile_vault.gateway import DashboardPublisher
+from domain.mobile_vault.dashboard_publisher import DashboardPublisher
 
 
 class PlaceDashboardUseCase:

@@ -1,7 +1,7 @@
 from integration.conftest import IntegrationTestContext
 
 from application.mobile_vault.place_dashboard_usecase import PlaceDashboardUseCase
-from domain.mobile_vault.gateway import DashboardPublisher
+from domain.mobile_vault.dashboard_publisher import DashboardPublisher
 
 
 class FakeDashboardPublisher(DashboardPublisher):

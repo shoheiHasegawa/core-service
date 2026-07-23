@@ -3,9 +3,9 @@ from sqlalchemy import text
 
 # Import the NEW classes (these will fail until implemented)
 from application.mobile_vault.retrieve_packets_usecase import RetrievePacketsUseCase
-from domain.mobile_vault.gateway import PacketReceiver
+from domain.mobile_vault.markdown_image_parser import MarkdownImageParser
 from domain.mobile_vault.packet import Packet
-from domain.mobile_vault.parser import MarkdownImageParser
+from domain.mobile_vault.packet_receiver import PacketReceiver
 
 
 class FakePacketReceiver(PacketReceiver):

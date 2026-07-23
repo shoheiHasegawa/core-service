@@ -6,7 +6,7 @@ from freezegun import freeze_time
 from integration.conftest import IntegrationTestContext
 
 from application.daily_planning.sync_worklogs_usecase import SyncWorklogsUseCase
-from domain.task_management.repository import BriefingGateway
+from domain.task_management.briefing_gateway import BriefingGateway
 from domain.task_management.task import DailyBriefing, Task, TaskCategory
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
 

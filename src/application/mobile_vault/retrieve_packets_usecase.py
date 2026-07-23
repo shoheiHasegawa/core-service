@@ -1,10 +1,10 @@
 import uuid
 from typing import Optional
 
-from domain.mobile_vault.gateway import PacketReceiver
-from domain.mobile_vault.parser import MarkdownImageParser
-from domain.task_management.repository import TaskRepository
+from domain.mobile_vault.markdown_image_parser import MarkdownImageParser
+from domain.mobile_vault.packet_receiver import PacketReceiver
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
+from domain.task_management.task_repository import TaskRepository
 
 
 class RetrievePacketsUseCase:

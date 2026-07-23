@@ -2,8 +2,9 @@ from datetime import date
 from unittest.mock import MagicMock
 
 from application.daily_planning.record_worklogs_usecase import RecordWorklogsUseCase
-from domain.task_management.repository import TaskRepository, WorklogRepository
 from domain.task_management.task import Task, TaskCategory, TaskStatus, Worklog
+from domain.task_management.task_repository import TaskRepository
+from domain.task_management.worklog_repository import WorklogRepository
 
 
 def test_record_worklogs():

@@ -1,6 +1,6 @@
 from datetime import date
 
-from domain.task_management.task import Task, TaskCategory, TaskStatus
+from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
 
 
 def test_task_model_extension():
@@ -8,7 +8,6 @@ def test_task_model_extension():
     """
     [TM-PLAN-07-01] TaskType Enum exists, and Task has task_type, area_id, cumulative_minutes with default values.
     """
-    from domain.task_management.task import TaskType
 
     assert hasattr(TaskType, "ONE_OFF")
     assert hasattr(TaskType, "ROUTINE")

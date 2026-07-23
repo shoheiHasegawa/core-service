@@ -1,6 +1,6 @@
 from integration.conftest import IntegrationTestContext
 
-from infrastructure.db.models import TaskModel
+from infrastructure.db.task_model import TaskModel
 
 
 def test_task_management_integration(test_context: IntegrationTestContext):

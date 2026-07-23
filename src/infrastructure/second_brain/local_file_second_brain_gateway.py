@@ -1,5 +1,7 @@
 import glob
 import os
+import re
+from pathlib import Path
 from typing import List
 
 
@@ -8,7 +10,6 @@ class LocalFileSecondBrainGateway:
         self.base_path = base_path
 
     def save(self, file_path: str, content: str) -> None:
-        from pathlib import Path
 
         resolved_base = Path(self.base_path).resolve()
         resolved_full = Path(os.path.join(self.base_path, file_path)).resolve()
@@ -23,7 +24,6 @@ class LocalFileSecondBrainGateway:
             f.write(content)
 
     def read(self, file_path: str) -> str:
-        from pathlib import Path
 
         resolved_base = Path(self.base_path).resolve()
         resolved_full = Path(os.path.join(self.base_path, file_path)).resolve()
@@ -35,7 +35,6 @@ class LocalFileSecondBrainGateway:
             return f.read()
 
     def copy_asset(self, source_file: str, dest_path: str) -> str:
-        from pathlib import Path
 
         resolved_base = Path(self.base_path).resolve()
         resolved_dest = Path(os.path.join(self.base_path, dest_path)).resolve()
@@ -68,7 +67,6 @@ class LocalFileSecondBrainGateway:
         return results
 
     def generate_safe_filename(self, title: str) -> str:
-        import re
 
         safe_title = re.sub(r'[/\\*?"<>|]+', "_", title).strip()
         return f"{safe_title}.md"

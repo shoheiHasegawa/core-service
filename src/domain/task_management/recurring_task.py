@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
@@ -57,7 +57,6 @@ class RecurringTask:
         return cron_dow in allowed_dows or (cron_dow == 0 and 7 in allowed_dows)
 
     def to_task(self, target_date: date) -> "Task":
-        from datetime import datetime
 
         from domain.task_management.task import Task
 

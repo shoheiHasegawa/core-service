@@ -1,36 +1,31 @@
-from typing import List
+import datetime
+import os
 
-from application.second_brain.config import SecondBrainConfig
+from application.second_brain.register_sense_making_note_dto import RegisterSenseMakingNoteDto
 from domain.second_brain.repository import SecondBrainGateway
 from domain.second_brain.zettelkasten_formatter import ZettelkastenFormatter
 
 
 class RegisterSenseMakingNoteUseCase:
-    def __init__(self, config: SecondBrainConfig, repository: SecondBrainGateway):
-        self.config = config
+    def __init__(self, save_dir: str, template_path: str, repository: SecondBrainGateway):
+        self.save_dir = save_dir
+        self.template_path = template_path
         self.repository = repository
 
-    def _save_formatted_note(
-        self, template_path: str, save_dir: str, title: str, content: str, tags: List[str], **kwargs
-    ) -> bool:
-        import datetime
+    def execute(self, dto: RegisterSenseMakingNoteDto) -> bool:
 
-        template_content = self.repository.read(template_path)
+        template_content = self.repository.read(self.template_path)
         formatter = ZettelkastenFormatter(template=template_content)
         formatted_content = formatter.format(
-            title=title, body=content, current_time=datetime.datetime.now(), tags=tags, **kwargs
+            title=dto.title,
+            body=dto.content,
+            current_time=datetime.datetime.now(),
+            tags=dto.tags,
+            source=dto.source,
         )
-        filename = self.repository.generate_safe_filename(title)
-        save_path = f"{save_dir}/{filename}"
+        filename = self.repository.generate_safe_filename(dto.title)
+
+        save_path = os.path.join(self.save_dir, filename)
+
         self.repository.save(save_path, formatted_content)
         return True
-
-    def execute(self, title: str, content: str, source: str = "", tags: List[str] = None) -> bool:
-        return self._save_formatted_note(
-            template_path=self.config.sense_making_template_path,
-            save_dir=self.config.sense_making_dir,
-            title=title,
-            content=content,
-            tags=tags or [],
-            source=source,
-        )

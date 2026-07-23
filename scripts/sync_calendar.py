@@ -1,15 +1,16 @@
-#!/usr/bin/env python3
-"""
-Agent が対話の中から手動で呼び出すカレンダー同期用CLIツール。
-既存のカレンダーイベントをクリアし、DBの最新状態からスケジュールを引き直して再登録する。
-"""
-
 import argparse
 import os
 import sys
 from datetime import date, datetime
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+
+from application.task_management.daily_action_service import DailyActionService  # noqa: E402
+from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+
+from infrastructure.calendar.google_calendar_gateway import GoogleCalendarGateway  # noqa: E402
+from infrastructure.task_management.task_repository import SqlTaskRepository  # noqa: E402
 
 
 def main():
@@ -24,13 +25,6 @@ def main():
     print(f"Synchronizing calendar for {target_date}...")
 
     try:
-        from sqlalchemy import create_engine
-        from sqlalchemy.orm import sessionmaker
-
-        from application.task_management.daily_action_service import DailyActionService
-        from infrastructure.calendar.google_calendar_gateway import GoogleCalendarGateway
-        from infrastructure.task_management.task_repository import SqlTaskRepository
-
         db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "you_inc_ops.db"))
         engine = create_engine(f"sqlite:///{db_path}")
         SessionLocal = sessionmaker(bind=engine)

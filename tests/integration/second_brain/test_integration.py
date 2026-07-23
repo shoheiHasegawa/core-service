@@ -1,5 +1,13 @@
+import os
+import tempfile
+
 from integration.conftest import IntegrationTestContext
 from sqlalchemy import text
+
+from application.second_brain.config import SecondBrainConfig
+from application.second_brain.register_inbox_note_dto import RegisterInboxNoteDto
+from application.second_brain.register_inbox_note_usecase import RegisterInboxNoteUseCase
+from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
 
 
 def test_second_brain_integration(test_context: IntegrationTestContext):
@@ -13,12 +21,6 @@ def test_second_brain_integration(test_context: IntegrationTestContext):
     """
     # [SB-INBOX-01] などのシナリオに基づくセットアップ
     # 実際の実装に合わせてServiceを呼び出し、DBへの副作用を引き起こす
-    import os
-    import tempfile
-
-    from application.second_brain.config import SecondBrainConfig
-    from application.second_brain.register_inbox_note_usecase import RegisterInboxNoteUseCase
-    from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
 
     base_dir = tempfile.mkdtemp()
     sb_dir = os.path.join(base_dir, "sb")
@@ -37,8 +39,14 @@ def test_second_brain_integration(test_context: IntegrationTestContext):
         f.write("{title}\n{body}")
 
     repository = LocalFileSecondBrainGateway(base_path=sb_dir)
-    usecase = RegisterInboxNoteUseCase(config=config, repository=repository, task_repository=test_context.task_repo)
-    usecase.execute("Integration Idea", "Content of the idea")
+    usecase = RegisterInboxNoteUseCase(
+        save_dir=config.inbox_dir,
+        template_path=config.inbox_template_path,
+        repository=repository,
+        task_repository=test_context.task_repo,
+    )
+    dto = RegisterInboxNoteDto(title="Integration Idea", content="Content of the idea")
+    usecase.execute(dto)
 
     # DBを直接クエリしての副作用確認 (Semantic Reward Hacking回避のため具体的なアサーション)
     # SecondBrainでの処理結果が何らかの形でDBに反映される（例：処理タスク化など）ことを想定

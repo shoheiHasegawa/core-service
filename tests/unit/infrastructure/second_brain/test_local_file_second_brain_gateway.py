@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
 
 
@@ -54,7 +56,6 @@ def test_search_existing_notes(tmp_path):
 
 def test_save_path_traversal(tmp_path):
     """[SB-SEARCH-01] Path traversal attempt in save should raise ValueError"""
-    import pytest
 
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))
     with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
@@ -64,7 +65,6 @@ def test_save_path_traversal(tmp_path):
 
 def test_save_file_exists(tmp_path):
     """[SB-AUDIT-01] Saving to an existing file should raise FileExistsError"""
-    import pytest
 
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))
     file_path = "test.md"
@@ -76,7 +76,6 @@ def test_save_file_exists(tmp_path):
 
 def test_read_path_traversal(tmp_path):
     """[SB-NOTE-04] Path traversal attempt in read should raise ValueError"""
-    import pytest
 
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))
     with pytest.raises(ValueError, match="Path traversal detected") as exc_info:
@@ -86,7 +85,6 @@ def test_read_path_traversal(tmp_path):
 
 def test_copy_asset_path_traversal(tmp_path):
     """[SB-NOTE-05] Path traversal attempt in copy_asset should raise ValueError"""
-    import pytest
 
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))
     source_file = tmp_path / "source.png"
@@ -98,7 +96,6 @@ def test_copy_asset_path_traversal(tmp_path):
 
 def test_copy_asset_file_exists(tmp_path):
     """[SB-NOTE-06] Copying to an existing file should raise FileExistsError"""
-    import pytest
 
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))
     source_file = tmp_path / "source.png"

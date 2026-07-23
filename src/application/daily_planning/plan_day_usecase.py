@@ -4,6 +4,7 @@ from typing import Optional
 import holidays
 
 from domain.interfaces.calendar_gateway import CalendarGateway
+from domain.task_management.briefing_gateway import BriefingGateway
 from domain.task_management.planning_rules import (
     ContextBatchingPolicy,
     DependencyPolicy,
@@ -14,8 +15,9 @@ from domain.task_management.planning_rules import (
     SchedulingValidator,
     WIPAllocationPolicy,
 )
-from domain.task_management.repository import BriefingGateway, ScheduleGateway, TaskRepository
+from domain.task_management.schedule_gateway import ScheduleGateway
 from domain.task_management.task import DailyBriefing
+from domain.task_management.task_repository import TaskRepository
 
 
 class PlanDayUseCase:
