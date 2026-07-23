@@ -19,6 +19,7 @@ def test_fetch_fixed_events_uses_build(mock_build, mock_creds):
 
     mock_build.assert_called_once()
     mock_build.return_value.events.assert_called()
+    assert mock_build.called
 
 
 @patch("google.oauth2.service_account.Credentials.from_service_account_file", autospec=True)
@@ -35,6 +36,7 @@ def test_fetch_all_day_events_uses_build(mock_build, mock_creds):
 
     mock_build.assert_called_once()
     mock_build.return_value.events.assert_called()
+    assert mock_build.called
 
 
 @patch("google.oauth2.service_account.Credentials.from_service_account_file", autospec=True)
@@ -51,3 +53,4 @@ def test_sync_daily_briefing_uses_build(mock_build, mock_creds):
 
     mock_build.assert_called_once()
     mock_build.return_value.events.assert_called()
+    assert mock_build.called
