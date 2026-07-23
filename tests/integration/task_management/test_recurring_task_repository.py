@@ -102,7 +102,7 @@ def test_find_active_by_date(test_context):
 
 
 def test_save_and_restore_recurring_task_with_day_context(test_context):
-    """[TM-PLAN-04] [TASK-EPIC05-PHASE1] RecurringTaskのday_contextを保存し、正しく復元できること"""
+    """[TM-PLAN-04] RecurringTaskのday_contextを保存し、正しく復元できること"""
     repo = SqlRecurringTaskRepository(test_context.session)
 
     task = RecurringTask(

@@ -7,7 +7,7 @@ from .task import Task, TaskCategory, WarningFlag
 class RecoveryFirstPolicy:
     @staticmethod
     def apply(tasks: List[Task], target_date: date) -> List[Task]:
-        """[TASK-EPIC03-04] リカバリー・ファースト: 睡眠と1時間以上のWANTを最優先"""
+        """[TM-PLAN-01] リカバリー・ファースト: 睡眠と1時間以上のWANTを最優先"""
         sleep_task = Task(
             id="sleep",
             title="Sleep",
@@ -26,7 +26,7 @@ class WIPAllocationPolicy:
 
     @staticmethod
     def apply(ready_tasks: List[Task]) -> List[Task]:
-        """[TASK-02] WIP制限: 1日のMUSTタスクは最大3つまで"""
+        """[TM-PLAN-02] WIP制限: 1日のMUSTタスクは最大3つまで"""
         must_tasks = [t for t in ready_tasks if t.category == TaskCategory.MUST][: WIPAllocationPolicy.MAX_MUST_WIP]
         other_tasks = [t for t in ready_tasks if t.category != TaskCategory.MUST]
         return must_tasks + other_tasks
@@ -35,7 +35,7 @@ class WIPAllocationPolicy:
 class ContextBatchingPolicy:
     @staticmethod
     def apply(tasks: List[Task]) -> List[Task]:
-        """[TASK-05] コンテキストバッチング: 深い⇔浅い作業の往復を最小化するためにソート"""
+        """[TM-PLAN-05] コンテキストバッチング: 深い⇔浅い作業の往復を最小化するためにソート"""
         # 深い作業と浅い作業を分けることで往復を1回に抑える
         return sorted(tasks, key=lambda t: not getattr(t, "is_deep_work", False))
 
@@ -66,7 +66,7 @@ class DeadlineValidator:
 class SchedulingValidator:
     @staticmethod
     def validate(tasks: List[Task]) -> List[WarningFlag]:
-        """[TASK-03] Wタスク不足警告などの検証 [TASK-04] LFD超過警告"""
+        """[TM-PLAN-03] Wタスク不足警告などの検証 [TM-PLAN-04] LFD超過警告"""
         validators: List[TaskCollectionValidator] = [WRatioValidator(), DeadlineValidator()]
         flags = []
         for validator in validators:
@@ -77,7 +77,7 @@ class SchedulingValidator:
 class DependencyPolicy:
     @staticmethod
     def filter_ready(tasks: List[Task], completed_task_ids: List[str]) -> List[Task]:
-        """[TASK-06] 未Readyタスクの自動不可視化"""
+        """[TM-PLAN-06] 未Readyタスクの自動不可視化"""
         ready_tasks = []
         completed_set = set(completed_task_ids)
         for t in tasks:
@@ -91,7 +91,7 @@ class StrategicInvestmentPolicy:
 
     @staticmethod
     def allocate(available_minutes: int, s_tasks: List[Task]) -> List[Task]:
-        """[TASK-07] 戦略的投資枠の強制ブロック"""
+        """[TM-PLAN-07] 戦略的投資枠の強制ブロック"""
         target_minutes = available_minutes * StrategicInvestmentPolicy.STRATEGIC_INVESTMENT_RATIO
         allocated = []
         allocated_minutes = 0
@@ -108,7 +108,7 @@ class OrphanTaskPolicy:
 
     @staticmethod
     def filter(tasks: List[Task]) -> List[Task]:
-        """[TASK-08] 孤立タスクの排除"""
+        """[TM-PLAN-08] 孤立タスクの排除"""
         return [t for t in tasks if t.area_id is not None and t.area_id != OrphanTaskPolicy.UNKNOWN_AREA_ID]
 
 
@@ -119,7 +119,7 @@ class ScheduleBuilder:
 
     @staticmethod
     def build(start_time: datetime, tasks: List[Task]) -> List[Dict[str, Any]]:
-        """[TASK-09] ディープワーク連続稼働リミット到達"""
+        """[TM-PLAN-09] ディープワーク連続稼働リミット到達"""
         schedule = []
         current_time = start_time
 
@@ -155,7 +155,7 @@ class ScheduleBuilder:
 
     @staticmethod
     def build_with_end(start_time: datetime, end_time: datetime, tasks: List[Task]) -> List[Dict[str, Any]]:
-        """[TASK-11] シャットダウン・リチュアルの固定配置"""
+        """[TM-PLAN-11] シャットダウン・リチュアルの固定配置"""
         schedule = ScheduleBuilder.build(start_time, tasks)
 
         shutdown_start = end_time - timedelta(minutes=ScheduleBuilder.SHUTDOWN_RITUAL_MINUTES)
@@ -218,7 +218,7 @@ class CircadianRhythmPolicy:
 
     @staticmethod
     def validate(schedule: List[Dict[str, Any]]) -> bool:
-        """[TASK-10] サーカディアン・ディップの自動処理"""
+        """[TM-PLAN-10] サーカディアン・ディップの自動処理"""
         for item in schedule:
             start_time = item["start"]
             end_time = item["end"]
@@ -238,7 +238,7 @@ class MorningDeepWorkPolicy:
 
     @staticmethod
     def validate(schedule: List[Dict[str, Any]]) -> bool:
-        """[TASK-12] 午前中の浅い作業ブロックエラー"""
+        """[TM-PLAN-12] 午前中の浅い作業ブロックエラー"""
         for item in schedule:
             start_time = item["start"]
             task = item["task"]
@@ -250,7 +250,7 @@ class MorningDeepWorkPolicy:
 
     @staticmethod
     def prioritize(tasks: List[Task]) -> List[Task]:
-        """[TASK-EPIC03-04] energy_level='HIGH' のタスクを優先"""
+        """[TM-PLAN-01] energy_level='HIGH' のタスクを優先"""
         high_energy = [t for t in tasks if getattr(t, "energy_level", "") == "HIGH"]
         others = [t for t in tasks if getattr(t, "energy_level", "") != "HIGH"]
         return high_energy + others

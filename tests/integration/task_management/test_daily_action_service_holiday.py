@@ -41,7 +41,6 @@ class FakeCalendarGateway(CalendarGateway):
 
 def test_daily_action_service_holiday_context(test_context: IntegrationTestContext):
     """[TM-PLAN-04] PlanDayUseCase.execute の祝日・有給判定と day_context の検証
-    Requirement: [TASK-EPIC05-PHASE3]
     """
     task_repo = test_context.task_repo
     schedule_gateway = FakeScheduleGateway()
