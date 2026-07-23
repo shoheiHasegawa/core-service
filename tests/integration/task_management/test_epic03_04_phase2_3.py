@@ -3,10 +3,9 @@ from typing import List
 
 from integration.conftest import IntegrationTestContext
 
-from application.task_management.daily_action_service import DailyActionService
+from application.daily_planning.plan_day_usecase import PlanDayUseCase
 from domain.task_management.repository import BriefingGateway, ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
-from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
 
 
 class FakeScheduleGateway(ScheduleGateway):
@@ -24,7 +23,7 @@ class FakeBriefingGateway(BriefingGateway):
 
 def test_daily_action_service_plan_day_constraints(test_context: IntegrationTestContext):
     """[TM-PLAN-03]
-    DailyActionService.plan_day の結合検証:
+    PlanDayUseCase.execute の結合検証:
     1. リカバリー・ファースト制約（睡眠・Wantの確保）
     2. 15分バッファ制約
     3. Morning Deep Work 制約
@@ -34,11 +33,8 @@ def test_daily_action_service_plan_day_constraints(test_context: IntegrationTest
     task_repo = test_context.task_repo
     schedule_gateway = FakeScheduleGateway()
     briefing_repo = FakeBriefingGateway()
-    worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
 
-    service = DailyActionService(
-        task_repo=task_repo, schedule_gateway=schedule_gateway, briefing_repo=briefing_repo, worklog_repo=worklog_repo
-    )
+    service = PlanDayUseCase(task_repo=task_repo, schedule_gateway=schedule_gateway, briefing_repo=briefing_repo)
 
     target_date = datetime.date(2026, 7, 20)
 
@@ -105,7 +101,7 @@ def test_daily_action_service_plan_day_constraints(test_context: IntegrationTest
     task_repo.save_tasks(tasks)
 
     # 実行: スケジュール作成
-    briefing = service.plan_day(target_date)
+    briefing = service.execute(target_date)
 
     # 検証 (Assert)
 

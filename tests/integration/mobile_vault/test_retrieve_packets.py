@@ -2,7 +2,7 @@ from integration.conftest import IntegrationTestContext
 from sqlalchemy import text
 
 # Import the NEW classes (these will fail until implemented)
-from application.mobile_vault.usecases.retrieve_packets_usecase import RetrievePacketsUseCase
+from application.mobile_vault.retrieve_packets_usecase import RetrievePacketsUseCase
 from domain.mobile_vault.gateway import PacketReceiver
 from domain.mobile_vault.packet import Packet
 from domain.mobile_vault.parser import MarkdownImageParser

@@ -4,8 +4,8 @@ from infrastructure.second_brain.local_file_second_brain_gateway import LocalFil
 
 
 def test_save_and_read_note(tmp_path):
-    """[SB-NOTE-01]"""
-    """[SB-NOTE-01] Auto-generated spec"""
+    """[SB-INBOX-01]"""
+    """[SB-INBOX-01] Auto-generated spec"""
     # Arrange
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))
     note_content = "Test Note Content"
@@ -20,8 +20,8 @@ def test_save_and_read_note(tmp_path):
 
 
 def test_copy_asset(tmp_path):
-    """[SB-NOTE-01]"""
-    """[SB-NOTE-01] Auto-generated spec"""
+    """[SB-INBOX-01]"""
+    """[SB-INBOX-01] Auto-generated spec"""
     # Arrange
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))
     source_file = tmp_path / "source.png"
@@ -37,8 +37,8 @@ def test_copy_asset(tmp_path):
 
 
 def test_search_existing_notes(tmp_path):
-    """[SB-NOTE-01]"""
-    """[SB-NOTE-01] Auto-generated spec"""
+    """[SB-INBOX-01]"""
+    """[SB-INBOX-01] Auto-generated spec"""
     # Arrange
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))
     (tmp_path / "note1.md").write_text("Hello World")
@@ -53,7 +53,7 @@ def test_search_existing_notes(tmp_path):
 
 
 def test_save_path_traversal(tmp_path):
-    """[SB-NOTE-02] Path traversal attempt in save should raise ValueError"""
+    """[SB-SEARCH-01] Path traversal attempt in save should raise ValueError"""
     import pytest
 
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))
@@ -63,7 +63,7 @@ def test_save_path_traversal(tmp_path):
 
 
 def test_save_file_exists(tmp_path):
-    """[SB-NOTE-03] Saving to an existing file should raise FileExistsError"""
+    """[SB-AUDIT-01] Saving to an existing file should raise FileExistsError"""
     import pytest
 
     repo = LocalFileSecondBrainGateway(base_path=str(tmp_path))

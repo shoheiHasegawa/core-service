@@ -2,8 +2,8 @@ from domain.second_brain.zettelkasten_validator import ZettelkastenValidator
 
 
 def test_validate_missing_id():
-    """[SB-NOTE-01]"""
-    """[SB-NOTE-01] Auto-generated spec"""
+    """[SB-INBOX-01]"""
+    """[SB-INBOX-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator()
     content = "---\ntags: [test]\n---\n# Content"
@@ -17,8 +17,8 @@ def test_validate_missing_id():
 
 
 def test_validate_missing_tags():
-    """[SB-NOTE-01]"""
-    """[SB-NOTE-01] Auto-generated spec"""
+    """[SB-INBOX-01]"""
+    """[SB-INBOX-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator()
     content = "---\nid: 1234567890\n---\n# Content"
@@ -32,8 +32,8 @@ def test_validate_missing_tags():
 
 
 def test_validate_forbidden_links():
-    """[SB-NOTE-01]"""
-    """[SB-NOTE-01] Auto-generated spec"""
+    """[SB-INBOX-01]"""
+    """[SB-INBOX-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator(forbidden_dirs=["/draft", "/temp"])
     content = "---\nid: 123\ntags: [test]\n---\nLink to [/draft/note.md](/draft/note.md)"
@@ -47,8 +47,8 @@ def test_validate_forbidden_links():
 
 
 def test_validate_tag_format_invalid():
-    """[SB-NOTE-01]"""
-    """[SB-NOTE-01] Auto-generated spec"""
+    """[SB-INBOX-01]"""
+    """[SB-INBOX-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator()
     # "テスト" is Japanese, "domain" lacks hierarchy, "Concept/Test" has uppercase
@@ -66,8 +66,8 @@ def test_validate_tag_format_invalid():
 
 
 def test_validate_tag_format_valid():
-    """[SB-NOTE-01]"""
-    """[SB-NOTE-01] Auto-generated spec"""
+    """[SB-INBOX-01]"""
+    """[SB-INBOX-01] Auto-generated spec"""
     # Arrange
     validator = ZettelkastenValidator()
     content = "---\nid: 123\ntags: [domain/machine_learning, concept/ai_orchestration]\n---\n# Content"

@@ -19,7 +19,7 @@ def test_task_management_integration(test_context: IntegrationTestContext):
     [TM-PLAN-12] 異常系: 午前中の浅い作業ブロックエラー
     """
     # 各シナリオ（[TM-PLAN-01]等）に基づく正しいセットアップ
-    service = test_context.task_management_service
+    service = test_context.task_operations_service
     task = service.register_task(
         title="Integration Test Planning Task", description="Testing day planning flow", estimated_minutes=90
     )

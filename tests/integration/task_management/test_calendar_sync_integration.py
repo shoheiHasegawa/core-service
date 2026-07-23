@@ -3,7 +3,7 @@ from typing import List
 
 from integration.conftest import IntegrationTestContext
 
-from application.task_management.daily_action_service import DailyActionService
+from application.daily_planning.plan_day_usecase import PlanDayUseCase
 from domain.interfaces.calendar_gateway import CalendarGateway
 from domain.task_management.repository import BriefingGateway, ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
@@ -43,19 +43,18 @@ def test_calendar_sync_integration_flow(test_context: IntegrationTestContext):
     """
     [TM-SYNC-01]
     SQLite(In-Memory) の TaskRepository と FakeCalendarGateway を結合し、
-    DailyActionService が正常にスケジュールを計算し、カレンダー同期までの一連のフローを完了できるかを検証する。
+    PlanDayUseCase が正常にスケジュールを計算し、カレンダー同期までの一連のフローを完了できるかを検証する。
     """
     task_repo = test_context.task_repo
     calendar_gateway = FakeCalendarGateway()
     schedule_gateway = FakeScheduleGateway()
     briefing_gateway = FakeBriefingGateway()
-    worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
+    SQLAlchemyWorklogRepository(test_context.session)
 
-    service = DailyActionService(
+    service = PlanDayUseCase(
         task_repo=task_repo,
         schedule_gateway=schedule_gateway,
         briefing_repo=briefing_gateway,
-        worklog_repo=worklog_repo,
         calendar_repo=calendar_gateway,
     )
 
@@ -75,7 +74,7 @@ def test_calendar_sync_integration_flow(test_context: IntegrationTestContext):
     task_repo.save_tasks(tasks)
 
     # 実行 (Act)
-    briefing = service.plan_day(target_date=target_date, sync_to_calendar=True)
+    briefing = service.execute(target_date=target_date, sync_to_calendar=True)
 
     # 検証 (Assert)
     # スケジュールが計算されたこと

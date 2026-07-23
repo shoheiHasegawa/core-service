@@ -37,7 +37,7 @@
 *   **Domain Separation (Port)**:
     *   `src/domain/mobile_vault/gateway.py` に `PacketReceiver` および `DashboardPublisher` を定義する。ファイルI/Oの概念（filename, read_text）を極力排除する。
 *   **Application (Use Cases)**:
-    *   `src/application/mobile_vault/usecases/` 配下に `retrieve_packets_usecase.py` と `place_dashboard_usecase.py` を独立して実装し、SRPを満たす。
+    *   `src/application/mobile_vault/` 配下に `retrieve_packets_usecase.py` と `place_dashboard_usecase.py` を独立して実装し、SRPを満たす。
 *   **Infrastructure (Adapter)**:
     *   `src/infrastructure/mobile_vault/local_file_mobile_vault_gateway.py` は、Domain層のインターフェースを実装する。
     *   `src/infrastructure/task_management/briefing_gateway.py` は `DashboardPublisher` を利用してブリーフィングを書き出す。

@@ -5,11 +5,11 @@ from domain.task_management.repository import TaskRepository
 from domain.task_management.task import Task, TaskCategory, TaskType
 
 
-class TaskManagementService:
-    def __init__(self, task_repo: Optional[TaskRepository] = None):
-        self.task_repo = task_repo
+class RegisterTaskUseCase:
+    def __init__(self, task_repository: Optional[TaskRepository] = None):
+        self.task_repository = task_repository
 
-    def register_task(
+    def execute(
         self,
         title: str,
         description: str,
@@ -26,19 +26,6 @@ class TaskManagementService:
             reference_id=reference_id,
             task_type=task_type if task_type is not None else TaskType.ONE_OFF,
         )
-        if self.task_repo:
-            self.task_repo.save_tasks([task])
-        return task
-
-    def refine_task(self, task_id: str) -> Optional[Task]:
-        if not self.task_repo:
-            return None
-
-        tasks = self.task_repo.get_tasks_by_ids([task_id])
-        if not tasks:
-            return None
-
-        task = tasks[0]
-        self.task_repo.save_tasks([task])
-
+        if self.task_repository:
+            self.task_repository.save_tasks([task])
         return task

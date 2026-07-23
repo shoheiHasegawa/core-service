@@ -1,9 +1,7 @@
 from datetime import date
 from typing import List
 
-from application.task_management.daily_action_service import DailyActionService
-
-# 以下のimportは現在は存在しないためImportErrorになります（Red状態）
+from application.daily_planning.plan_day_usecase import PlanDayUseCase
 from domain.interfaces.calendar_gateway import CalendarGateway
 from domain.task_management.task import Task, TaskCategory
 
@@ -41,25 +39,20 @@ class FakeBriefingGateway:
         pass
 
 
-class FakeWorklogRepository:
-    pass
-
-
-def test_daily_action_service_sync_to_calendar():
+def test_plan_day_usecase_sync_to_calendar():
     """[TM-SYNC-01] plan_day実行時に同期フラグがTrueなら、計算されたスケジュールがcalendar_gatewayに同期されること"""
     task_repo = FakeTaskRepository()
     fake_calendar_gateway = FakeCalendarGateway()
 
-    service = DailyActionService(
+    usecase = PlanDayUseCase(
         task_repo=task_repo,
         schedule_gateway=FakeScheduleGateway(),
         briefing_repo=FakeBriefingGateway(),
-        worklog_repo=FakeWorklogRepository(),
         calendar_repo=fake_calendar_gateway,
     )
 
     # 同期フラグを立てて実行
-    briefing = service.plan_day(date.today(), sync_to_calendar=True)
+    briefing = usecase.execute(date.today(), sync_to_calendar=True)
 
     # 同期メソッドが呼ばれたことをアサート
     assert fake_calendar_gateway.sync_daily_briefing_called == 1

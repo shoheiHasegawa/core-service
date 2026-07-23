@@ -3,7 +3,7 @@ from typing import List
 
 from integration.conftest import IntegrationTestContext
 
-from application.task_management.daily_action_service import DailyActionService
+from application.daily_planning.plan_day_usecase import PlanDayUseCase
 from domain.interfaces.calendar_gateway import CalendarGateway
 from domain.task_management.recurring_task import RecurringTask
 from domain.task_management.repository import BriefingGateway, ScheduleGateway
@@ -40,23 +40,22 @@ class FakeCalendarGateway(CalendarGateway):
 
 
 def test_daily_action_service_holiday_context(test_context: IntegrationTestContext):
-    """[TM-PLAN-04] DailyActionService.plan_day の祝日・有給判定と day_context の検証
+    """[TM-PLAN-04] PlanDayUseCase.execute の祝日・有給判定と day_context の検証
     Requirement: [TASK-EPIC05-PHASE3]
     """
     task_repo = test_context.task_repo
     schedule_gateway = FakeScheduleGateway()
     briefing_gateway = FakeBriefingGateway()
-    worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
+    SQLAlchemyWorklogRepository(test_context.session)
     recurring_task_repo = SqlRecurringTaskRepository(test_context.session)
 
     # 2026-07-21 (火) に有給イベントを設定
     calendar_gateway = FakeCalendarGateway(events_map={datetime.date(2026, 7, 21): ["有給休暇", "ゴミの日"]})
 
-    service = DailyActionService(
+    service = PlanDayUseCase(
         task_repo=task_repo,
         schedule_gateway=schedule_gateway,
         briefing_repo=briefing_gateway,
-        worklog_repo=worklog_repo,
         calendar_repo=calendar_gateway,
         recurring_task_repo=recurring_task_repo,
     )
@@ -96,21 +95,21 @@ def test_daily_action_service_holiday_context(test_context: IntegrationTestConte
 
     # --- 1. 祝日の判定: 2026-01-01 (木) ---
     date_holiday = datetime.date(2026, 1, 1)
-    briefing_1 = service.plan_day(date_holiday)
+    briefing_1 = service.execute(date_holiday)
     scheduled_task_names_1 = [t.title for t in briefing_1.scheduled_tasks]
     assert "Workday Task" not in scheduled_task_names_1, "祝日なのでWORKDAYタスクはスケジュールされない"
     assert "Any Task" in scheduled_task_names_1, "ANYタスクは常にスケジュールされる"
 
     # --- 2. 有給休暇の判定: 2026-07-21 (火) ---
     date_pto = datetime.date(2026, 7, 21)
-    briefing_2 = service.plan_day(date_pto)
+    briefing_2 = service.execute(date_pto)
     scheduled_task_names_2 = [t.title for t in briefing_2.scheduled_tasks]
     assert "Workday Task" not in scheduled_task_names_2, "有休なのでWORKDAYタスクはスケジュールされない"
     assert "Any Task" in scheduled_task_names_2, "ANYタスクは常にスケジュールされる"
 
     # --- 3. 通常の平日: 2026-07-22 (水) ---
     date_workday = datetime.date(2026, 7, 22)
-    briefing_3 = service.plan_day(date_workday)
+    briefing_3 = service.execute(date_workday)
     scheduled_task_names_3 = [t.title for t in briefing_3.scheduled_tasks]
     assert "Workday Task" in scheduled_task_names_3, "平日なのでWORKDAYタスクはスケジュールされる"
     assert "Any Task" in scheduled_task_names_3, "ANYタスクは常にスケジュールされる"

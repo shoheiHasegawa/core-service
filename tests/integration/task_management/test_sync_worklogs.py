@@ -5,7 +5,7 @@ from datetime import date
 from freezegun import freeze_time
 from integration.conftest import IntegrationTestContext
 
-from application.task_management.sync_worklogs_service import SyncWorklogsService
+from application.daily_planning.sync_worklogs_usecase import SyncWorklogsUseCase
 from domain.task_management.repository import BriefingGateway
 from domain.task_management.task import DailyBriefing, Task, TaskCategory
 from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
@@ -41,14 +41,14 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
     test_context.session.commit()
 
     # サービス初期化
-    service = SyncWorklogsService(
+    service = SyncWorklogsUseCase(
         briefing_gateway=fake_gateway,
         task_repository=task_repo,
         worklog_repository=worklog_repo,
     )
 
     # 実行
-    service.sync()
+    service.execute()
     test_context.session.commit()
 
     # 検証：WorklogがDBに保存されているか

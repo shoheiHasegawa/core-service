@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from typing import List
+from typing import Optional
 
 import holidays
 
@@ -14,24 +14,26 @@ from domain.task_management.planning_rules import (
     SchedulingValidator,
     WIPAllocationPolicy,
 )
-from domain.task_management.repository import BriefingGateway, ScheduleGateway, TaskRepository, WorklogRepository
-from domain.task_management.task import DailyBriefing, Worklog
+from domain.task_management.repository import BriefingGateway, ScheduleGateway, TaskRepository
+from domain.task_management.task import DailyBriefing
 
 
-class DailyActionService:
+class PlanDayUseCase:
+    """
+    1日の計画（Daily Briefing）を生成し、カレンダーやブリーフィングファイルへ出力するユースケース。
+    """
+
     def __init__(
         self,
         task_repo: TaskRepository,
         schedule_gateway: ScheduleGateway,
         briefing_repo: BriefingGateway,
-        worklog_repo: WorklogRepository,
-        calendar_repo: CalendarGateway = None,
+        calendar_repo: Optional[CalendarGateway] = None,
         recurring_task_repo=None,
     ) -> None:
         self.task_repo = task_repo
         self.schedule_gateway = schedule_gateway
         self.briefing_repo = briefing_repo
-        self.worklog_repo = worklog_repo
         self.calendar_repo = calendar_repo
         self.recurring_task_repo = recurring_task_repo
 
@@ -39,12 +41,11 @@ class DailyActionService:
         if target_date in holidays.JP():
             return True
         if self.calendar_repo:
-            # 終日予定はカレンダー上のブロック（壁）ではなく、コンテキスト（Holiday等）を切り替えるメタデータ・フラグとして扱う。
             all_day_events = self.calendar_repo.fetch_all_day_events(target_date)
             return any(keyword in event for event in all_day_events for keyword in ["有休", "有給", "休暇"])
         return False
 
-    def plan_day(self, target_date: date, sync_to_calendar: bool = False) -> DailyBriefing:
+    def execute(self, target_date: date, sync_to_calendar: bool = False) -> DailyBriefing:
         is_holiday = self._is_holiday(target_date)
 
         ready_tasks = self.task_repo.get_ready_tasks_for_date(target_date)
@@ -97,31 +98,3 @@ class DailyActionService:
             self.calendar_repo.sync_daily_briefing(target_date, scheduled_tasks)
 
         return briefing
-
-    def record_worklogs(self, target_date: date, worklogs: List[Worklog]) -> None:
-        if not worklogs:
-            return
-
-        task_ids = [w.task_id for w in worklogs]
-        tasks = self.task_repo.get_tasks_by_ids(task_ids)
-        task_map = {t.id: t for t in tasks}
-
-        updated_tasks = []
-        for w in worklogs:
-            if w.task_id in task_map:
-                task = task_map[w.task_id]
-
-                # 指定日付の既存 Worklog を取得
-                existing_worklogs = self.worklog_repo.find_by_task_and_date(w.task_id, target_date)
-                existing_minutes = sum([ew.minutes for ew in existing_worklogs])
-
-                # 差分（Delta）だけを加算
-                delta = w.minutes - existing_minutes
-                task.record_work(delta, w.is_completed, w.memo)
-
-                w.target_date = target_date
-                self.worklog_repo.save(w)
-                updated_tasks.append(task)
-
-        if updated_tasks:
-            self.task_repo.save_tasks(updated_tasks)

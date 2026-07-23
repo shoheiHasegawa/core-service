@@ -6,7 +6,12 @@ from domain.task_management.repository import BriefingGateway, TaskRepository, W
 from domain.task_management.task import Worklog
 
 
-class SyncWorklogsService:
+class SyncWorklogsUseCase:
+    """
+    ダッシュボードファイルの内容から完了タスクをパースし、
+    ワークログを生成・同期するユースケース。
+    """
+
     def __init__(
         self,
         briefing_gateway: BriefingGateway,
@@ -18,7 +23,7 @@ class SyncWorklogsService:
         self.worklog_repository = worklog_repository
         self.parser = BriefingMarkdownParser()
 
-    def sync(self) -> None:
+    def execute(self) -> None:
         today = datetime.now().date()
         contents = self.briefing_gateway.get_recent_briefing_contents()
 

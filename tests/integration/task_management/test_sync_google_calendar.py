@@ -3,7 +3,7 @@ from typing import List
 
 from integration.conftest import IntegrationTestContext
 
-from application.task_management.daily_action_service import DailyActionService
+from application.daily_planning.plan_day_usecase import PlanDayUseCase
 from domain.interfaces.calendar_gateway import CalendarGateway
 from domain.task_management.repository import BriefingGateway, ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
@@ -48,18 +48,17 @@ def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestCon
     [TM-SYNC-03] 正常系: DailyBriefingのMarkdown連携 (Mobile Vault同期)
     """
     task_repo = test_context.task_repo
-    worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
+    SQLAlchemyWorklogRepository(test_context.session)
     schedule_gateway = FakeScheduleGateway()
     briefing_gateway = FakeBriefingGateway()
 
     # [TM-PLAN-06] 終日イベントをメタデータとして扱う ("有給"等をフラグとして注入)
     calendar_gateway = FakeCalendarGateway(all_day_events=["有給"])
 
-    service = DailyActionService(
+    service = PlanDayUseCase(
         task_repo=task_repo,
         schedule_gateway=schedule_gateway,
         briefing_repo=briefing_gateway,
-        worklog_repo=worklog_repo,
         calendar_repo=calendar_gateway,
     )
 
@@ -76,7 +75,7 @@ def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestCon
     task_repo.save_tasks(tasks)
 
     # [TM-SYNC-01] 同期フラグTrueで実行
-    briefing = service.plan_day(target_date=target_date, sync_to_calendar=True)
+    briefing = service.execute(target_date=target_date, sync_to_calendar=True)
 
     # Assert (ここでRedになるか検証)
     assert calendar_gateway.synced_tasks is not None, "カレンダーへの同期が呼び出されること"

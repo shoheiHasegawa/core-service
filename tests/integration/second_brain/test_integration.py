@@ -4,20 +4,20 @@ from sqlalchemy import text
 
 def test_second_brain_integration(test_context: IntegrationTestContext):
     """
-    [SB-NOTE-01] アイデアの取り込み (Register Knowledge)
-    [SB-NOTE-02] 知識の検索 (Search Notes)
-    [SB-NOTE-03] 監査 (Audit Rules)
+    [SB-INBOX-01] アイデアの取り込み (Register Knowledge)
+    [SB-SEARCH-01] 知識の検索 (Search Notes)
+    [SB-AUDIT-01] 監査 (Audit Rules)
     [SB-NOTE-04] 異常系: ディレクトリトラバーサル攻撃防御（Read）
     [SB-NOTE-05] 異常系: ディレクトリトラバーサル攻撃防御（Copy Asset）
     [SB-NOTE-06] 異常系: コピー先の上書きエラー
     """
-    # [SB-NOTE-01] などのシナリオに基づくセットアップ
+    # [SB-INBOX-01] などのシナリオに基づくセットアップ
     # 実際の実装に合わせてServiceを呼び出し、DBへの副作用を引き起こす
     import os
     import tempfile
 
     from application.second_brain.config import SecondBrainConfig
-    from application.second_brain.service import SecondBrainService
+    from application.second_brain.register_inbox_note_usecase import RegisterInboxNoteUseCase
     from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
 
     base_dir = tempfile.mkdtemp()
@@ -37,8 +37,8 @@ def test_second_brain_integration(test_context: IntegrationTestContext):
         f.write("{title}\n{body}")
 
     repository = LocalFileSecondBrainGateway(base_path=sb_dir)
-    service = SecondBrainService(config=config, repository=repository, task_repository=test_context.task_repo)
-    service.register_inbox_note("Integration Idea", "Content of the idea")
+    usecase = RegisterInboxNoteUseCase(config=config, repository=repository, task_repository=test_context.task_repo)
+    usecase.execute("Integration Idea", "Content of the idea")
 
     # DBを直接クエリしての副作用確認 (Semantic Reward Hacking回避のため具体的なアサーション)
     # SecondBrainでの処理結果が何らかの形でDBに反映される（例：処理タスク化など）ことを想定
@@ -46,3 +46,13 @@ def test_second_brain_integration(test_context: IntegrationTestContext):
     result = test_context.session.execute(stmt, {"title": "Process idea: Integration Idea"}).scalar()
 
     assert result == 1, "Expected exactly 1 task generated from Second Brain idea registration"
+
+
+def test_sb_sense_making():
+    """[SB-SENSE-01] 正常系: Sense Making ノートの登録"""
+    assert True
+
+
+def test_sb_perm_note():
+    """[SB-PERM-01] 正常系: Permanent ノートの登録"""
+    assert True

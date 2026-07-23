@@ -9,7 +9,9 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from application.task_management.task_management_service import TaskManagementService
+from application.task_operations.refine_task_usecase import RefineTaskUseCase
+from application.task_operations.register_task_usecase import RegisterTaskUseCase
+from application.task_operations.task_operations_service import TaskOperationsService
 from infrastructure.db.models import Base
 from infrastructure.task_management.task_repository import SqlTaskRepository
 
@@ -31,8 +33,9 @@ class IntegrationTestContext:
         self.task_repo = SqlTaskRepository(self.session)
 
         # Services
-        # self.daily_action_service = DailyActionService(...)
-        self.task_management_service = TaskManagementService(self.task_repo)
+        register_task_uc = RegisterTaskUseCase(self.task_repo)
+        refine_task_uc = RefineTaskUseCase(self.task_repo)
+        self.task_operations_service = TaskOperationsService(register_task_uc, refine_task_uc)
 
     def teardown(self):
         self.session.rollback()

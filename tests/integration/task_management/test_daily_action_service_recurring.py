@@ -3,7 +3,7 @@ from typing import List
 
 from integration.conftest import IntegrationTestContext
 
-from application.task_management.daily_action_service import DailyActionService
+from application.daily_planning.plan_day_usecase import PlanDayUseCase
 from domain.task_management.recurring_task import RecurringTask
 from domain.task_management.repository import BriefingGateway, ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
@@ -31,7 +31,7 @@ def test_daily_action_service_recurring_tasks(test_context: IntegrationTestConte
     task_repo = test_context.task_repo
     schedule_gateway = FakeScheduleGateway()
     briefing_repo = FakeBriefingGateway()
-    worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
+    SQLAlchemyWorklogRepository(test_context.session)
     recurring_task_repo = SqlRecurringTaskRepository(test_context.session)
 
     # RecurringTasks をセットアップ
@@ -78,17 +78,15 @@ def test_daily_action_service_recurring_tasks(test_context: IntegrationTestConte
     )
     task_repo.save_tasks([normal_task])
 
-    # サービスを生成（現在は recurring_task_repo を受け付けないためここで TypeError が起きる想定）
-    service = DailyActionService(
+    service = PlanDayUseCase(
         task_repo=task_repo,
         schedule_gateway=schedule_gateway,
         briefing_repo=briefing_repo,
-        worklog_repo=worklog_repo,
         recurring_task_repo=recurring_task_repo,
     )
 
     # 実行
-    briefing = service.plan_day(target_date)
+    briefing = service.execute(target_date)
 
     # 検証
     scheduled_tasks = briefing.scheduled_tasks
