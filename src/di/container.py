@@ -115,7 +115,7 @@ class CoreServiceContainer:
         )
         # 実際には、対象となる全ディレクトリをルートとしたGatewayを作成するか、個別に作成します
         # ひとまずinbox_dirをベースとする等の実装になりますが、今回は仮でinbox_dirを渡します
-        sb_gateway = LocalFileSecondBrainGateway(base_path=self.config.sb_inbox_dir)
+        sb_gateway = LocalFileSecondBrainGateway(base_path=str(Path(self.config.sb_inbox_dir).parent))
 
         return SecondBrainService(
             RegisterInboxNoteUseCase(sb_config, sb_gateway, self.task_repo),

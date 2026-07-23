@@ -19,8 +19,10 @@ class SecondBrainService:
     def register_inbox_note(self, content):
         return self.register_inbox_note_usecase.execute(content)
 
-    def register_permanent_note(self, content):
-        return self.register_permanent_note_usecase.execute(content)
+    def register_permanent_note(self, title, claim, context="", connections="", tags=None):
+        return self.register_permanent_note_usecase.execute(
+            title=title, claim=claim, context=context, connections=connections, tags=tags
+        )
 
     def search_notes(self, query):
         return self.search_notes_usecase.execute(query)
