@@ -24,4 +24,4 @@ AIエージェント（および人間）がPRをレビューする際は、以�
 ## 5. CI/CD 品質ゲート
 - GitHub Actionsによる自動化テストがPassしているか？
 - `make test` におけるカバレッジが 90% 以上であるか？
-- `scripts/validate_sdd.py` がエラーを出力していないか？
+- `../agent-core/tools/validate_sdd.py` がエラーを出力していないか？

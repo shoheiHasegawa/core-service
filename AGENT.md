@@ -20,4 +20,4 @@
 2. **[副作用の排除]**: DBへの書き込みや外部APIコールなどの副作用は、Interface（Port）を定義するだけに留める（※これはドメイン層の原則であり、具象クラスの存在を否定するものではない）。
 3. **[Service-Configパターン]**: すべては 上位の実行環境（Composition Root等） から Dependency Injection されることを前提とし、内部で具象クラスをインスタンス化しない。（詳細は `docs/rules/dependency_injection.md` を参照）。
 4. **[インフラストラクチャの境界]**: DBやファイル読み書きなどの具象実装（アダプター）は `core-service/src/infrastructure/` に配置すること。`agent-core` 側には実装の実体を持たず、設定とDI（`factories/`）の呼び出しのみを行うこと。
-5. **[ルールの遵守義務]**: 実装完了時は、必ず上記ガイドラインに基づく厳格なレビューと、`scripts/validate_sdd.py` による自動検証を通過させること。
+5. **[ルールの遵守義務]**: 実装完了時は、必ず上記ガイドラインに基づく厳格なレビューと、`../agent-core/tools/validate_sdd.py` による自動検証を通過させること。

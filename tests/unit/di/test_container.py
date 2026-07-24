@@ -32,7 +32,6 @@ def test_container_initialization_and_services(monkeypatch):
         sb_forbidden_patterns=["forbidden"],
         agent_queue_dir="/tmp/agent_queue",
         db_path="sqlite:///:memory:",
-        mobile_archive_dir="/tmp/mobile_archive",
     )
 
     mock_session = MagicMock(spec=Session)

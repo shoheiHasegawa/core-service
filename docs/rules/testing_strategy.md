@@ -6,7 +6,7 @@
 - **仕様IDの採番ルール**: `[ドメイン略称]-[機能群]-[連番]`（例: `[TM-PLAN-01]`, `[MV-RECV-01]`, `[SB-NOTE-01]`）という普遍的な命名規則を使用すること。Epic依存の命名は禁止。
 - すべての実装は `src/application/*/spec.md` に定義されたユースケースシナリオに基づくこと。
 - すべてのテストコードの関数DocString内には、必ず担保する仕様ID（例: `[TM-PLAN-01]`）を記載し、仕様とテストのトレーサビリティを強制する。
-- （これらは `scripts/validate_sdd.py` のLinterによってCI/CD的に自動検知される）
+- （これらは `../agent-core/tools/validate_sdd.py` のLinterによってCI/CD的に自動検知される）
 
 ## 2. Integration Test (結合テスト) の制約と責務
 - `tests/integration/` は、**公開Service仕様（In-Out）を固定し、要求シナリオの100%を網羅する**ための防波堤（ハーネス）である。
@@ -47,7 +47,7 @@
   - `README.md`: 機能の概要とデータフロー図
   - `spec.md`: 実装が担保すべき仕様（シナリオ）
   - `*.py`: 実装コード
-- （この制約は `scripts/validate_sdd.py` によって自動検証される）
+- （この制約は `../agent-core/tools/validate_sdd.py` によって自動検証される）
 
 ## 5. スクリプト群 (`scripts/`) のテスト制約
 - `scripts/` に配置された開発補助ツールやLinter等に対しても、品質担保のためにテストを書くこと。
@@ -62,7 +62,7 @@
   - **Refactor (Green -> Clean) フェーズ【重要】**: テストがパスした後、Implementer は**直ちに**自身でDDDとSOLID原則に基づくリファクタリングを行う。
   - **Unit Test (内部エッジケース検証)**: 実装詳細（ドメインモデル等のエッジケース、境界値、状態遷移）はUnit Testで網羅的に固める。Unit Testは内部実装検証が目的であるため、`spec.md`の全シナリオ網羅は必須ではない。
   - **Gate (関所の強制)**:
-    - レビュー前に必ず `scripts/validate_sdd.py` を実行すること。Integration Testが `spec.md` の要求仕様IDを100%網羅していること、また全テストでFake IDが使用されていないことを機械的に証明しなければならない。
+    - レビュー前に必ず `../agent-core/tools/validate_sdd.py` を実行すること。Integration Testが `spec.md` の要求仕様IDを100%網羅していること、また全テストでFake IDが使用されていないことを機械的に証明しなければならない。
     - これを通過しない限り、レビューへの提出およびリファクタリング完了を認めない。
   - **Specialized Reviewフェーズ**: 複数の専門特化ペルソナ（QA Engineer、Domain Architect等）に分割して並列でレビューを実行させる。
 

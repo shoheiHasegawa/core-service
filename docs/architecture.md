@@ -29,5 +29,5 @@ Agentic OS環境において、AIエージェントのパフォーマンスを�
 ---
 
 ### レビューおよび品質保証
-上記5大原則が遵守されているかを検証するためのゲートウェイとして、自動Linter (`scripts/validate_sdd.py`) およびレビュープロセスが存在する。
+上記5大原則が遵守されているかを検証するためのゲートウェイとして、自動Linter (`../agent-core/tools/validate_sdd.py`) およびレビュープロセスが存在する。
 👉 **レビュー基準**: [Review Process](review.md)

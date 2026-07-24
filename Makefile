@@ -10,12 +10,12 @@ test:
 
 lint:
 	@echo "Running static analysis (Ruff)..."
-	uv run ruff check --fix src tests scripts
-	uv run ruff format src tests scripts
+	uv run ruff check --fix src tests
+	uv run ruff format src tests
 
 validate:
 	@echo "Running Architecture & SDD Validator..."
-	uv run python scripts/validate_sdd.py
+	uv run python ../agent-core/tools/validate_sdd.py
 
 check-all: test lint validate
 	@echo "All checks passed! Ready for harvest."
