@@ -12,8 +12,8 @@ from sqlalchemy.orm import sessionmaker
 from application.task_operations.refine_task_usecase import RefineTaskUseCase
 from application.task_operations.register_task_usecase import RegisterTaskUseCase
 from application.task_operations.task_operations_service import TaskOperationsService
-from infrastructure.db.base import Base
-from infrastructure.task_management.task_repository import SqlTaskRepository
+from infrastructure.sqlalchemy.base import Base
+from infrastructure.sqlalchemy.task_repository import SqlTaskRepository
 
 
 class IntegrationTestContext:

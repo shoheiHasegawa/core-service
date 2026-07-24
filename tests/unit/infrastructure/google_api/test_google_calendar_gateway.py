@@ -1,8 +1,7 @@
 import datetime
 from unittest.mock import patch
 
-from infrastructure.calendar.config import CalendarConfig
-from infrastructure.calendar.google_calendar_gateway import GoogleCalendarGateway
+from infrastructure.google_api.google_calendar_gateway import CalendarConfig, GoogleCalendarGateway
 
 
 @patch("google.oauth2.service_account.Credentials.from_service_account_file", autospec=True)

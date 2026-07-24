@@ -3,8 +3,7 @@ from typing import Optional
 
 import holidays
 
-from domain.interfaces.calendar_gateway import CalendarGateway
-from domain.task_management.briefing_gateway import BriefingGateway
+from domain.task_management.calendar_gateway import CalendarGateway
 from domain.task_management.planning_rules import (
     ContextBatchingPolicy,
     DependencyPolicy,
@@ -22,20 +21,18 @@ from domain.task_management.task_repository import TaskRepository
 
 class PlanDayUseCase:
     """
-    1日の計画（Daily Briefing）を生成し、カレンダーやブリーフィングファイルへ出力するユースケース。
+    1日の計画（Daily Briefing）を生成し、カレンダーへ出力するユースケース。
     """
 
     def __init__(
         self,
         task_repo: TaskRepository,
         schedule_gateway: ScheduleGateway,
-        briefing_repo: BriefingGateway,
         calendar_repo: Optional[CalendarGateway] = None,
         recurring_task_repo=None,
     ) -> None:
         self.task_repo = task_repo
         self.schedule_gateway = schedule_gateway
-        self.briefing_repo = briefing_repo
         self.calendar_repo = calendar_repo
         self.recurring_task_repo = recurring_task_repo
 
@@ -94,7 +91,6 @@ class PlanDayUseCase:
 
         # カレンダー同期と出力
         self.schedule_gateway.sync_schedule(target_date, scheduled_tasks)
-        self.briefing_repo.save(briefing)
 
         if sync_to_calendar and self.calendar_repo:
             self.calendar_repo.sync_daily_briefing(target_date, scheduled_tasks)

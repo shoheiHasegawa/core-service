@@ -7,7 +7,7 @@ from sqlalchemy import text
 from application.second_brain.config import SecondBrainConfig
 from application.second_brain.register_inbox_note_dto import RegisterInboxNoteDto
 from application.second_brain.register_inbox_note_usecase import RegisterInboxNoteUseCase
-from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
+from infrastructure.local_file.local_file_second_brain_gateway import LocalFileSecondBrainGateway
 
 
 def test_second_brain_integration(test_context: IntegrationTestContext):

@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 
 from domain.mobile_vault.packet import Packet
-from infrastructure.mobile_vault.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
+from infrastructure.local_file.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
 
 
 def test_local_file_mobile_vault_gateway_fetch_unprocessed_packets(tmp_path):

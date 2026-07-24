@@ -32,17 +32,15 @@ from domain.mobile_vault.markdown_image_parser import MarkdownImageParser
 
 # Domain Interfaces
 from domain.task_management.schedule_gateway import ScheduleGateway
-from infrastructure.calendar.config import CalendarConfig
-from infrastructure.calendar.google_calendar_gateway import GoogleCalendarGateway
-from infrastructure.mobile_vault.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
-from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
-from infrastructure.system_events.queue_system_event_gateway import QueueSystemEventGateway
-from infrastructure.task_management.briefing_gateway import MobileVaultBriefingGateway
-from infrastructure.task_management.recurring_task_repository import SqlRecurringTaskRepository
+from infrastructure.google_api.google_calendar_gateway import CalendarConfig, GoogleCalendarGateway
+from infrastructure.local_file.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
+from infrastructure.local_file.local_file_second_brain_gateway import LocalFileSecondBrainGateway
+from infrastructure.local_file.queue_system_event_gateway import QueueSystemEventGateway
+from infrastructure.sqlalchemy.recurring_task_repository import SqlRecurringTaskRepository
 
 # Infrastructure & Adapters
-from infrastructure.task_management.task_repository import SqlTaskRepository
-from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
+from infrastructure.sqlalchemy.task_repository import SqlTaskRepository
+from infrastructure.sqlalchemy.worklog_repository import SQLAlchemyWorklogRepository
 
 
 class DummyScheduleGateway(ScheduleGateway):
@@ -85,18 +83,22 @@ class CoreServiceContainer:
         plan_day_uc = PlanDayUseCase(
             task_repo=self.task_repo,
             schedule_gateway=self.schedule_gateway,
-            briefing_repo=MobileVaultBriefingGateway(self.mobile_vault_gateway, self.mobile_vault_gateway),
             calendar_repo=self.calendar_gateway,
             recurring_task_repo=SqlRecurringTaskRepository(self.session),
         )
         record_worklogs_uc = RecordWorklogsUseCase(self.task_repo, self.worklog_repo)
         sync_worklogs_uc = SyncWorklogsUseCase(
-            briefing_gateway=MobileVaultBriefingGateway(self.mobile_vault_gateway, self.mobile_vault_gateway),
+            dashboard_reader=self.mobile_vault_gateway,
             task_repository=self.task_repo,
             worklog_repository=self.worklog_repo,
         )
         # Return Facade
-        return DailyPlanningService(plan_day_uc, record_worklogs_uc, sync_worklogs_uc)
+        return DailyPlanningService(
+            plan_day_uc,
+            record_worklogs_uc,
+            sync_worklogs_uc,
+            mobile_vault_publisher=self.mobile_vault_gateway,
+        )
 
     def get_task_operations_service(self) -> TaskOperationsService:
         register_task_uc = RegisterTaskUseCase(self.task_repo)

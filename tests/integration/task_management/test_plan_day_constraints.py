@@ -4,7 +4,6 @@ from typing import List
 from integration.conftest import IntegrationTestContext
 
 from application.daily_planning.plan_day_usecase import PlanDayUseCase
-from domain.task_management.briefing_gateway import BriefingGateway
 from domain.task_management.schedule_gateway import ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
 
@@ -12,14 +11,6 @@ from domain.task_management.task import Task, TaskCategory
 class FakeScheduleGateway(ScheduleGateway):
     def sync_schedule(self, target_date: datetime.date, tasks: List[Task]) -> None:
         pass
-
-
-class FakeBriefingGateway(BriefingGateway):
-    def save(self, briefing) -> None:
-        pass
-
-    def get_recent_briefing_contents(self) -> list[str]:
-        return []
 
 
 def test_daily_action_service_plan_day_constraints(test_context: IntegrationTestContext):
@@ -33,9 +24,8 @@ def test_daily_action_service_plan_day_constraints(test_context: IntegrationTest
     """
     task_repo = test_context.task_repo
     schedule_gateway = FakeScheduleGateway()
-    briefing_repo = FakeBriefingGateway()
 
-    service = PlanDayUseCase(task_repo=task_repo, schedule_gateway=schedule_gateway, briefing_repo=briefing_repo)
+    service = PlanDayUseCase(task_repo=task_repo, schedule_gateway=schedule_gateway)
 
     target_date = datetime.date(2026, 7, 20)
 

@@ -5,8 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from domain.task_management.task import Worklog
-from infrastructure.db.base import Base
-from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
+from infrastructure.sqlalchemy.base import Base
+from infrastructure.sqlalchemy.worklog_repository import SQLAlchemyWorklogRepository
 
 
 @pytest.fixture

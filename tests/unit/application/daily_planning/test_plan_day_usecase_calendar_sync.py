@@ -2,7 +2,7 @@ from datetime import date
 from typing import List
 
 from application.daily_planning.plan_day_usecase import PlanDayUseCase
-from domain.interfaces.calendar_gateway import CalendarGateway
+from domain.task_management.calendar_gateway import CalendarGateway
 from domain.task_management.task import Task, TaskCategory
 
 
@@ -47,7 +47,6 @@ def test_plan_day_usecase_sync_to_calendar():
     usecase = PlanDayUseCase(
         task_repo=task_repo,
         schedule_gateway=FakeScheduleGateway(),
-        briefing_repo=FakeBriefingGateway(),
         calendar_repo=fake_calendar_gateway,
     )
 

@@ -4,11 +4,10 @@ from typing import List
 from integration.conftest import IntegrationTestContext
 
 from application.daily_planning.plan_day_usecase import PlanDayUseCase
-from domain.interfaces.calendar_gateway import CalendarGateway
-from domain.task_management.briefing_gateway import BriefingGateway
+from domain.task_management.calendar_gateway import CalendarGateway
 from domain.task_management.schedule_gateway import ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
-from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
+from infrastructure.sqlalchemy.worklog_repository import SQLAlchemyWorklogRepository
 
 
 class FakeCalendarGateway(CalendarGateway):
@@ -32,14 +31,6 @@ class FakeScheduleGateway(ScheduleGateway):
         pass
 
 
-class FakeBriefingGateway(BriefingGateway):
-    def save(self, briefing) -> None:
-        pass
-
-    def get_recent_briefing_contents(self) -> list[str]:
-        return []
-
-
 def test_calendar_sync_integration_flow(test_context: IntegrationTestContext):
     """
     [TM-SYNC-01]
@@ -49,13 +40,11 @@ def test_calendar_sync_integration_flow(test_context: IntegrationTestContext):
     task_repo = test_context.task_repo
     calendar_gateway = FakeCalendarGateway()
     schedule_gateway = FakeScheduleGateway()
-    briefing_gateway = FakeBriefingGateway()
     SQLAlchemyWorklogRepository(test_context.session)
 
     service = PlanDayUseCase(
         task_repo=task_repo,
         schedule_gateway=schedule_gateway,
-        briefing_repo=briefing_gateway,
         calendar_repo=calendar_gateway,
     )
 

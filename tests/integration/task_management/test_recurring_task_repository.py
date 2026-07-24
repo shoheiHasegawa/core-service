@@ -2,7 +2,7 @@ from datetime import date
 
 from domain.task_management.recurring_task import RecurringTask
 from domain.task_management.task import TaskCategory
-from infrastructure.task_management.recurring_task_repository import SqlRecurringTaskRepository
+from infrastructure.sqlalchemy.recurring_task_repository import SqlRecurringTaskRepository
 
 
 def test_save_and_restore_recurring_task(test_context):

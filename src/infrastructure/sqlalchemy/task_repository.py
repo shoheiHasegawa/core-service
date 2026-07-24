@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
 from domain.task_management.task_repository import TaskRepository
-from infrastructure.db.task_model import TaskModel
+from infrastructure.sqlalchemy.task_model import TaskModel
 
 
 class SqlTaskRepository(TaskRepository):

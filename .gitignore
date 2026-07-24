@@ -55,3 +55,6 @@ venv.bak/
 .vscode/
 *.swp
 *.swo
+
+# Ruff
+.ruff_cache/

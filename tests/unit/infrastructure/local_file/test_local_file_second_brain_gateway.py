@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from infrastructure.second_brain.local_file_second_brain_gateway import LocalFileSecondBrainGateway
+from infrastructure.local_file.local_file_second_brain_gateway import LocalFileSecondBrainGateway
 
 
 def test_save_and_read_note(tmp_path):

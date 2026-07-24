@@ -6,13 +6,14 @@ from freezegun import freeze_time
 from integration.conftest import IntegrationTestContext
 
 from application.daily_planning.sync_worklogs_usecase import SyncWorklogsUseCase
-from domain.task_management.briefing_gateway import BriefingGateway
+from domain.mobile_vault.dashboard_reader import DashboardReader
 from domain.task_management.task import DailyBriefing, Task, TaskCategory
-from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
+from infrastructure.sqlalchemy.worklog_repository import SQLAlchemyWorklogRepository
 
 
-class FakeBriefingGateway(BriefingGateway):
+class FakeDashboardReader(DashboardReader):
     def __init__(self):
+        self.get_recent_dashboards_called = 0
         self.contents = [
             "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n",
             "# Daily Briefing (2026-07-21)\n- [x] Task Old (予定: 10m) <!-- id: t_old -->\n",
@@ -22,8 +23,8 @@ class FakeBriefingGateway(BriefingGateway):
     def save(self, briefing: DailyBriefing) -> None:
         pass
 
-    def get_recent_briefing_contents(self) -> list[str]:
-        self.get_recent_briefing_contents_called += 1
+    def get_recent_dashboards(self) -> list[str]:
+        self.get_recent_dashboards_called += 1
         return self.contents
 
 
@@ -32,7 +33,7 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
     """[TM-SYNC-04] InboxディレクトリのBriefingファイルを読み込み、Worklogを作成する"""
     task_repo = test_context.task_repo
     worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
-    fake_gateway = FakeBriefingGateway()
+    dashboard_reader = FakeDashboardReader()
 
     # 準備：DBにタスクを登録
     target_date = date(2026, 7, 22)
@@ -42,7 +43,7 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
 
     # サービス初期化
     service = SyncWorklogsUseCase(
-        briefing_gateway=fake_gateway,
+        dashboard_reader=dashboard_reader,
         task_repository=task_repo,
         worklog_repository=worklog_repo,
     )
@@ -57,7 +58,7 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
     assert worklogs[0].task_id == "t1"
 
     # get_recent_briefing_contents が呼ばれたか検証
-    assert fake_gateway.get_recent_briefing_contents_called == 1, "ダッシュボード内容を取得するメソッドが呼ばれるべき"
+    assert dashboard_reader.get_recent_dashboards_called == 1, "ダッシュボード内容を取得するメソッドが呼ばれるべき"
 
     # 昨日のファイルや無関係のファイルがパースされたり異常動作を引き起こしていないことの検証
     worklogs_old = worklog_repo.find_by_task_and_date("t_old", date(2026, 7, 21))

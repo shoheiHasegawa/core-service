@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import MagicMock
 
 from application.daily_planning.daily_planning_service import DailyPlanningService
@@ -17,7 +18,7 @@ def test_daily_planning_service():
     )
 
     plan_usecase.execute.return_value = None
-    assert service.plan_day() is None
+    assert service.plan_day(date.today()) is None
     plan_usecase.execute.assert_called_once()
 
     record_usecase.execute.return_value = None

@@ -1,11 +1,18 @@
 import datetime
+from dataclasses import dataclass
 from typing import List
 
 import googleapiclient.discovery
 from google.oauth2 import service_account
 
-from domain.interfaces.calendar_gateway import CalendarGateway
-from infrastructure.calendar.config import CalendarConfig
+from domain.task_management.calendar_gateway import CalendarGateway
+
+
+@dataclass
+class CalendarConfig:
+    calendar_id: str
+    credentials_path: str
+    api_version: str = "v3"
 
 
 class GoogleCalendarGateway(CalendarGateway):

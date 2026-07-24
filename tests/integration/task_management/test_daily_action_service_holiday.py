@@ -4,26 +4,17 @@ from typing import List
 from integration.conftest import IntegrationTestContext
 
 from application.daily_planning.plan_day_usecase import PlanDayUseCase
-from domain.interfaces.calendar_gateway import CalendarGateway
-from domain.task_management.briefing_gateway import BriefingGateway
+from domain.task_management.calendar_gateway import CalendarGateway
 from domain.task_management.recurring_task import RecurringTask
 from domain.task_management.schedule_gateway import ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
-from infrastructure.task_management.recurring_task_repository import SqlRecurringTaskRepository
-from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
+from infrastructure.sqlalchemy.recurring_task_repository import SqlRecurringTaskRepository
+from infrastructure.sqlalchemy.worklog_repository import SQLAlchemyWorklogRepository
 
 
 class FakeScheduleGateway(ScheduleGateway):
     def sync_schedule(self, target_date: datetime.date, tasks: List[Task]) -> None:
         pass
-
-
-class FakeBriefingGateway(BriefingGateway):
-    def save(self, briefing) -> None:
-        pass
-
-    def get_recent_briefing_contents(self) -> list[str]:
-        return []
 
 
 class FakeCalendarGateway(CalendarGateway):
@@ -44,7 +35,6 @@ def test_daily_action_service_holiday_context(test_context: IntegrationTestConte
     """[TM-PLAN-04] PlanDayUseCase.execute の祝日・有給判定と day_context の検証"""
     task_repo = test_context.task_repo
     schedule_gateway = FakeScheduleGateway()
-    briefing_gateway = FakeBriefingGateway()
     SQLAlchemyWorklogRepository(test_context.session)
     recurring_task_repo = SqlRecurringTaskRepository(test_context.session)
 
@@ -54,7 +44,6 @@ def test_daily_action_service_holiday_context(test_context: IntegrationTestConte
     service = PlanDayUseCase(
         task_repo=task_repo,
         schedule_gateway=schedule_gateway,
-        briefing_repo=briefing_gateway,
         calendar_repo=calendar_gateway,
         recurring_task_repo=recurring_task_repo,
     )

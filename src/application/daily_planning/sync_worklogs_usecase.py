@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from domain.task_management.briefing_gateway import BriefingGateway
+from domain.mobile_vault.dashboard_reader import DashboardReader
 from domain.task_management.briefing_markdown_parser import BriefingMarkdownParser
 from domain.task_management.task import Worklog
 from domain.task_management.task_repository import TaskRepository
@@ -16,18 +16,18 @@ class SyncWorklogsUseCase:
 
     def __init__(
         self,
-        briefing_gateway: BriefingGateway,
+        dashboard_reader: DashboardReader,
         task_repository: TaskRepository,
         worklog_repository: WorklogRepository,
     ):
-        self.briefing_gateway = briefing_gateway
+        self.dashboard_reader = dashboard_reader
         self.task_repository = task_repository
         self.worklog_repository = worklog_repository
         self.parser = BriefingMarkdownParser()
 
     def execute(self) -> None:
         today = datetime.now().date()
-        contents = self.briefing_gateway.get_recent_briefing_contents()
+        contents = self.dashboard_reader.get_recent_dashboards()
 
         for content in contents:
             completed_task_ids = self.parser.parse_completed_task_ids(content)

@@ -5,9 +5,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from domain.task_management.task import Task, TaskCategory, TaskStatus, TaskType
-from infrastructure.db.base import Base
-from infrastructure.db.task_model import TaskModel
-from infrastructure.task_management.task_repository import SqlTaskRepository
+from infrastructure.sqlalchemy.base import Base
+from infrastructure.sqlalchemy.task_model import TaskModel
+from infrastructure.sqlalchemy.task_repository import SqlTaskRepository
 
 
 @pytest.fixture

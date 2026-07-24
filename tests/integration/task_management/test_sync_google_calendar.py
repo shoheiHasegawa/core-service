@@ -4,11 +4,10 @@ from typing import List
 from integration.conftest import IntegrationTestContext
 
 from application.daily_planning.plan_day_usecase import PlanDayUseCase
-from domain.interfaces.calendar_gateway import CalendarGateway
-from domain.task_management.briefing_gateway import BriefingGateway
+from domain.task_management.calendar_gateway import CalendarGateway
 from domain.task_management.schedule_gateway import ScheduleGateway
 from domain.task_management.task import Task, TaskCategory
-from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
+from infrastructure.sqlalchemy.worklog_repository import SQLAlchemyWorklogRepository
 
 
 class FakeCalendarGateway(CalendarGateway):
@@ -31,17 +30,6 @@ class FakeScheduleGateway(ScheduleGateway):
         pass
 
 
-class FakeBriefingGateway(BriefingGateway):
-    def __init__(self):
-        self.saved_briefing = None
-
-    def save(self, briefing) -> None:
-        self.saved_briefing = briefing
-
-    def get_recent_briefing_contents(self) -> list[str]:
-        return []
-
-
 def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestContext):
     """
     [TM-SYNC-01] 正常系: 決定されたスケジュールを外部SoR（カレンダー）に同期する
@@ -51,7 +39,6 @@ def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestCon
     task_repo = test_context.task_repo
     SQLAlchemyWorklogRepository(test_context.session)
     schedule_gateway = FakeScheduleGateway()
-    briefing_gateway = FakeBriefingGateway()
 
     # [TM-PLAN-06] 終日イベントをメタデータとして扱う ("有給"等をフラグとして注入)
     calendar_gateway = FakeCalendarGateway(all_day_events=["有給"])
@@ -59,7 +46,6 @@ def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestCon
     service = PlanDayUseCase(
         task_repo=task_repo,
         schedule_gateway=schedule_gateway,
-        briefing_repo=briefing_gateway,
         calendar_repo=calendar_gateway,
     )
 
@@ -81,7 +67,3 @@ def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestCon
     # Assert (ここでRedになるか検証)
     assert calendar_gateway.synced_tasks is not None, "カレンダーへの同期が呼び出されること"
     assert len(calendar_gateway.synced_tasks) == len(briefing.scheduled_tasks)
-
-    # [TM-SYNC-03] Mobile Vaultへの同期が呼び出されること
-    assert briefing_gateway.saved_briefing is not None, "BriefingGatewayが呼び出されること"
-    assert briefing_gateway.saved_briefing.target_date == target_date

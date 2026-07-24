@@ -6,9 +6,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from domain.task_management.task import Worklog
-from infrastructure.db.task_model import TaskModel
-from infrastructure.db.worklog_model import WorklogModel
-from infrastructure.task_management.worklog_repository import SQLAlchemyWorklogRepository
+from infrastructure.sqlalchemy.task_model import TaskModel
+from infrastructure.sqlalchemy.worklog_model import WorklogModel
+from infrastructure.sqlalchemy.worklog_repository import SQLAlchemyWorklogRepository
 
 
 def test_worklog_model_new_columns(test_context: IntegrationTestContext):
