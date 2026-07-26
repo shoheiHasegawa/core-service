@@ -13,15 +13,25 @@
 
 ## 3. Scenarios (Use Cases)
 
-### [MV-RETRIEVE-01] Retrieve Unprocessed Packets (未処理パケットの回収)
-*   **Target**: `RetrievePacketsUseCase`
+### [MV-RECV-01] Peek Mobile Inbox (未処理パケットの一覧取得)
+*   **Target**: `PeekMobileInboxUseCase`
 *   **Process**:
-    1. `PacketReceiver` 経由で、Vault内の未処理の `Packet` のリストを取得する。
-    2. 取得した `Packet` ごとに以下を実行する:
-       a. `MarkdownImageParser` 等を用いて画像リンクを抽出・処理する。
-       b. 処理後、`TaskRepository` を用いて、パケットの処理タスク（Task）を生成・保存する。
-       c. `PacketReceiver.delete_packet(packet)` で、回収完了したパケットをVaultから削除する。
-*   **Output**: 成功裏に回収されたパケットの数（Int）。
+    1. `PacketReceiver` 経由で、Vault内の未処理パケットの一覧を取得する。
+    2. 各パケットの内容（テキスト）と、関連する画像パス（Attachment）の情報を読み取る。
+    3. 副作用（ファイルの削除や移動）は一切発生させない（Read-only）。
+*   **Output**: 読み取られたパケット情報（ID, 内容, 画像パスのリスト）のコレクション。
+
+### [MV-RECV-02] Process Mobile Packet (未処理パケットの選択的処理)
+*   **Target**: `ProcessMobilePacketUseCase`
+*   **Input**: 処理対象のパケットID (`packet_id: str`)、アクション (`action: str` - idea/task/delete)、メタデータ (`title`, `tags`, `energy_level`)
+*   **Process**:
+    1. 対象パケットを読み取り、`action` に応じて以下を実行する:
+       - **idea**: `SecondBrainService` 経由でアイデアノートとして登録。
+       - **task**: `TaskOperationsService` 経由でタスクとして登録。
+       - **delete**: 登録せず破棄。
+    2. `idea` または `task` の場合、パケットに含まれる画像ファイルを `second-brain` の Attachments ディレクトリ等へ安全に移動（コピー＆元ファイル削除）する。
+    3. `PacketReceiver.delete_packet(packet_id)` で、処理完了したパケットをVaultから削除する。
+*   **Output**: 処理の成功/失敗を表す真偽値 (Boolean)。
 
 ### [MV-PLACE-01] Place Dashboard (ダッシュボードの配置)
 *   **Target**: `PlaceDashboardUseCase`
@@ -37,7 +47,7 @@
 *   **Domain Separation (Port)**:
     *   `src/domain/mobile_vault/gateway.py` に `PacketReceiver` および `DashboardPublisher` を定義する。ファイルI/Oの概念（filename, read_text）を極力排除する。
 *   **Application (Use Cases)**:
-    *   `src/application/mobile_vault/` 配下に `retrieve_packets_usecase.py` と `place_dashboard_usecase.py` を独立して実装し、SRPを満たす。
+    *   `src/application/mobile_vault/` 配下に `peek_mobile_inbox_usecase.py`, `process_mobile_packet_usecase.py`, `place_dashboard_usecase.py` を独立して実装し、SRPを満たす。
 *   **Infrastructure (Adapter)**:
     *   `src/infrastructure/mobile_vault/local_file_mobile_vault_gateway.py` は、Domain層のインターフェースを実装する。
     *   `src/infrastructure/task_management/briefing_gateway.py` は `DashboardPublisher` を利用してブリーフィングを書き出す。

@@ -1,3 +1,4 @@
+import tempfile
 from unittest.mock import MagicMock
 
 import googleapiclient.discovery
@@ -16,37 +17,38 @@ def test_container_initialization_and_services(monkeypatch):
     monkeypatch.setattr(
         googleapiclient.discovery, "build", lambda *args, **kwargs: MagicMock(spec=["execute", "events"])
     )
+    with tempfile.TemporaryDirectory() as temp_dir:
+        config = CoreServiceConfig(
+            google_calendar_id="test_cal_id",
+            google_credentials_path="test_path",
+            mobile_inbox_dir=f"{temp_dir}/mobile_inbox",
+            mobile_dashboard_dir=f"{temp_dir}/mobile_dashboard",
+            mobile_attachments_dir=f"{temp_dir}/mobile_attachments",
+            sb_inbox_dir=f"{temp_dir}/sb_inbox",
+            sb_sense_making_dir=f"{temp_dir}/sb_sense",
+            sb_permanent_notes_dir=f"{temp_dir}/sb_perm",
+            sb_attachments_dir=f"{temp_dir}/sb_attach",
+            sb_inbox_template_path=f"{temp_dir}/sb_inbox_template",
+            sb_sense_making_template_path=f"{temp_dir}/sb_sense_template",
+            sb_permanent_note_template_path=f"{temp_dir}/sb_perm_template",
+            sb_forbidden_patterns=["forbidden"],
+            agent_queue_dir=f"{temp_dir}/agent_queue",
+            db_path="sqlite:///:memory:",
+        )
 
-    config = CoreServiceConfig(
-        google_calendar_id="test_cal_id",
-        google_credentials_path="test_path",
-        mobile_inbox_dir="/tmp/mobile_inbox",
-        mobile_dashboard_dir="/tmp/mobile_dashboard",
-        sb_inbox_dir="/tmp/sb_inbox",
-        sb_sense_making_dir="/tmp/sb_sense",
-        sb_permanent_notes_dir="/tmp/sb_perm",
-        sb_attachments_dir="/tmp/sb_attach",
-        sb_inbox_template_path="/tmp/sb_inbox_template",
-        sb_sense_making_template_path="/tmp/sb_sense_template",
-        sb_permanent_note_template_path="/tmp/sb_perm_template",
-        sb_forbidden_patterns=["forbidden"],
-        agent_queue_dir="/tmp/agent_queue",
-        db_path="sqlite:///:memory:",
-    )
+        mock_session = MagicMock(spec=Session)
 
-    mock_session = MagicMock(spec=Session)
+        container = CoreServiceContainer(config, mock_session)
 
-    container = CoreServiceContainer(config, mock_session)
+        # Verify we can fetch all services properly
+        daily_planning = container.get_daily_planning_service()
+        assert isinstance(daily_planning, DailyPlanningService)
 
-    # Verify we can fetch all services properly
-    daily_planning = container.get_daily_planning_service()
-    assert isinstance(daily_planning, DailyPlanningService)
+        task_ops = container.get_task_operations_service()
+        assert isinstance(task_ops, TaskOperationsService)
 
-    task_ops = container.get_task_operations_service()
-    assert isinstance(task_ops, TaskOperationsService)
+        second_brain = container.get_second_brain_service()
+        assert isinstance(second_brain, SecondBrainService)
 
-    second_brain = container.get_second_brain_service()
-    assert isinstance(second_brain, SecondBrainService)
-
-    mobile_vault = container.get_mobile_vault_service()
-    assert isinstance(mobile_vault, MobileVaultService)
+        mobile_vault = container.get_mobile_vault_service()
+        assert isinstance(mobile_vault, MobileVaultService)

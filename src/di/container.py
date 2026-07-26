@@ -12,7 +12,6 @@ from application.mobile_vault.mobile_vault_service import MobileVaultService
 from application.mobile_vault.place_dashboard_usecase import PlaceDashboardUseCase
 
 # UseCases (Mobile Vault)
-from application.mobile_vault.retrieve_packets_usecase import RetrievePacketsUseCase
 from application.second_brain.audit_zettelkasten_rules_usecase import AuditZettelkastenRulesUseCase
 from application.second_brain.config import SecondBrainConfig
 
@@ -64,7 +63,7 @@ class CoreServiceContainer:
         self.worklog_repo = SQLAlchemyWorklogRepository(self.session)
 
         self.mobile_vault_gateway = LocalFileMobileVaultGateway(
-            self.config.mobile_inbox_dir, self.config.mobile_dashboard_dir
+            self.config.mobile_inbox_dir, self.config.mobile_dashboard_dir, self.config.mobile_attachments_dir
         )
 
         # Calendar
@@ -143,10 +142,24 @@ class CoreServiceContainer:
         )
 
     def get_mobile_vault_service(self) -> MobileVaultService:
+        from application.mobile_vault.peek_mobile_inbox_usecase import PeekMobileInboxUseCase
+        from application.mobile_vault.process_mobile_packet_usecase import ProcessMobilePacketUseCase
+
+        parser = MarkdownImageParser()
+        sb_gateway = LocalFileSecondBrainGateway(base_path=str(Path(self.config.sb_inbox_dir).parent))
+
+        peek_inbox_uc = PeekMobileInboxUseCase(self.mobile_vault_gateway, parser)
+        process_packet_uc = ProcessMobilePacketUseCase(
+            receiver=self.mobile_vault_gateway,
+            second_brain_service=self.get_second_brain_service(),
+            task_operations_service=self.get_task_operations_service(),
+            sb_gateway=sb_gateway,
+            sb_attachments_dir=self.config.sb_attachments_dir,
+            parser=parser,
+        )
 
         return MobileVaultService(
-            RetrievePacketsUseCase(
-                receiver=self.mobile_vault_gateway, parser=MarkdownImageParser(), task_repository=self.task_repo
-            ),
-            PlaceDashboardUseCase(publisher=self.mobile_vault_gateway),
+            peek_inbox_usecase=peek_inbox_uc,
+            process_packet_usecase=process_packet_uc,
+            place_dashboard_usecase=PlaceDashboardUseCase(publisher=self.mobile_vault_gateway),
         )

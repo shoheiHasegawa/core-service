@@ -58,3 +58,8 @@ venv.bak/
 
 # Ruff
 .ruff_cache/
+
+# Databases
+*.db
+*.db-shm
+*.db-wal

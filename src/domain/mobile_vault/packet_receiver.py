@@ -9,5 +9,17 @@ class PacketReceiver(ABC):
         pass
 
     @abstractmethod
+    def get_packet(self, packet_id: str) -> Packet | None:
+        pass
+
+    @abstractmethod
     def delete_packet(self, packet: Packet) -> None:
+        pass
+
+    @abstractmethod
+    def get_image_path(self, image_filename: str) -> str | None:
+        pass
+
+    @abstractmethod
+    def delete_image(self, image_filename: str) -> None:
         pass

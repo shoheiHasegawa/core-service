@@ -16,6 +16,7 @@ class CoreServiceConfig:
     # Vault (iCloud) 関連
     mobile_inbox_dir: str
     mobile_dashboard_dir: str
+    mobile_attachments_dir: str
 
     # エージェント・システムキュー関連
     agent_queue_dir: str

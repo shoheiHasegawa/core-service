@@ -7,7 +7,7 @@ from infrastructure.local_file.local_file_mobile_vault_gateway import LocalFileM
 
 
 def test_local_file_mobile_vault_gateway_fetch_unprocessed_packets(tmp_path):
-    """[MV-RETRIEVE-01]
+    """[MV-RECV-01]
     指定ディレクトリ内の .md ファイル一覧をPacketとして正しく取得できるかのテスト。
     """
     inbox_dir = tmp_path / "inbox"
@@ -50,7 +50,7 @@ def test_local_file_mobile_vault_gateway_publish_dashboard(tmp_path):
 
 
 def test_local_file_mobile_vault_gateway_delete_packet(tmp_path):
-    """[MV-RETRIEVE-01] ファイル削除のテスト。"""
+    """[MV-RECV-01] ファイル削除のテスト。"""
     # Arrange
     work_dir = tmp_path / "work"
     repo = LocalFileMobileVaultGateway(inbox_dir=str(work_dir), dashboard_dir=str(tmp_path))
@@ -113,6 +113,6 @@ def test_local_file_mobile_vault_gateway_get_recent_dashboards_empty_dir(tmp_pat
 
 
 def test_local_file_mobile_vault_gateway_fetch_empty_dir(tmp_path):
-    """[MV-RETRIEVE-01] 空ディレクトリの場合は空リストを返す。"""
+    """[MV-RECV-01] 空ディレクトリの場合は空リストを返す。"""
     repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path / "nonexistent"))
     assert repo.fetch_unprocessed_packets() == []

@@ -2,7 +2,7 @@ from domain.mobile_vault.markdown_image_parser import MarkdownImageParser
 
 
 def test_markdown_image_parser_extracts_images():
-    """[MV-RETRIEVE-01]
+    """[MV-RECV-01]
     MarkdownImageParserがMarkdown文字列から画像リンク（Obsidian形式や標準MD形式）を抽出するテスト。
     """
     parser = MarkdownImageParser()
