@@ -1,5 +1,6 @@
 from integration.conftest import IntegrationTestContext
 
+# testing_strategy.md 第2.6項（アサーションの空洞化防止）に基づき、DBの副作用チェックのため直接参照
 from infrastructure.sqlalchemy.task_model import TaskModel
 
 
@@ -26,8 +27,12 @@ def test_task_management_integration(test_context: IntegrationTestContext):
 
     # daily_service による計画フェーズは別テストで検証予定
 
-    # DBを直接クエリしての副作用確認
-    # セッションからTaskModelを直接取得して、WIP超過やステータス更新など仕様に沿った状態かを確認する
+    # -------------------------------------------------------------------------
+    # 【設計理由・規約準拠】
+    # testing_strategy.md 第2.6項（アサーションの空洞化防止）の原則に基づき、
+    # AIエージェントによるテストの形骸化（Semantic Reward Hacking）を防止するため、
+    # DB (TaskModel) を直接クエリして副作用（データ状態の永続化）をアサーションする設計にしています。
+    # -------------------------------------------------------------------------
     db_task = test_context.session.query(TaskModel).filter_by(id=task.id).one_or_none()
 
     assert db_task is not None, "Task must exist in the database."
