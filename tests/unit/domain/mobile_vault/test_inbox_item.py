@@ -1,4 +1,4 @@
-from domain.mobile_vault.packet import Packet
+from domain.mobile_vault.inbox_item import InboxItem
 
 
 def test_packet_generation_assigns_unique_id():
@@ -9,12 +9,12 @@ def test_packet_generation_assigns_unique_id():
     content = "Some note content"
     images = ["test.png"]
 
-    packet1 = Packet.create(content=content, images=images)
-    packet2 = Packet.create(content=content, images=images)
+    packet1 = InboxItem.create(content=content, images=images)
+    packet2 = InboxItem.create(content=content, images=images)
 
-    assert packet1.packet_id is not None
-    assert packet2.packet_id is not None
-    assert packet1.packet_id != packet2.packet_id
+    assert packet1.item_id is not None
+    assert packet2.item_id is not None
+    assert packet1.item_id != packet2.item_id
 
     assert packet1.content == content
     assert packet1.images == images

@@ -22,6 +22,22 @@ class SqlTaskRepository(TaskRepository):
         )
         return [self._to_entity(m) for m in models]
 
+    def get_uncompleted_past_tasks(self, current_date: date) -> List[Task]:
+        models = (
+            self.session.query(TaskModel)
+            .filter(TaskModel.target_date < current_date, TaskModel.status != TaskStatus.COMPLETED.value)
+            .all()
+        )
+        return [self._to_entity(m) for m in models]
+
+    def get_backlog_tasks(self) -> List[Task]:
+        models = (
+            self.session.query(TaskModel)
+            .filter(TaskModel.target_date.is_(None), TaskModel.status == TaskStatus.TODO.value)
+            .all()
+        )
+        return [self._to_entity(m) for m in models]
+
     def get_tasks_by_ids(self, task_ids: List[str]) -> List[Task]:
         models = self.session.query(TaskModel).filter(TaskModel.id.in_(task_ids)).all()
         return [self._to_entity(m) for m in models]

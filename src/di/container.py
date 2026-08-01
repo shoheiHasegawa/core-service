@@ -99,11 +99,16 @@ class CoreServiceContainer:
             clock=SystemClock(),
             uuid_generator=SystemUUIDGenerator(),
         )
+        from application.daily_planning.auto_assign_tasks_usecase import AutoAssignTasksUseCase
+
+        auto_assign_uc = AutoAssignTasksUseCase(self.task_repo)
+
         # Return Facade
         return DailyPlanningService(
             plan_day_uc,
             record_worklogs_uc,
             sync_worklogs_uc,
+            auto_assign_tasks_usecase=auto_assign_uc,
             mobile_vault_publisher=self.mobile_vault_gateway,
         )
 
@@ -150,14 +155,14 @@ class CoreServiceContainer:
         )
 
     def get_mobile_vault_service(self) -> MobileVaultService:
-        from application.mobile_vault.peek_mobile_inbox_usecase import PeekMobileInboxUseCase
-        from application.mobile_vault.process_mobile_packet_usecase import ProcessMobilePacketUseCase
+        from application.mobile_vault.peek_inbox_usecase import PeekInboxUseCase
+        from application.mobile_vault.process_inbox_item_usecase import ProcessInboxItemUseCase
 
         parser = MarkdownImageParser()
         sb_gateway = LocalFileSecondBrainGateway(base_path=str(Path(self.config.sb_inbox_dir).parent))
 
-        peek_inbox_uc = PeekMobileInboxUseCase(self.mobile_vault_gateway, parser)
-        process_packet_uc = ProcessMobilePacketUseCase(
+        peek_inbox_uc = PeekInboxUseCase(self.mobile_vault_gateway, parser)
+        process_inbox_item_uc = ProcessInboxItemUseCase(
             receiver=self.mobile_vault_gateway,
             second_brain_service=self.get_second_brain_service(),
             task_operations_service=self.get_task_operations_service(),
@@ -168,6 +173,6 @@ class CoreServiceContainer:
 
         return MobileVaultService(
             peek_inbox_usecase=peek_inbox_uc,
-            process_packet_usecase=process_packet_uc,
+            process_inbox_item_usecase=process_inbox_item_uc,
             place_dashboard_usecase=PlaceDashboardUseCase(publisher=self.mobile_vault_gateway),
         )

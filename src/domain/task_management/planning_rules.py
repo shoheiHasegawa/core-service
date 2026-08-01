@@ -174,8 +174,9 @@ class ScheduleBuilder:
         start_time: datetime, tasks: List[Task], end_time: datetime, fixed_tasks: List[Task] = None
     ) -> tuple[List[Task], List[Task]]:
         """15分のバッファを設けながらタスクをスケジュールする（固定タスクを避ける）"""
+        # Ensure fixed tasks are sorted by start_time
         fixed_tasks = fixed_tasks or []
-        fixed_tasks = sorted(fixed_tasks, key=lambda t: getattr(t, "start_time", datetime.max))
+        fixed_tasks = sorted(fixed_tasks, key=lambda t: t.start_time or datetime.max)
 
         scheduled = []
         deferred = []
@@ -208,7 +209,7 @@ class ScheduleBuilder:
                     current_time = t.end_time + timedelta(minutes=15)
                     break
 
-        scheduled.sort(key=lambda x: getattr(x, "start_time", datetime.max))
+        scheduled.sort(key=lambda x: x.start_time or datetime.max)
         return scheduled, deferred
 
 

@@ -23,6 +23,10 @@ class FakeDashboardReader(DashboardReader):
         self.read_dashboard_called += 1
         return self.dashboards.get(filename)
 
+    def delete_dashboard(self, filename: str) -> None:
+        if filename in self.dashboards:
+            del self.dashboards[filename]
+
 
 @freeze_time("2026-07-22")
 def test_sync_worklogs_integration(test_context: IntegrationTestContext):

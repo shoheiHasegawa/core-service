@@ -2,11 +2,11 @@ from pathlib import Path
 
 from domain.mobile_vault.dashboard_publisher import DashboardPublisher
 from domain.mobile_vault.dashboard_reader import DashboardReader
-from domain.mobile_vault.packet import Packet
-from domain.mobile_vault.packet_receiver import PacketReceiver
+from domain.mobile_vault.inbox_item import InboxItem
+from domain.mobile_vault.inbox_receiver import InboxReceiver
 
 
-class LocalFileMobileVaultGateway(PacketReceiver, DashboardPublisher, DashboardReader):
+class LocalFileMobileVaultGateway(InboxReceiver, DashboardPublisher, DashboardReader):
     def __init__(self, inbox_dir: str, dashboard_dir: str = "", attachments_dir: str = ""):
         self.inbox_dir = Path(inbox_dir).resolve() if inbox_dir else Path().resolve()
         self.dashboard_dir = Path(dashboard_dir).resolve() if dashboard_dir else Path().resolve()
@@ -17,28 +17,28 @@ class LocalFileMobileVaultGateway(PacketReceiver, DashboardPublisher, DashboardR
         if dashboard_dir:
             self.dashboard_dir.mkdir(parents=True, exist_ok=True)
 
-    def fetch_unprocessed_packets(self) -> list[Packet]:
+    def fetch_unprocessed_items(self) -> list[InboxItem]:
         if not self.inbox_dir.exists() or not self.inbox_dir.is_dir():
             return []
-        packets = []
+        inbox_items = []
         for p in self.inbox_dir.iterdir():
             if p.is_file() and p.suffix == ".md":
                 content = p.read_text(encoding="utf-8")
-                # Use the filename as packet_id
-                packets.append(Packet(packet_id=p.name, content=content, images=[]))
-        return packets
+                # Use the filename as item_id
+                inbox_items.append(InboxItem(item_id=p.name, content=content, images=[]))
+        return inbox_items
 
-    def get_packet(self, packet_id: str) -> Packet | None:
-        file_path = (self.inbox_dir / packet_id).resolve()
+    def get_item(self, item_id: str) -> InboxItem | None:
+        file_path = (self.inbox_dir / item_id).resolve()
         if not file_path.is_relative_to(self.inbox_dir):
             return None
         if file_path.exists() and file_path.is_file():
             content = file_path.read_text(encoding="utf-8")
-            return Packet(packet_id=file_path.name, content=content, images=[])
+            return InboxItem(item_id=file_path.name, content=content, images=[])
         return None
 
-    def delete_packet(self, packet: Packet) -> None:
-        file_path = (self.inbox_dir / packet.packet_id).resolve()
+    def delete_item(self, inbox_item: InboxItem) -> None:
+        file_path = (self.inbox_dir / inbox_item.item_id).resolve()
         if not file_path.is_relative_to(self.inbox_dir):
             raise ValueError("ディレクトリトラバーサル攻撃を検知しました")
         if file_path.exists():
@@ -78,3 +78,14 @@ class LocalFileMobileVaultGateway(PacketReceiver, DashboardPublisher, DashboardR
             return file_path.read_text(encoding="utf-8")
 
         return None
+
+    def delete_dashboard(self, filename: str) -> None:
+        if not self.dashboard_dir.exists() or not self.dashboard_dir.is_dir():
+            return
+
+        file_path = (self.dashboard_dir / filename).resolve()
+        if not file_path.is_relative_to(self.dashboard_dir):
+            raise ValueError("ディレクトリトラバーサル攻撃を検知しました")
+
+        if file_path.exists() and file_path.is_file():
+            file_path.unlink()

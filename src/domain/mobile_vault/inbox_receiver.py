@@ -1,19 +1,19 @@
 from abc import ABC, abstractmethod
 
-from domain.mobile_vault.packet import Packet
+from domain.mobile_vault.inbox_item import InboxItem
 
 
-class PacketReceiver(ABC):
+class InboxReceiver(ABC):
     @abstractmethod
-    def fetch_unprocessed_packets(self) -> list[Packet]:
+    def fetch_unprocessed_items(self) -> list[InboxItem]:
         pass
 
     @abstractmethod
-    def get_packet(self, packet_id: str) -> Packet | None:
+    def get_item(self, item_id: str) -> InboxItem | None:
         pass
 
     @abstractmethod
-    def delete_packet(self, packet: Packet) -> None:
+    def delete_item(self, inbox_item: InboxItem) -> None:
         pass
 
     @abstractmethod

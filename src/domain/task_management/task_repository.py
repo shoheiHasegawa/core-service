@@ -12,6 +12,16 @@ class TaskRepository(ABC):
         pass
 
     @abstractmethod
+    def get_uncompleted_past_tasks(self, current_date: date) -> List[Task]:
+        """過去の日付にアサインされて未完了のタスクを取得する"""
+        pass
+
+    @abstractmethod
+    def get_backlog_tasks(self) -> List[Task]:
+        """日付未定のバックログタスク(TODO)を取得する"""
+        pass
+
+    @abstractmethod
     def get_tasks_by_ids(self, task_ids: List[str]) -> List[Task]:
         """指定されたIDのタスクを取得する"""
         pass

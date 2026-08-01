@@ -1,0 +1,14 @@
+[importlinter]
+root_package = "src"
+
+[importlinter:contract:layered_architecture]
+name = "DDD Layered Architecture Contract"
+type = "layers"
+layers =
+    application
+    domain
+ignore_imports =
+    # Infrastructure層はプラグインとして外部から注入されるため、Layer依存としては下位（どこにも依存されない）に配置
+    # ApplicationはDomainに依存できるが、Domainは誰にも依存しない。
+    infrastructure -> domain
+    infrastructure -> application

@@ -28,33 +28,71 @@ class RecurringTask:
         if self.day_context == "HOLIDAY" and not is_holiday:
             return False
 
-        if self.rule_type != "cron" or not self.cron_schedule:
+        if not self.cron_schedule:
             return False
 
         parts = self.cron_schedule.split()
         if len(parts) != 5:
             return False
 
+        dom_part = parts[2]
+        month_part = parts[3]
         dow_part = parts[4]
-        if dow_part == "*":
-            return True
 
-        # isoweekday: 1=Mon...7=Sun. cron: 0=Sun, 1=Mon...6=Sat
-        cron_dow = target_date.isoweekday()
-        if cron_dow == 7:
-            cron_dow = 0
+        # Month check
+        if month_part != "*":
+            allowed_months = set()
+            for p in month_part.split(","):
+                if "-" in p:
+                    s, e = p.split("-")
+                    for m in range(int(s), int(e) + 1):
+                        allowed_months.add(m)
+                else:
+                    allowed_months.add(int(p))
+            if target_date.month not in allowed_months:
+                return False
 
-        allowed_dows = set()
-        for p in dow_part.split(","):
-            if "-" in p:
-                start, end = p.split("-")
-                for d in range(int(start), int(end) + 1):
+        dom_match = True
+        if dom_part != "*":
+            allowed_doms = set()
+            for p in dom_part.split(","):
+                if "-" in p:
+                    s, e = p.split("-")
+                    for d in range(int(s), int(e) + 1):
+                        allowed_doms.add(d)
+                else:
+                    allowed_doms.add(int(p))
+            dom_match = target_date.day in allowed_doms
+
+        dow_match = True
+        if dow_part != "*":
+            cron_dow = target_date.isoweekday()
+            if cron_dow == 7:
+                cron_dow = 0
+
+            allowed_dows = set()
+            for p in dow_part.split(","):
+                if "-" in p:
+                    start, end = p.split("-")
+                    for d in range(int(start), int(end) + 1):
+                        allowed_dows.add(d % 7 if d == 7 else d)
+                else:
+                    d = int(p)
                     allowed_dows.add(d % 7 if d == 7 else d)
-            else:
-                d = int(p)
-                allowed_dows.add(d % 7 if d == 7 else d)
 
-        return cron_dow in allowed_dows or (cron_dow == 0 and 7 in allowed_dows)
+            dow_match = cron_dow in allowed_dows or (cron_dow == 0 and 7 in allowed_dows)
+
+        if dom_part != "*" and dow_part != "*":
+            # In standard cron, if both DOM and DOW are restricted, it's an OR condition
+            if not (dom_match or dow_match):
+                return False
+        else:
+            if not dom_match:
+                return False
+            if not dow_match:
+                return False
+
+        return True
 
     def to_task(self, target_date: date) -> "Task":
 

@@ -14,15 +14,21 @@ class DailyPlanningService:
         plan_day_usecase,
         record_worklogs_usecase,
         sync_worklogs_usecase,
+        auto_assign_tasks_usecase=None,
         mobile_vault_publisher: DashboardPublisher = None,
     ):
         self.plan_day_usecase = plan_day_usecase
         self.record_worklogs_usecase = record_worklogs_usecase
         self.sync_worklogs_usecase = sync_worklogs_usecase
+        self.auto_assign_tasks_usecase = auto_assign_tasks_usecase
         self.mobile_vault_publisher = mobile_vault_publisher
 
     def plan_day(self, target_date, sync_to_calendar: bool = False):
-        # 1. 計画を作成
+        # 1. 自動アサインと持ち越しを実行
+        if self.auto_assign_tasks_usecase:
+            self.auto_assign_tasks_usecase.execute(target_date)
+
+        # 2. 計画を作成
         briefing = self.plan_day_usecase.execute(target_date, sync_to_calendar=sync_to_calendar)
 
         # 2. フォーマットして Mobile Vault (他のService) に保存

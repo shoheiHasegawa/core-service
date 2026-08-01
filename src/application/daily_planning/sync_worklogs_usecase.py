@@ -73,3 +73,6 @@ class SyncWorklogsUseCase:
 
                 task.record_work(minutes=actual_minutes, is_completed=pw.is_completed, memo=pw.memo)
                 self.task_repository.save(task)
+
+            # パース・同期が成功裏に完了したら、元のBriefing.mdを削除（Leave No Trace）
+            self.dashboard_reader.delete_dashboard(filename)

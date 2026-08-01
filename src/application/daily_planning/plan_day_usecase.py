@@ -37,6 +37,8 @@ class PlanDayUseCase:
         self.recurring_task_repo = recurring_task_repo
 
     def _is_holiday(self, target_date: date) -> bool:
+        if target_date.isoweekday() >= 6:
+            return True
         if target_date in holidays.JP():
             return True
         if self.calendar_repo:
@@ -88,6 +90,11 @@ class PlanDayUseCase:
             deferred_tasks=deferred_tasks,
             warning_flags=warning_flags,
         )
+
+        for t in scheduled_tasks:
+            self.task_repo.save(t)
+        for t in deferred_tasks:
+            self.task_repo.save(t)
 
         # カレンダー同期と出力
         self.schedule_gateway.sync_schedule(target_date, scheduled_tasks)

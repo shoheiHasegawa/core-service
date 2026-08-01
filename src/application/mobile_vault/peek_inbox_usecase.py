@@ -1,20 +1,20 @@
 from typing import Dict, List
 
+from domain.mobile_vault.inbox_receiver import InboxReceiver
 from domain.mobile_vault.markdown_image_parser import MarkdownImageParser
-from domain.mobile_vault.packet_receiver import PacketReceiver
 
 
-class PeekMobileInboxUseCase:
-    def __init__(self, receiver: PacketReceiver, parser: MarkdownImageParser):
+class PeekInboxUseCase:
+    def __init__(self, receiver: InboxReceiver, parser: MarkdownImageParser):
         self.receiver = receiver
         self.parser = parser
 
     def execute(self) -> List[Dict]:
-        packets = self.receiver.fetch_unprocessed_packets()
+        inbox_items = self.receiver.fetch_unprocessed_items()
         result = []
-        for packet in packets:
+        for inbox_item in inbox_items:
             # パースして画像名を取得
-            image_names = self.parser.extract_images(packet.content)
+            image_names = self.parser.extract_images(inbox_item.content)
             # 存在する画像の絶対パスを取得
             valid_images = []
             for img in image_names:
@@ -24,8 +24,8 @@ class PeekMobileInboxUseCase:
 
             result.append(
                 {
-                    "packet_id": packet.packet_id,
-                    "content": packet.content,
+                    "item_id": inbox_item.item_id,
+                    "content": inbox_item.content,
                     "images": valid_images,
                 }
             )

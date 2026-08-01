@@ -5,9 +5,7 @@
 
 ## 1. 依存の方向（Dependency Rule）
 依存関係は常に「外側の層から内側の層（Domain）」へ向かって一方向に流れること。
-- `Domain` は他のいかなる層にも依存してはならない。
-- `Application` は `Domain` に依存する。
-- `Infrastructure` は `Domain` と `Application` に依存する。
+- ⚠️ **このルールは `.importlinter` によって静的解析されます。** Agentはプロンプトで判断するのではなく、必ず `make lint` を実行し、エラーが出た場合はアーキテクチャ違反として直ちに修正してください。
 
 ## 2. 各層の責務
 ### 2.1. Domain層 (`src/domain/`)

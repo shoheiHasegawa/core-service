@@ -3,16 +3,16 @@ import os
 from application.second_brain.register_inbox_note_dto import RegisterInboxNoteDto
 from application.second_brain.second_brain_service import SecondBrainService
 from application.task_operations.task_operations_service import TaskOperationsService
+from domain.mobile_vault.inbox_receiver import InboxReceiver
 from domain.mobile_vault.markdown_image_parser import MarkdownImageParser
-from domain.mobile_vault.packet_receiver import PacketReceiver
 from domain.second_brain.repository import SecondBrainGateway
 from domain.task_management.task import TaskCategory
 
 
-class ProcessMobilePacketUseCase:
+class ProcessInboxItemUseCase:
     def __init__(
         self,
-        receiver: PacketReceiver,
+        receiver: InboxReceiver,
         second_brain_service: SecondBrainService,
         task_operations_service: TaskOperationsService,
         sb_gateway: SecondBrainGateway,
@@ -27,24 +27,24 @@ class ProcessMobilePacketUseCase:
         self.parser = parser
 
     def execute(
-        self, packet_id: str, action: str, title: str = "", tags: list[str] = None, energy_level: str = None
+        self, item_id: str, action: str, title: str = "", tags: list[str] = None, energy_level: str = None
     ) -> bool:
-        packet = self.receiver.get_packet(packet_id)
-        if not packet:
+        inbox_item = self.receiver.get_item(item_id)
+        if not inbox_item:
             return False
 
         if action == "idea":
-            dto = RegisterInboxNoteDto(title=title or packet_id, content=packet.content, tags=tags)
+            dto = RegisterInboxNoteDto(title=title or item_id, content=inbox_item.content, tags=tags)
             self.second_brain_service.register_inbox_note(dto)
 
-            images = self.parser.extract_images(packet.content)
+            images = self.parser.extract_images(inbox_item.content)
             for img in images:
                 src_path = self.receiver.get_image_path(img)
                 if src_path:
                     dest_path = os.path.join(self.sb_attachments_dir, img)
                     self.sb_gateway.copy_asset(src_path, dest_path)
 
-            self.receiver.delete_packet(packet)
+            self.receiver.delete_item(inbox_item)
             for img in images:
                 try:
                     self.receiver.delete_image(img)
@@ -55,11 +55,11 @@ class ProcessMobilePacketUseCase:
             category = TaskCategory.MUST if energy_level == "High" else TaskCategory.SHOULD
 
             self.task_operations_service.register_task(
-                title=title or packet_id, description=packet.content, category=category, estimated_minutes=30
+                title=title or item_id, description=inbox_item.content, category=category, estimated_minutes=30
             )
 
-            self.receiver.delete_packet(packet)
-            images = self.parser.extract_images(packet.content)
+            self.receiver.delete_item(inbox_item)
+            images = self.parser.extract_images(inbox_item.content)
             for img in images:
                 try:
                     self.receiver.delete_image(img)
@@ -67,8 +67,8 @@ class ProcessMobilePacketUseCase:
                     pass
 
         elif action == "delete":
-            self.receiver.delete_packet(packet)
-            images = self.parser.extract_images(packet.content)
+            self.receiver.delete_item(inbox_item)
+            images = self.parser.extract_images(inbox_item.content)
             for img in images:
                 try:
                     self.receiver.delete_image(img)

@@ -1,10 +1,10 @@
 import pytest
 
-from domain.mobile_vault.packet import Packet
+from domain.mobile_vault.inbox_item import InboxItem
 from infrastructure.local_file.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
 
 
-def test_local_file_mobile_vault_gateway_fetch_unprocessed_packets(tmp_path):
+def test_local_file_mobile_vault_gateway_fetch_unprocessed_items(tmp_path):
     """[MV-RECV-01]
     指定ディレクトリ内の .md ファイル一覧をPacketとして正しく取得できるかのテスト。
     """
@@ -20,12 +20,12 @@ def test_local_file_mobile_vault_gateway_fetch_unprocessed_packets(tmp_path):
     file2.touch()
     file3.touch()
 
-    packets = repo.fetch_unprocessed_packets()
+    inbox_items = repo.fetch_unprocessed_items()
 
-    assert len(packets) == 2
-    packet_ids = {p.packet_id for p in packets}
-    assert "note1.md" in packet_ids
-    assert "note3.md" in packet_ids
+    assert len(inbox_items) == 2
+    item_ids = {p.item_id for p in inbox_items}
+    assert "note1.md" in item_ids
+    assert "note3.md" in item_ids
 
 
 def test_local_file_mobile_vault_gateway_publish_dashboard(tmp_path):
@@ -47,7 +47,7 @@ def test_local_file_mobile_vault_gateway_publish_dashboard(tmp_path):
     assert returned_path == str(file_path)
 
 
-def test_local_file_mobile_vault_gateway_delete_packet(tmp_path):
+def test_local_file_mobile_vault_gateway_delete_item(tmp_path):
     """[MV-RECV-01] ファイル削除のテスト。"""
     # Arrange
     work_dir = tmp_path / "work"
@@ -60,10 +60,10 @@ def test_local_file_mobile_vault_gateway_delete_packet(tmp_path):
     work_dir.mkdir(exist_ok=True)
     file_path.write_text("Delete me")
 
-    packet = Packet(packet_id=filename, content="Delete me", images=[])
+    inbox_item = InboxItem(item_id=filename, content="Delete me", images=[])
 
     # Act
-    repo.delete_packet(packet)
+    repo.delete_item(inbox_item)
 
     # Assert
     assert not file_path.exists()
@@ -106,4 +106,4 @@ def test_local_file_mobile_vault_gateway_read_dashboard_empty_dir(tmp_path):
 def test_local_file_mobile_vault_gateway_fetch_empty_dir(tmp_path):
     """[MV-RECV-01] 空ディレクトリの場合は空リストを返す。"""
     repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path / "nonexistent"))
-    assert repo.fetch_unprocessed_packets() == []
+    assert repo.fetch_unprocessed_items() == []

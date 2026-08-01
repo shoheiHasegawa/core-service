@@ -28,6 +28,9 @@ class FakeTaskRepository:
     def get_ready_tasks_for_date(self, target_date):
         return [Task(id="t1", title="Must 1", category=TaskCategory.MUST, estimated_minutes=30)]
 
+    def save(self, task):
+        pass
+
 
 class FakeScheduleGateway:
     def sync_schedule(self, target_date, tasks):

@@ -4,8 +4,8 @@ import tempfile
 from pathlib import Path
 
 from application.mobile_vault.mobile_vault_service import MobileVaultService
-from application.mobile_vault.peek_mobile_inbox_usecase import PeekMobileInboxUseCase
-from application.mobile_vault.process_mobile_packet_usecase import ProcessMobilePacketUseCase
+from application.mobile_vault.peek_inbox_usecase import PeekInboxUseCase
+from application.mobile_vault.process_inbox_item_usecase import ProcessInboxItemUseCase
 from application.second_brain.second_brain_service import SecondBrainService
 from domain.mobile_vault.markdown_image_parser import MarkdownImageParser
 from infrastructure.local_file.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
@@ -13,10 +13,10 @@ from infrastructure.local_file.local_file_second_brain_gateway import LocalFileS
 from tests.integration.conftest import IntegrationTestContext
 
 
-def test_peek_and_process_mobile_packet_integration(test_context: IntegrationTestContext):
+def test_peek_and_process_inbox_item_integration(test_context: IntegrationTestContext):
     """
-    [MV-RECV-01] PeekMobileInboxUseCase
-    [MV-RECV-02] ProcessMobilePacketUseCase
+    [MV-RECV-01] PeekInboxUseCase
+    [MV-RECV-02] ProcessInboxItemUseCase
     DBまで貫通させ、実際のファイル移動・タスク生成が行われるか検証する
     """
     with (
@@ -48,16 +48,16 @@ def test_peek_and_process_mobile_packet_integration(test_context: IntegrationTes
         parser = MarkdownImageParser()
 
         # テストデータの準備 (Mobile側)
-        packet_path = Path(mobile_dir) / "packet_test.md"
+        packet_path = Path(mobile_dir) / "item_test.md"
         packet_path.write_text("Test idea with image\n![[test_img.png]]")
         img_path = Path(mobile_img_dir) / "test_img.png"
         img_path.write_text("fake image content")
 
         # UseCase初期化
-        peek_uc = PeekMobileInboxUseCase(mobile_gateway, parser)
+        peek_uc = PeekInboxUseCase(mobile_gateway, parser)
         attachments_dir = Path(sb_dir) / "90_Meta" / "Attachments"
         attachments_dir.mkdir(parents=True, exist_ok=True)
-        process_uc = ProcessMobilePacketUseCase(
+        process_uc = ProcessInboxItemUseCase(
             receiver=mobile_gateway,
             second_brain_service=sb_service,
             task_operations_service=test_context.task_operations_service,
@@ -68,12 +68,12 @@ def test_peek_and_process_mobile_packet_integration(test_context: IntegrationTes
         service = MobileVaultService(peek_uc, process_uc, None)
 
         # --- 1. Peekのテスト [MV-RECV-01] ---
-        packets = service.peek_inbox()
-        assert len(packets) == 1
-        assert packets[0]["packet_id"] == "packet_test.md"
-        assert packets[0]["content"] == "Test idea with image\n![[test_img.png]]"
-        assert len(packets[0]["images"]) == 1
-        assert packets[0]["images"][0]["name"] == "test_img.png"
+        inbox_items = service.peek_inbox()
+        assert len(inbox_items) == 1
+        assert inbox_items[0]["item_id"] == "item_test.md"
+        assert inbox_items[0]["content"] == "Test idea with image\n![[test_img.png]]"
+        assert len(inbox_items[0]["images"]) == 1
+        assert inbox_items[0]["images"][0]["name"] == "test_img.png"
 
         # ファイルがまだ削除・移動されていないことの確認
         assert img_path.exists()
@@ -81,8 +81,8 @@ def test_peek_and_process_mobile_packet_integration(test_context: IntegrationTes
 
         # --- 2. Processのテスト (ideaアクション) [MV-RECV-02] ---
         # "idea" アクションは、second-brain の 00_Inbox に保存され、画像が 90_Meta/Attachments に移動する
-        success = service.process_packet(
-            packet_id="packet_test.md", action="idea", title="Great Idea", tags=["concept/test"]
+        success = service.process_inbox_item(
+            item_id="item_test.md", action="idea", title="Great Idea", tags=["concept/test"]
         )
         assert success is True
 
@@ -104,11 +104,11 @@ def test_peek_and_process_mobile_packet_integration(test_context: IntegrationTes
 
         # --- 3. Processのテスト (taskアクション) [MV-RECV-02] ---
         # もう一つテストデータを作成
-        packet_task_path = Path(mobile_dir) / "packet_task.md"
-        packet_task_path.write_text("Buy milk")
+        item_task_path = Path(mobile_dir) / "item_task.md"
+        item_task_path.write_text("Buy milk")
 
-        success_task = service.process_packet(
-            packet_id="packet_task.md", action="task", title="Milk", energy_level="Low"
+        success_task = service.process_inbox_item(
+            item_id="item_task.md", action="task", title="Milk", energy_level="Low"
         )
         assert success_task is True
 
@@ -121,4 +121,4 @@ def test_peek_and_process_mobile_packet_integration(test_context: IntegrationTes
         assert tasks[0].category == "S"
 
         # モバイル側のファイル削除確認
-        assert not packet_task_path.exists()
+        assert not item_task_path.exists()
