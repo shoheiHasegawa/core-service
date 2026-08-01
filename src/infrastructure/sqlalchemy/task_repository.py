@@ -53,6 +53,8 @@ class SqlTaskRepository(TaskRepository):
         model.target_date = task.target_date
         model.dependencies = json.dumps(task.dependencies)
         model.reference_id = task.reference_id
+        model.last_memo = task.last_memo
+        model.energy_level = task.energy_level
 
     def find_by_target_date(self, target_date: date) -> List[Task]:
         models = self.session.query(TaskModel).filter(TaskModel.target_date == target_date).all()
@@ -87,4 +89,6 @@ class SqlTaskRepository(TaskRepository):
             target_date=model.target_date,
             dependencies=deps,
             reference_id=model.reference_id,
+            last_memo=model.last_memo,
+            energy_level=model.energy_level,
         )

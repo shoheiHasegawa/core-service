@@ -81,5 +81,5 @@ class Worklog:
     target_date: Optional[date] = None
     memo: Optional[str] = None
     area_id: str = "00_Unknown"
-    category: str = "M"
-    task_type: str = "ONE_OFF"
+    category: TaskCategory = TaskCategory.MUST
+    task_type: TaskType = TaskType.ONE_OFF

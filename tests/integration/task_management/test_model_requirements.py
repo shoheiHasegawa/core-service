@@ -81,6 +81,8 @@ def test_worklog_repository_save_restore_new_columns(test_context: IntegrationTe
     """[TM-PLAN-03]
     SqlWorklogRepository（SQLAlchemyWorklogRepository）が、これら新しいカラムを含むWorklogエンティティを正しく保存・復元できることを検証する
     """
+    from domain.task_management.task import TaskCategory, TaskType
+
     repo = SQLAlchemyWorklogRepository(test_context.session)
 
     target_date = datetime.date.today()
@@ -97,8 +99,8 @@ def test_worklog_repository_save_restore_new_columns(test_context: IntegrationTe
     # Pythonは動的に属性を追加できるので、強制的に設定してリポジトリの挙動を確認する
     # ドメインモデルが正式に更新された後は通常のコンストラクタ引数になる想定
     worklog.area_id = "00_Dev"
-    worklog.category = "M"
-    worklog.task_type = "ONE_OFF"
+    worklog.category = TaskCategory.MUST
+    worklog.task_type = TaskType.ONE_OFF
 
     repo.save(worklog)
 
@@ -109,6 +111,6 @@ def test_worklog_repository_save_restore_new_columns(test_context: IntegrationTe
     restored_wl = restored_list[0]
     assert restored_wl.id == "test-repo-wl-1"
     assert getattr(restored_wl, "area_id", None) == "00_Dev"
-    assert getattr(restored_wl, "category", None) == "M"
-    assert getattr(restored_wl, "task_type", None) == "ONE_OFF"
+    assert getattr(restored_wl, "category", None) == TaskCategory.MUST
+    assert getattr(restored_wl, "task_type", None) == TaskType.ONE_OFF
     assert getattr(restored_wl, "is_completed", False) is True

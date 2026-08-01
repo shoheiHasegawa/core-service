@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 
 class DashboardReader(ABC):
     @abstractmethod
-    def get_recent_dashboards(self) -> list[str]:
-        """直近のダッシュボードのテキスト内容一覧を取得する"""
+    def read_dashboard(self, filename: str) -> Optional[str]:
+        """指定したファイル名のダッシュボードの内容を取得する"""
         pass

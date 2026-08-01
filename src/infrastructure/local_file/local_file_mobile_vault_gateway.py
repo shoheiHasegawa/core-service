@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from pathlib import Path
 
 from domain.mobile_vault.dashboard_publisher import DashboardPublisher
@@ -67,22 +66,15 @@ class LocalFileMobileVaultGateway(PacketReceiver, DashboardPublisher, DashboardR
         file_path.write_text(content, encoding="utf-8")
         return str(file_path)
 
-    def get_recent_dashboards(self) -> list[str]:
-
-        today = datetime.now().date()
-        yesterday = today - timedelta(days=1)
-        target_filenames = [
-            f"Briefing_{yesterday.strftime('%Y-%m-%d')}.md",
-            f"Briefing_{today.strftime('%Y-%m-%d')}.md",
-        ]
-
-        contents = []
+    def read_dashboard(self, filename: str) -> str | None:
         if not self.dashboard_dir.exists() or not self.dashboard_dir.is_dir():
-            return contents
+            return None
 
-        for filename in target_filenames:
-            file_path = (self.dashboard_dir / filename).resolve()
-            if file_path.exists() and file_path.is_file():
-                contents.append(file_path.read_text(encoding="utf-8"))
+        file_path = (self.dashboard_dir / filename).resolve()
+        if not file_path.is_relative_to(self.dashboard_dir):
+            return None
 
-        return contents
+        if file_path.exists() and file_path.is_file():
+            return file_path.read_text(encoding="utf-8")
+
+        return None

@@ -42,6 +42,8 @@ def test_save_and_find_by_target_date(session):
         area_id="00_Unknown",
         cumulative_minutes=0,
         reference_id="ref-123",
+        last_memo="test_memo",
+        energy_level="HIGH",
     )
 
     # 保存
@@ -54,6 +56,8 @@ def test_save_and_find_by_target_date(session):
     assert tasks[0].id == "t-repo-1"
     assert tasks[0].title == "Repo Test Task"
     assert tasks[0].reference_id == "ref-123"
+    assert tasks[0].last_memo == "test_memo"
+    assert tasks[0].energy_level == "HIGH"
 
 
 def test_find_by_id(session):

@@ -37,12 +37,14 @@ class SQLAlchemyWorklogRepository(WorklogRepository):
         model.minutes = worklog.minutes
         model.memo = worklog.memo
         model.area_id = worklog.area_id
-        model.category = worklog.category
-        model.task_type = worklog.task_type
+        model.category = worklog.category.value
+        model.task_type = worklog.task_type.value
         model.is_completed = worklog.is_completed
         self.session.commit()
 
     def find_by_task_and_date(self, task_id: str, target_date: date) -> List[Worklog]:
+        from domain.task_management.task import TaskCategory, TaskType
+
         models = (
             self.session.query(WorklogModel)
             .filter(WorklogModel.task_id == task_id, WorklogModel.target_date == target_date)
@@ -57,8 +59,8 @@ class SQLAlchemyWorklogRepository(WorklogRepository):
                 target_date=m.target_date,
                 memo=m.memo,
                 area_id=m.area_id,
-                category=m.category,
-                task_type=m.task_type,
+                category=TaskCategory(m.category) if m.category else TaskCategory.MUST,
+                task_type=TaskType(m.task_type) if m.task_type else TaskType.ONE_OFF,
             )
             for m in models
         ]

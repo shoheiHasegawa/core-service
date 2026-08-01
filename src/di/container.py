@@ -86,10 +86,18 @@ class CoreServiceContainer:
             recurring_task_repo=SqlRecurringTaskRepository(self.session),
         )
         record_worklogs_uc = RecordWorklogsUseCase(self.task_repo, self.worklog_repo)
+
+        from domain.task_management.briefing_markdown_parser import BriefingMarkdownParser
+        from infrastructure.system.system_clock import SystemClock
+        from infrastructure.system.system_uuid_generator import SystemUUIDGenerator
+
         sync_worklogs_uc = SyncWorklogsUseCase(
             dashboard_reader=self.mobile_vault_gateway,
             task_repository=self.task_repo,
             worklog_repository=self.worklog_repo,
+            parser=BriefingMarkdownParser(),
+            clock=SystemClock(),
+            uuid_generator=SystemUUIDGenerator(),
         )
         # Return Facade
         return DailyPlanningService(

@@ -20,3 +20,13 @@ class TaskRepository(ABC):
     def save_tasks(self, tasks: List[Task]) -> None:
         """タスクの状態を保存する"""
         pass
+
+    @abstractmethod
+    def find_by_id(self, task_id: str) -> "Task | None":
+        """指定されたIDの単一タスクを取得する"""
+        pass
+
+    @abstractmethod
+    def save(self, task: Task) -> None:
+        """単一のタスクを保存する"""
+        pass

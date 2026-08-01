@@ -7,25 +7,21 @@ from integration.conftest import IntegrationTestContext
 
 from application.daily_planning.sync_worklogs_usecase import SyncWorklogsUseCase
 from domain.mobile_vault.dashboard_reader import DashboardReader
-from domain.task_management.task import DailyBriefing, Task, TaskCategory
+from domain.task_management.task import Task, TaskCategory
 from infrastructure.sqlalchemy.worklog_repository import SQLAlchemyWorklogRepository
 
 
 class FakeDashboardReader(DashboardReader):
     def __init__(self):
-        self.get_recent_dashboards_called = 0
-        self.contents = [
-            "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n",
-            "# Daily Briefing (2026-07-21)\n- [x] Task Old (予定: 10m) <!-- id: t_old -->\n",
-        ]
-        self.get_recent_briefing_contents_called = 0
+        self.dashboards = {}
+        self.read_dashboard_called = 0
 
-    def save(self, briefing: DailyBriefing) -> None:
-        pass
+    def publish(self, filename: str, content: str):
+        self.dashboards[filename] = content
 
-    def get_recent_dashboards(self) -> list[str]:
-        self.get_recent_dashboards_called += 1
-        return self.contents
+    def read_dashboard(self, filename: str) -> dict[str, str]:
+        self.read_dashboard_called += 1
+        return self.dashboards.get(filename)
 
 
 @freeze_time("2026-07-22")
@@ -35,21 +31,33 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
     worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
     dashboard_reader = FakeDashboardReader()
 
+    # Setup dashboards
+    dashboard_reader.publish(
+        "Briefing_2026-07-21.md", "# Daily Briefing (2026-07-21)\n- [x] Task Old (予定: 10m) <!-- id: t_old -->\n"
+    )
+    dashboard_reader.publish(
+        "Briefing_2026-07-22.md", "# Daily Briefing (2026-07-22)\n- [x] Task 1 (予定: 30m) <!-- id: t1 -->\n"
+    )
+
+    from datetime import datetime
+
+    from domain.task_management.briefing_markdown_parser import BriefingMarkdownParser
+    from tests.integration.helpers.fake_clock import FakeClock
+    from tests.integration.helpers.fake_uuid_generator import FakeUUIDGenerator
+
+    clock = FakeClock(datetime(2026, 7, 22, 10, 0, 0))
+    uuid_gen = FakeUUIDGenerator(["fake-wl-1", "fake-wl-2"])
+
+    usecase = SyncWorklogsUseCase(dashboard_reader, task_repo, worklog_repo, BriefingMarkdownParser(), clock, uuid_gen)
+
     # 準備：DBにタスクを登録
     target_date = date(2026, 7, 22)
     task1 = Task(id="t1", title="Task 1", category=TaskCategory.MUST, estimated_minutes=30, target_date=target_date)
     task_repo.save_tasks([task1])
     test_context.session.commit()
 
-    # サービス初期化
-    service = SyncWorklogsUseCase(
-        dashboard_reader=dashboard_reader,
-        task_repository=task_repo,
-        worklog_repository=worklog_repo,
-    )
-
     # 実行
-    service.execute()
+    usecase.execute()
     test_context.session.commit()
 
     # 検証：WorklogがDBに保存されているか
@@ -57,8 +65,8 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
     assert len(worklogs) == 1
     assert worklogs[0].task_id == "t1"
 
-    # get_recent_briefing_contents が呼ばれたか検証
-    assert dashboard_reader.get_recent_dashboards_called == 1, "ダッシュボード内容を取得するメソッドが呼ばれるべき"
+    # read_dashboard が呼ばれたか検証
+    assert dashboard_reader.read_dashboard_called == 2, "昨日と今日のダッシュボードが読み取られるべき"
 
     # 昨日のファイルや無関係のファイルがパースされたり異常動作を引き起こしていないことの検証
     worklogs_old = worklog_repo.find_by_task_and_date("t_old", date(2026, 7, 21))

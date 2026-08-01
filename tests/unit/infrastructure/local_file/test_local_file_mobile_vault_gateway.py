@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pytest
 
 from domain.mobile_vault.packet import Packet
@@ -82,34 +80,27 @@ def test_local_file_mobile_vault_gateway_save_file_path_traversal(tmp_path):
     assert "ディレクトリトラバーサル攻撃を検知しました" in str(exc_info.value)
 
 
-def test_local_file_mobile_vault_gateway_get_recent_dashboards(tmp_path):
-    """[MV-PLACE-01] 直近のダッシュボードファイルの内容が取得できることのテスト。"""
+def test_local_file_mobile_vault_gateway_read_dashboard(tmp_path):
+    """[MV-PLACE-01] 指定したファイル名のダッシュボードの内容を読み取れること"""
+    dashboard_dir = tmp_path / "dashboards"
+    repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path), dashboard_dir=str(dashboard_dir))
 
-    work_dir = tmp_path / "work"
-    work_dir.mkdir(parents=True, exist_ok=True)
-    repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path), dashboard_dir=str(work_dir))
+    target_filename = "Briefing_2026-07-22.md"
+    content = "# Briefing"
+    repo.publish(target_filename, content)
 
-    today = datetime.now().date()
+    # 読み取れること
+    read_content = repo.read_dashboard(target_filename)
+    assert read_content == content
 
-    today_file = work_dir / f"Briefing_{today.strftime('%Y-%m-%d')}.md"
-    # yesterday_file does not exist (not created)
-    other_file = work_dir / "Briefing_2020-01-01.md"
-
-    today_file.write_text("today's content")
-    other_file.write_text("old content")
-    # yesterday_file does not exist
-
-    contents = repo.get_recent_dashboards()
-
-    assert len(contents) == 1
-    assert "today's content" in contents
+    # 存在しないファイルはNoneを返すこと
+    assert repo.read_dashboard("nonexistent.md") is None
 
 
-def test_local_file_mobile_vault_gateway_get_recent_dashboards_empty_dir(tmp_path):
-    """[MV-PLACE-01] 空ディレクトリの場合は空リストを返す。"""
+def test_local_file_mobile_vault_gateway_read_dashboard_empty_dir(tmp_path):
+    """[MV-PLACE-01] 空ディレクトリの場合はNoneを返す。"""
     repo = LocalFileMobileVaultGateway(inbox_dir=str(tmp_path), dashboard_dir=str(tmp_path / "nonexistent"))
-    contents = repo.get_recent_dashboards()
-    assert len(contents) == 0
+    assert repo.read_dashboard("test.md") is None
 
 
 def test_local_file_mobile_vault_gateway_fetch_empty_dir(tmp_path):
