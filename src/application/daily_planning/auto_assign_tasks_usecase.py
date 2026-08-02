@@ -1,7 +1,7 @@
 from datetime import date
 
 from domain.task_management.planning_rules import WIPAllocationPolicy
-from domain.task_management.task import TaskCategory
+from domain.task_management.task import TaskCategory, TaskType
 from domain.task_management.task_repository import TaskRepository
 
 
@@ -16,11 +16,12 @@ class AutoAssignTasksUseCase:
     def execute(self, target_date: date) -> None:
         # 1. Roll-over uncompleted past tasks
         past_tasks = self.task_repository.get_uncompleted_past_tasks(target_date)
-        for t in past_tasks:
+        rollover_tasks = [t for t in past_tasks if t.task_type == TaskType.ONE_OFF]
+        for t in rollover_tasks:
             t.target_date = target_date
 
-        if past_tasks:
-            self.task_repository.save_tasks(past_tasks)
+        if rollover_tasks:
+            self.task_repository.save_tasks(rollover_tasks)
 
         # 2. Check current MUST WIP limit for the target date
         # (This includes the rolled-over tasks)

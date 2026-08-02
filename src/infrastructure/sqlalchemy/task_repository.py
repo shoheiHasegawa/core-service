@@ -25,7 +25,11 @@ class SqlTaskRepository(TaskRepository):
     def get_uncompleted_past_tasks(self, current_date: date) -> List[Task]:
         models = (
             self.session.query(TaskModel)
-            .filter(TaskModel.target_date < current_date, TaskModel.status != TaskStatus.COMPLETED.value)
+            .filter(
+                TaskModel.target_date < current_date,
+                TaskModel.status != TaskStatus.COMPLETED.value,
+                TaskModel.task_type == TaskType.ONE_OFF.value,
+            )
             .all()
         )
         return [self._to_entity(m) for m in models]

@@ -147,3 +147,55 @@ def test_task_repository_malformed_dependencies_raises_value_error(session):
     with pytest.raises(ValueError, match="Data corruption detected in dependencies") as exc_info:
         repository.find_by_id("t-corrupt-1")
     assert "Data corruption" in str(exc_info.value)
+
+
+def test_get_uncompleted_past_tasks_only_returns_one_off(session):
+    """
+    get_uncompleted_past_tasks は過去の未完了タスクのうち ONE_OFF タスクのみを取得し、
+    RECURRING タスクや完了済みタスク、未来日付タスクを除外することを検証する。
+    """
+    repository = SqlTaskRepository(session)
+    past_one_off = Task(
+        id="t-past-oneoff",
+        title="Past One Off",
+        category=TaskCategory.MUST,
+        estimated_minutes=30,
+        task_type=TaskType.ONE_OFF,
+        status=TaskStatus.TODO,
+        target_date=date(2026, 7, 30),
+    )
+    past_recurring = Task(
+        id="t-past-recurring",
+        title="Past Recurring",
+        category=TaskCategory.SHOULD,
+        estimated_minutes=30,
+        task_type=TaskType.RECURRING,
+        status=TaskStatus.TODO,
+        target_date=date(2026, 7, 30),
+    )
+    past_completed = Task(
+        id="t-past-completed",
+        title="Past Completed",
+        category=TaskCategory.MUST,
+        estimated_minutes=30,
+        task_type=TaskType.ONE_OFF,
+        status=TaskStatus.COMPLETED,
+        target_date=date(2026, 7, 30),
+    )
+    future_one_off = Task(
+        id="t-future-oneoff",
+        title="Future One Off",
+        category=TaskCategory.MUST,
+        estimated_minutes=30,
+        task_type=TaskType.ONE_OFF,
+        status=TaskStatus.TODO,
+        target_date=date(2026, 8, 1),
+    )
+    repository.save_tasks([past_one_off, past_recurring, past_completed, future_one_off])
+
+    tasks = repository.get_uncompleted_past_tasks(date(2026, 8, 1))
+
+    assert len(tasks) == 1
+    assert tasks[0].id == "t-past-oneoff"
+    assert tasks[0].task_type == TaskType.ONE_OFF
+
