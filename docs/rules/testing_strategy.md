@@ -29,5 +29,32 @@ AIがカバレッジを稼ぐための「悪質なハック」や「トレーサ
 - **1 Concept = 1 File の原則**: Unitテストのファイル名は、対象実装ファイル名に `test_` をプレフィックスとして付与すること。
 - **配置（ディレクトリの一致）**: Unitテストのディレクトリ構造は、実装コードの `src/` 配下の構造と完全に一致させること。
 
-## 4. TDD Workflow (ハードゲートへの移譲)
-Agentは自律的にTDDの手順を推測して実行するのではなく、**必ず `tdd_controller.py` 等のシステム的ステートマシン（ハードゲート）を経由し、その指示・ルーティングに従ってテストと実装のループを回すこと。**
+## 4. ダブルループTDD（Double-Loop TDD）標準開発フロー
+
+`core-service` におけるすべての新機能開発およびリファクタリングは、以下の **ダブルループTDD（Outside-In TDD）** に従って実行する。
+
+```
+[外側ループ (Outer Loop: 仕様・結合テスト)]
+  Step 1: SDD Spec Design (sdd-spec-writer) -> spec.md 定義 (要求ID, I/O型)
+  Step 2: Outer Red (tdd-red-coder) -> tests/integration/ に仕様テストを作成 (FAIL確認)
+      │
+      ▼
+  [内側ループ (Inner Loop: ドメイン・実装・単体テスト)]
+    Step 3a: Inner Red (tdd-green-refactorer) -> tests/unit/ にドメイン単体テスト作成 (必要時)
+    Step 3b: Inner Green -> src/ にドメイン・UseCaseを最小実装
+    Step 3c: Refactor -> クリーンアーキテクチャ・SOLID原則に従い整理 (Green維持)
+      │
+      ▼
+  Step 4: Outer Green -> tests/integration/ の結合テストが全件 PASS することを確認
+  Step 5: Quality Gate & Compliance (司法) -> validate_sdd.py (カバレッジ >= 90%, 要求ID一致)
+```
+
+### 各ステップの厳格な遷移条件
+1. **Outer Red 成立条件**:
+   - `tests/integration/` に `spec.md` の全要求IDを紐付けた結合テストが作成され、テスト実行が **FAIL（Red）** すること（構文エラーではなくアサーション失敗であること）。
+2. **Inner Loop 開発基準**:
+   - 複雑なビジネスルールや計算、エッジケースは `tests/unit/` で単体テストを書きながらドメインを肉付けする。
+3. **Outer Green 達成基準**:
+   - `pytest tests/integration/` および `pytest tests/unit/` が **すべて PASS（Exit 0）** すること。
+4. **Quality Gate 通過基準**:
+   - `agent-core/tools/validate_sdd.py`（カバレッジ >= 90%、Makefile完全性、要求ID双方向トレーサビリティ、Linter）がノーエラーで完全合格すること。
