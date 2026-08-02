@@ -96,12 +96,13 @@ class RecurringTask:
 
     def to_task(self, target_date: date) -> "Task":
 
-        from domain.task_management.task import Task
+        from domain.task_management.task import Task, TaskType
 
         task = Task(
             id=f"{self.id}_{target_date.strftime('%Y%m%d')}",
             title=self.name,
             category=self.category,
+            task_type=TaskType.RECURRING,
             estimated_minutes=self.duration_minutes,
             area_id="00_Recurring",
             target_date=target_date,

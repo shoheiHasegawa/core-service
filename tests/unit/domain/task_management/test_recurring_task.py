@@ -1,7 +1,7 @@
 from datetime import date
 
 from domain.task_management.recurring_task import RecurringTask
-from domain.task_management.task import TaskCategory
+from domain.task_management.task import TaskCategory, TaskType
 
 
 def create_recurring_task(day_context="ANY", cron_schedule="* * * * *"):
@@ -56,3 +56,37 @@ def test_is_scheduled_on_any_returns_true_regardless_of_holiday():
 
     target_date_workday = date(2026, 7, 13)  # 2026-07-13 is Monday
     assert task.is_scheduled_on(target_date_workday, is_holiday=False)
+
+
+def test_to_task_creates_task_with_recurring_type():
+    """
+    RecurringTask.to_task(target_date) で生成される Task の task_type が TaskType.RECURRING であることを検証する。
+    """
+    rt = RecurringTask(
+        id="rt-001",
+        name="Daily Standup",
+        rule_type="cron",
+        cron_schedule="0 9 * * 1-5",
+        start_time="09:00",
+        end_time="09:30",
+        duration_minutes=30,
+        category=TaskCategory.MUST,
+        valid_from=None,
+        valid_until=None,
+        day_context="WORKDAY",
+    )
+    target_date = date(2026, 8, 3)
+    task = rt.to_task(target_date)
+
+    assert task.id == "rt-001_20260803"
+    assert task.title == "Daily Standup"
+    assert task.category == TaskCategory.MUST
+    assert task.task_type == TaskType.RECURRING
+    assert task.estimated_minutes == 30
+    assert task.area_id == "00_Recurring"
+    assert task.target_date == target_date
+    assert task.start_time is not None
+    assert task.start_time.hour == 9 and task.start_time.minute == 0
+    assert task.end_time is not None
+    assert task.end_time.hour == 9 and task.end_time.minute == 30
+
