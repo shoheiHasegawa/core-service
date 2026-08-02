@@ -74,5 +74,7 @@ class ProcessInboxItemUseCase:
                     self.receiver.delete_image(img)
                 except ValueError:
                     pass
+        else:
+            raise ValueError(f"Invalid action: {action}. Expected 'idea', 'task', or 'delete'.")
 
         return True

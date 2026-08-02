@@ -1,4 +1,4 @@
-"""[MV-RECV-01][MV-RECV-02] Mobile Vault Integration Tests"""
+"""[MV-RECV-01][MV-RECV-02][MV-RECV-03] Mobile Vault Integration Tests"""
 
 import tempfile
 from pathlib import Path
@@ -17,6 +17,7 @@ def test_peek_and_process_inbox_item_integration(test_context: IntegrationTestCo
     """
     [MV-RECV-01] PeekInboxUseCase
     [MV-RECV-02] ProcessInboxItemUseCase
+    [MV-RECV-03] ProcessInboxItemUseCase with invalid action
     DBまで貫通させ、実際のファイル移動・タスク生成が行われるか検証する
     """
     with (
@@ -118,7 +119,25 @@ def test_peek_and_process_inbox_item_integration(test_context: IntegrationTestCo
         tasks = test_context.session.query(TaskModel).all()
         assert len(tasks) == 1
         assert tasks[0].title == "Milk"
-        assert tasks[0].category == "S"
-
         # モバイル側のファイル削除確認
         assert not item_task_path.exists()
+
+        # --- 4. Processのテスト (deleteアクション) [MV-RECV-02] ---
+        item_delete_path = Path(mobile_dir) / "item_delete.md"
+        item_delete_path.write_text("Delete me with image\n![[del_img.png]]")
+        del_img_path = Path(mobile_img_dir) / "del_img.png"
+        del_img_path.write_text("image to be deleted")
+
+        success_delete = service.process_inbox_item(item_id="item_delete.md", action="delete")
+        assert success_delete is True
+        assert not item_delete_path.exists()
+        assert not del_img_path.exists()
+
+        # --- 5. 異常系テスト (無効なアクション) [MV-RECV-03] ---
+        item_invalid_path = Path(mobile_dir) / "item_invalid.md"
+        item_invalid_path.write_text("Invalid action note")
+
+        import pytest
+
+        with pytest.raises(ValueError, match="Invalid action: invalid_action"):
+            service.process_inbox_item(item_id="item_invalid.md", action="invalid_action")

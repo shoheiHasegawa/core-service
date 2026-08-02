@@ -1,53 +1,43 @@
-# Specification: Mobile Vault Context
+# Mobile Vault 仕様書 (spec.md)
 
-## 1. Domain Overview
-*   **Domain**: `you_inc` (Personal Agentic OS)
-*   **Context**: Mobile Vault Integration
-*   **Responsibility**: ユーザーがモバイル端末（iPhone等）で利用している「Vault（iCloud/Obsidian等）」と、Agentic OS間のデータの非同期なやり取りを管理する。
+## 1. Design Decisions & Rationale (設計根拠)
 
-## 2. Ubiquitous Language (ユビキタス言語)
-*   **Vault (保管庫)**: モバイル端末とAgentic OSを繋ぐ非同期のファイル連携領域。
-*   **InboxItem (パケット)**: ユーザーがモバイルからVaultに投げ込んだ未処理の思考の断片（Markdownメモ＋画像等）。
-*   **Dashboard (ダッシュボード)**: Agent側からユーザーに向けてVaultへ書き出す、読み取り専用のサマリ画面。
-*   **Briefing (ブリーフィング)**: Task ManagementコンテキストにおいてVaultへ配置される特定のダッシュボード。
+- **なぜ非同期ファイル連携（Vault）なのか**:
+  - モバイル端末（iPhone/Obsidian等）からの素早い思考メモ投下と、デスクトップ/Agentic OS側の非同期な計算・処理を物理的に分離（疎結合化）するため。
+- **なぜ処理後の即時破棄（Leave No Trace）なのか**:
+  - Vaultに処理済みのメモや画像が残り続けると、未処理パケットとの混同や二重取り込み（ゴーストデータ）が発生するため、処理完了時（idea/task/delete）はVault上の原本ファイルを即時物理削除する。
+- **なぜ厳格なアクションバリデーションなのか**:
+  - 不正なアクション名（タイポ等）によるサイレントな処理スキップ（未処理データの消失）を防ぎ、異常なデータに即座に気づけるよう例外（`ValueError`）を発生させる。
 
-## 3. Scenarios (Use Cases)
+---
 
-### [MV-RECV-01] Peek Mobile Inbox (未処理パケットの一覧取得)
-*   **Target**: `PeekInboxUseCase`
-*   **Process**:
-    1. `InboxReceiver` 経由で、Vault内の未処理パケットの一覧を取得する。
-    2. 各パケットの内容（テキスト）と、関連する画像パス（Attachment）の情報を読み取る。
-    3. 副作用（ファイルの削除や移動）は一切発生させない（Read-only）。
-*   **Output**: 読み取られたパケット情報（ID, 内容, 画像パスのリスト）のコレクション。
+## 2. Contract (I/O Types & Exceptions)
 
-### [MV-RECV-02] Process Mobile InboxItem (未処理パケットの選択的処理)
-*   **Target**: `ProcessInboxItemUseCase`
-*   **Input**: 処理対象のパケットID (`item_id: str`)、アクション (`action: str` - idea/task/delete)、メタデータ (`title`, `tags`, `energy_level`)
-*   **Process**:
-    1. 対象パケットを読み取り、`action` に応じて以下を実行する:
-       - **idea**: `SecondBrainService` 経由でアイデアノートとして登録。
-       - **task**: `TaskOperationsService` 経由でタスクとして登録。
-       - **delete**: 登録せず破棄。
-    2. `idea` または `task` の場合、パケットに含まれる画像ファイルを `second-brain` の Attachments ディレクトリ等へ安全に移動（コピー＆元ファイル削除）する。
-    3. `InboxReceiver.delete_item(item_id)` で、処理完了したパケットをVaultから削除する。
-*   **Output**: 処理の成功/失敗を表す真偽値 (Boolean)。
+### UseCases & Functions
+- **`PeekInboxUseCase.execute() -> List[Dict[str, Any]]`**:
+  - 未処理パケットの一覧を返す。
+  - 返却要素: `{"item_id": str, "content": str, "images": List[Dict[str, str]]}`
+- **`ProcessInboxItemUseCase.execute(item_id: str, action: str, title: str = "", tags: list[str] = None, energy_level: str = None) -> bool`**:
+  - `action`: `"idea"` | `"task"` | `"delete"` (必須)
+  - `item_id`: 処理対象ファイル名
+  - 返却値: 処理成功時は `True`、対象パケットが存在しない場合は `False`。
+- **`PlaceDashboardUseCase.execute(title: str, content: str) -> str`**:
+  - `title`: 出力ファイル名 (例: `Briefing_2026-08-02.md`)
+  - `content`: Markdown本文
+  - 返却値: 配置されたファイルの絶対パス。
 
-### [MV-PLACE-01] Place Dashboard (ダッシュボードの配置)
-*   **Target**: `PlaceDashboardUseCase`
-*   **Input**: 配置対象のダッシュボードタイトル (`title: str`)、内容のMarkdown文字列 (`content: str`)
-*   **Process**:
-    1. `DashboardPublisher.publish(title, content)` を呼び出し、Vaultへダッシュボードを配置する。
-*   **Output**: 配置されたファイルの絶対パスなど、インフラが決定した識別子（String）。
+### Exceptions (例外定義)
+- **`ValueError`**: `action` に `"idea"`, `"task"`, `"delete"` 以外の無効な文字列が渡された場合に送出。
 
-### [MV-PLACE-02] 異常系: Dashboard配置の上書き処理
-*   **事後条件**: ダッシュボードの性質上、既存のファイルが存在する場合は安全に上書き保存されること。（※旧仕様ではエラーにしていましたが、ダッシュボードは定期更新されるため上書きを許容します）
+---
 
-## 4. Architecture & Layered Rules
-*   **Domain Separation (Port)**:
-    *   `src/domain/mobile_vault/gateway.py` に `InboxReceiver` および `DashboardPublisher` を定義する。ファイルI/Oの概念（filename, read_text）を極力排除する。
-*   **Application (Use Cases)**:
-    *   `src/application/mobile_vault/` 配下に `peek_inbox_usecase.py`, `process_inbox_item_usecase.py`, `place_dashboard_usecase.py` を独立して実装し、SRPを満たす。
-*   **Infrastructure (Adapter)**:
-    *   `src/infrastructure/mobile_vault/local_file_mobile_vault_gateway.py` は、Domain層のインターフェースを実装する。
-    *   `src/infrastructure/task_management/briefing_gateway.py` は `DashboardPublisher` を利用してブリーフィングを書き出す。
+## 3. Scenarios (テスト要求シナリオ)
+
+### 正常系 (Happy Path)
+- `[MV-RECV-01]`: `PeekInboxUseCase` により、Vault内の未処理パケット（Markdownメモおよび添付画像）の一覧が副作用なく（Read-onlyで）取得できること。
+- `[MV-RECV-02]`: `ProcessInboxItemUseCase` により、指定したパケットが `idea`（Second Brainへの登録＋画像移動）、`task`（Task DBへの登録）、`delete`（破棄）のアクションに応じて正しく振り分けられ、処理完了後にVaultから原本ファイルが自動削除されること。
+- `[MV-PLACE-01]`: `PlaceDashboardUseCase` により、指定されたタイトルとMarkdown内容がVaultへ正常に配置・保存され、ファイルパスが返却されること。
+- `[MV-PLACE-02]`: `PlaceDashboardUseCase` により、同名のダッシュボードファイルが既に存在する場合であっても、安全に上書き保存されること。
+
+### 異常系 / エッジケース (Edge Cases)
+- `[MV-RECV-03]`: `ProcessInboxItemUseCase` に対し、`idea`, `task`, `delete` 以外の未知のアクションが指定された場合、サイレントに完了せず `ValueError` が送出されること。

@@ -1,53 +1,35 @@
-from integration.conftest import IntegrationTestContext
+"""[MV-PLACE-01][MV-PLACE-02] Place Dashboard Integration Tests"""
+
+import tempfile
+from pathlib import Path
 
 from application.mobile_vault.place_dashboard_usecase import PlaceDashboardUseCase
-from domain.mobile_vault.dashboard_publisher import DashboardPublisher
+from infrastructure.local_file.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
+from tests.integration.conftest import IntegrationTestContext
 
 
-class FakeDashboardPublisher(DashboardPublisher):
-    def __init__(self):
-        self.published = {}
-        self.error_on_publish = False
-
-    def publish(self, title: str, content: str) -> str:
-        if self.error_on_publish:
-            raise FileExistsError("File already exists")
-        self.published[title] = content
-        return f"/mock/path/{title}"
-
-
-def test_place_dashboard(test_context: IntegrationTestContext):
+def test_place_dashboard_and_overwrite_integration(test_context: IntegrationTestContext):
     """
     [MV-PLACE-01] Place Dashboard (ダッシュボードの配置)
+    [MV-PLACE-02] Dashboard配置の上書き処理
+    実ファイルシステム（LocalFileMobileVaultGateway）を用いて書き込み・上書きを検証する。
     """
-    # Arrange
-    publisher = FakeDashboardPublisher()
-    use_case = PlaceDashboardUseCase(publisher=publisher)
+    with tempfile.TemporaryDirectory() as mobile_dir:
+        # Arrange
+        gateway = LocalFileMobileVaultGateway(inbox_dir=mobile_dir, dashboard_dir=mobile_dir)
+        use_case = PlaceDashboardUseCase(publisher=gateway)
 
-    # Act
-    result_path = use_case.execute(title="dashboard.md", content="# Hello Dashboard")
+        # 1. 新規配置のテスト [MV-PLACE-01]
+        result_path = use_case.execute(title="dashboard.md", content="# Hello Dashboard")
 
-    # Assert
-    assert result_path == "/mock/path/dashboard.md"
-    assert publisher.published["dashboard.md"] == "# Hello Dashboard"
+        expected_file = Path(mobile_dir) / "dashboard.md"
+        assert Path(result_path).resolve() == expected_file.resolve()
+        assert expected_file.exists()
+        assert expected_file.read_text() == "# Hello Dashboard"
 
+        # 2. 上書きのテスト [MV-PLACE-02]
+        result_path_2 = use_case.execute(title="dashboard.md", content="# Overwritten Dashboard")
 
-def test_place_dashboard_overwrite(test_context: IntegrationTestContext):
-    """
-    [MV-PLACE-02] 異常系: Dashboard配置の上書き処理
-    (Now we test that we actually overwrite, or the use case handles it gracefully)
-    Wait, in the spec it says: 既存のファイルが存在する場合は安全に上書き保存されること
-    If we mock publisher to just overwrite, it works.
-    If the infrastructure throws an exception, maybe we don't catch it here, it depends on infra.
-    But let's assume infra overwrites it. If we wanted to test this, the test is mostly about infra adapter.
-    For the application, we just call publish. We don't really need a special error handling test in the UseCase if it doesn't handle errors specially.
-    So we just test it calls publish.
-    """
-    publisher = FakeDashboardPublisher()
-    use_case = PlaceDashboardUseCase(publisher=publisher)
-
-    # Just asserting it can handle normal execution.
-    use_case.execute(title="dashboard.md", content="First content")
-    use_case.execute(title="dashboard.md", content="Second content")
-
-    assert publisher.published["dashboard.md"] == "Second content"
+        assert Path(result_path_2).resolve() == expected_file.resolve()
+        assert expected_file.exists()
+        assert expected_file.read_text() == "# Overwritten Dashboard"

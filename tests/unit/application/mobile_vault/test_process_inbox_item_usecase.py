@@ -73,3 +73,72 @@ def test_process_inbox_item_task():
     )
     mock_receiver.delete_item.assert_called_once_with(mock_packet)
     mock_sb_service.register_inbox_note.assert_not_called()
+
+
+def test_process_inbox_item_delete():
+    """[MV-RECV-02] Process Mobile PacketのDelete処理のテスト。"""
+    mock_receiver = MagicMock(spec=InboxReceiver)
+    mock_sb_service = MagicMock(spec=SecondBrainService)
+    mock_task_service = MagicMock(spec=TaskOperationsService)
+    mock_sb_gateway = MagicMock(spec=SecondBrainGateway)
+    mock_parser = MagicMock(spec=MarkdownImageParser)
+
+    mock_packet = InboxItem(item_id="test_delete.md", content="Delete body", images=[])
+    mock_receiver.get_item.return_value = mock_packet
+    mock_parser.extract_images.return_value = []
+
+    usecase = ProcessInboxItemUseCase(
+        receiver=mock_receiver,
+        second_brain_service=mock_sb_service,
+        task_operations_service=mock_task_service,
+        sb_gateway=mock_sb_gateway,
+        sb_attachments_dir="/fake/attachments",
+        parser=mock_parser,
+    )
+
+    result = usecase.execute(item_id="test_delete.md", action="delete")
+
+    assert result is True
+    mock_receiver.delete_item.assert_called_once_with(mock_packet)
+    mock_sb_service.register_inbox_note.assert_not_called()
+    mock_task_service.register_task.assert_not_called()
+
+
+def test_process_inbox_item_not_found():
+    """[MV-RECV-02] 対象パケットが存在しない場合は False を返す。"""
+    mock_receiver = MagicMock(spec=InboxReceiver)
+    mock_receiver.get_item.return_value = None
+
+    usecase = ProcessInboxItemUseCase(
+        receiver=mock_receiver,
+        second_brain_service=MagicMock(spec=SecondBrainService),
+        task_operations_service=MagicMock(spec=TaskOperationsService),
+        sb_gateway=MagicMock(spec=SecondBrainGateway),
+        sb_attachments_dir="/fake/attachments",
+        parser=MagicMock(spec=MarkdownImageParser),
+    )
+
+    result = usecase.execute(item_id="non_existent.md", action="idea")
+    assert result is False
+
+
+def test_process_inbox_item_invalid_action():
+    """[MV-RECV-03] 無効なアクションが指定された場合は ValueError を送出する。"""
+    import pytest
+
+    mock_receiver = MagicMock(spec=InboxReceiver)
+    mock_packet = InboxItem(item_id="test.md", content="Body", images=[])
+    mock_receiver.get_item.return_value = mock_packet
+
+    usecase = ProcessInboxItemUseCase(
+        receiver=mock_receiver,
+        second_brain_service=MagicMock(spec=SecondBrainService),
+        task_operations_service=MagicMock(spec=TaskOperationsService),
+        sb_gateway=MagicMock(spec=SecondBrainGateway),
+        sb_attachments_dir="/fake/attachments",
+        parser=MagicMock(spec=MarkdownImageParser),
+    )
+
+    with pytest.raises(ValueError, match="Invalid action: invalid_action") as exc_info:
+        usecase.execute(item_id="test.md", action="invalid_action")
+    assert "Invalid action" in str(exc_info.value)
