@@ -198,4 +198,3 @@ def test_get_uncompleted_past_tasks_only_returns_one_off(session):
     assert len(tasks) == 1
     assert tasks[0].id == "t-past-oneoff"
     assert tasks[0].task_type == TaskType.ONE_OFF
-

@@ -33,14 +33,14 @@ class FakeScheduleGateway(ScheduleGateway):
 def test_sync_calendar_and_metadata_integration(test_context: IntegrationTestContext):
     """
     [TM-SYNC-01] 正常系: 決定されたスケジュールを外部SoR（カレンダー）に同期する
-    [TM-PLAN-06] アーキテクチャ原則: SoR分離と終日予定のメタデータ化
+    [TM-PLAN-13] アーキテクチャ原則: SoR分離と終日予定のメタデータ化
     [TM-SYNC-03] 正常系: DailyBriefingのMarkdown連携 (Mobile Vault同期)
     """
     task_repo = test_context.task_repo
     SQLAlchemyWorklogRepository(test_context.session)
     schedule_gateway = FakeScheduleGateway()
 
-    # [TM-PLAN-06] 終日イベントをメタデータとして扱う ("有給"等をフラグとして注入)
+    # [TM-PLAN-13] 終日イベントをメタデータとして扱う ("有給"等をフラグとして注入)
     calendar_gateway = FakeCalendarGateway(all_day_events=["有給"])
 
     service = PlanDayUseCase(

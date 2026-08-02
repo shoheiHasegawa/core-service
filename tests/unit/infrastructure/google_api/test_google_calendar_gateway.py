@@ -26,7 +26,7 @@ def test_fetch_fixed_events_uses_build(mock_build, mock_creds):
 @patch("googleapiclient.discovery.build", autospec=True)
 def test_fetch_all_day_events_uses_build(mock_build, mock_creds):
     """
-    [TM-PLAN-06] GoogleCalendarGateway.fetch_all_day_eventsの検証
+    [TM-PLAN-13] GoogleCalendarGateway.fetch_all_day_eventsの検証
     """
     config = CalendarConfig(calendar_id="test@example.com", credentials_path="dummy.json")
     repo = GoogleCalendarGateway(config=config)
@@ -167,4 +167,3 @@ def test_sync_daily_briefing_deletes_obsolete_events(mock_build, mock_creds):
     _, kwargs = mock_events.insert.call_args
     body = kwargs.get("body", {})
     assert body.get("extendedProperties", {}).get("private", {}).get("you_inc_task_id") == "task-new"
-

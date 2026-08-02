@@ -93,4 +93,3 @@ def test_auto_assign_tasks_does_not_rollover_recurring_tasks():
     # RECURRINGタスクは持ち越されず、target_date も更新されず保存もされない
     assert past_recurring.target_date == date(2026, 7, 31)
     assert past_recurring not in repo.saved_tasks
-

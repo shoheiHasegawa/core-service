@@ -1,66 +1,63 @@
-# 仕様定義 (Action & Reflection Pipeline)
+# Daily Planning 仕様書 (spec.md)
 
-このドキュメントは、本パッケージが満たすべきすべての振る舞い（ユースケース）をシナリオとして定義する。
-すべてのテストコードは、このシナリオID（例: `[TM-PLAN-01]`）と紐付けて実装されること。
+## 1. Design Decisions & Rationale (設計根拠)
 
-## [TM-PLAN-01] 正常系: 1日のプランニングの基本フローとリカバリーファースト
-- **事前条件**: Task Registryに「今日やるべき[M][S][W]タスク」が存在する。
-- **事後条件**: `[W]` ブロック（最低1時間）と睡眠ブロックが最優先で配置され、`[Energy: High]` なタスクが午前のブロックに配置される。
+- **なぜリカバリーファースト・9大制約なのか**:
+  - ストイックな個体の「休めない病」を解消するため、`[W] Want` 枠を先取り不可侵枠（`👑`）として配置し、`[S] Should` の進捗を論理的に証明することで心理的免罪符（Safety Pass）を提供する。
+  - サーカディアンリズム（午前ディープ・午後ディップ）と超日リズム（90分限界）に従い、意志力の消耗を防ぐ。
+- **なぜSoR分離（GCal=外部 / SQLite=内部）なのか**:
+  - 双方向CRUDの競合やゴースト予定を根絶するため、外部予定（会議等）はカレンダーをRead-Onlyで参照し、内部タスク・ルーティンはDBを正本（Write）として一方向Reconciliation（完全洗い替え）を行う。
+  - 終日予定は時間をブロックするのではなく、「日のコンテキストを修飾するメタデータ（例: 有休/祝日）」として解釈する。
+- **なぜLeave No Trace（物理自動削除）なのか**:
+  - ファイルシステムをステート（状態）として残すと同期漏れやゴーストファイルが発生するため、実績回収完了後は `Briefing_YYYY-MM-DD.md` を即時物理削除し、DBのみを永続SoRとする。
 
-## [TM-PLAN-02] 異常系/エッジケース: WIP超過
-- **事後条件**: WIP_LIMIT（3つ）を超えるタスクはスケジュールから弾かれる。
+---
 
-## [TM-PLAN-03] 異常系/エッジケース: [W]タスク不足の警告
-- **事後条件**: 返却される `DailyBriefing` の `warning_flags` に `"W_ratio_low"` がセットされる。
+## 2. Contract (I/O Types)
 
-## [TM-PLAN-04] 異常系/エッジケース: LFD（限界期限）の超過警告
-- **事後条件**: 該当タスクの組み込み時に `DeadlineExceededWarning` フラグが立つ。
+### Input (DTO)
+- **`PlanDayDto`**:
+  - `target_date: date` (必須: プランニング対象日)
+  - `force_sync: bool` (任意, default=True: Google Calendarへの同期を行うか)
+- **`SyncWorklogsDto`**:
+  - `target_date: Optional[date]` (任意: 指定日付のブリーフィングのみ回収、未指定時は全ファイルをスキャン)
 
-## [TM-PLAN-05] 異常系: コンテキストスイッチの超過
-- **事後条件**: タスクが自動バッチ化され、1日の「深い⇔浅い」の往復が最大3回以内に収まること。
+### Output (DTO)
+- **`DailyBriefing`**:
+  - `target_date: date`
+  - `events: List[CalendarEvent]` (配置された全スケジュールブロック)
+  - `warning_flags: List[str]` (例: `"W_ratio_low"`, `"DeadlineExceededWarning"`)
+  - `content_markdown: str` (Mobile Vaultに配信されるMarkdown文字列)
+- **`SyncWorklogsResult`**:
+  - `processed_files_count: int`
+  - `completed_task_ids: List[str]`
+  - `recorded_worklogs_count: int`
 
-## [TM-PLAN-06] 異常系: 未Readyタスクの自動不可視化
-- **事後条件**: 依存先タスクが未完了のタスクは完全に除外される。
+### Exceptions (ドメインエラー)
+- **`PlanningException`**: スケジューリング計算時の致命的破綻
+- **`CalendarSyncException`**: Google Calendar API連携時の認証・通信エラー
 
-## [TM-PLAN-07] 正常系/エッジケース: 戦略的投資枠の強制ブロック
-- **事後条件**: 割り当て可能な空き時間のうち、20%が自己研鑽などの中長期タスク（`[S]`タスク）のために強制的にブロックされること。
+---
 
-## [TM-PLAN-08] 異常系: 孤立タスクの排除
-- **事後条件**: 目的(Areas)に紐付いていないタスクは除外される。
+## 3. Scenarios (テスト要求シナリオ)
 
-## [TM-PLAN-09] 異常系: ディープワーク連続稼働リミット到達
-- **事後条件**: 90分経過地点で強制的に15〜20分の「ブレイク」または「低負荷/[W]タスク」が挿入されること。
+### 正常系 (Happy Path)
+- `[TM-PLAN-01]`: Task Registryに「今日やるべき[M][S][W]タスク」が存在するとき、`[W]` ブロック（最低1時間）と睡眠ブロックが最優先で配置され、`[Energy: High]` なタスクが午前のブロックに配置されること。
+- `[TM-PLAN-07]`: 割り当て可能な空き時間のうち、20%が自己研鑽などの中長期タスク（`[S]`タスク）のために強制的にブロックされること。
+- `[TM-PLAN-10]`: 午後(13:00〜15:00)には `[Energy: Low]` または `[W]` のみが配置されること。
+- `[TM-PLAN-11]`: 活動終了の最後の30分間は「明日の計画とクールダウン（シャットダウン・リチュアル）」のための固定ブロックとなること。
+- `[TM-SYNC-01]`: `plan_day` によって `DailyBriefing` が生成され、固定枠と流動枠のパズルが完了した際、`CalendarRepository` を通じて外部カレンダーにブロック情報が一方向同期（Reconciliation）されること。
+- `[TM-SYNC-02]`: 外部イベント（会議等）はGoogle CalendarをSoRとしてRead-Onlyで扱い、内部ルーティンはDBをSoRとしてWrite権限で動的配置されること。DB側のルーティンは有効期間内のみ配置されること。
+- `[TM-SYNC-03]`: `plan_day` によって `DailyBriefing` が生成された際、`MobileVaultGateway` を通じて計画されたタスク一覧が所定のディレクトリにMarkdown形式（`Briefing_YYYY-MM-DD.md`）で配置・上書きされること。
+- `[TM-SYNC-04]`: `sync_worklogs` 処理により、Mobile Vault上の `Briefing_YYYY-MM-DD.md` から `- [x]` のマークがついたタスクを抽出し、該当タスクの `TaskStatus` を `COMPLETED` に更新し、実績を `Worklog` に記録した上で、回収済みファイルを自動物理削除（Leave No Trace）すること。
 
-## [TM-PLAN-10] 正常系: サーカディアン・ディップの自動処理
-- **事後条件**: 午後(13:00〜15:00)には `[Energy: Low]` または `[W]` のみが配置されること。
-
-## [TM-PLAN-11] 正常系: シャットダウン・リチュアルの固定配置
-- **事後条件**: 活動終了の最後の30分間は「明日の計画とクールダウン」のための固定ブロックとなること。
-
-## [TM-PLAN-12] 異常系: 午前中の浅い作業ブロックエラー
-- **事後条件**: 午前中の Shallow Work は拒絶されるか、午後に回されること。
-
-## [TM-SYNC-01] 正常系: 決定されたスケジュールを外部SoR（カレンダー）に同期する
-- **事前条件**: `plan_day` によって `DailyBriefing` が生成され、固定枠と流動枠のパズルが完了している。
-- **事後条件**: `CalendarRepository` を通じて外部カレンダーにブロック情報が書き込まれる（Agentic OS の状態が SoR に反映される）。
-
-## [TM-PLAN-06] アーキテクチャ原則: SoR分離と終日予定のメタデータ化
-- **事前条件**: スケジューリング処理（`plan_day`）が開始される。
-- **事後条件**: 
-  - 外部の「時間指定イベント（会議など）」はスケジュール上の**物理的なブロック（壁）**として扱われる。
-  - 外部の「終日イベント（有給、ゴミの日、記念日など）」はスケジュールを占有するブロックではなく、日のコンテキスト（Holiday等）を切り替えるための**メタデータ（フラグ）**として扱われる。
-  - 日本の祝日（`holidays.JP`）や終日予定の「有休」フラグが存在する場合、システムは曜日に関わらず `day_context="HOLIDAY"` として自律的に振る舞い、`WORKDAY` 専用のタスクを除外する。
-
-## [TM-SYNC-02] 制約: System of Record (SoR) の分離
-- **事後条件**: 外部イベント（会議、ゴミの日等）はGoogle CalendarをSoRとしてRead-Onlyで扱い、内部ルーティン（自己投資等）は `recurring_tasks` テーブルをSoRとしてWrite権限で動的配置されること。
-- **事後条件**: DB側の内部ルーティンは `valid_from` と `valid_until` の期間内のみカレンダーに配置（同期）されること。
-
-## [TM-SYNC-03] 正常系/異常系: DailyBriefingのMarkdown連携とフェイルセーフ (Mobile Vault同期)
-- **事前条件**: `plan_day` によって `DailyBriefing` が生成される。
-- **事後条件 (正常)**: `BriefingRepository` を通じて、計画されたタスク一覧が所定のInboxディレクトリにMarkdown形式（例: `Briefing_2026-07-22.md`）で保存されること。
-- **事後条件 (既存ファイルあり)**: すでに同日のファイルが存在する場合（洗い替え時）、既存ファイル内の完了実績消失を防ぐため、物理的に `Briefing_YYYY-MM-DD_backup_HHMMSS.md` にリネーム（退避）した上で、最新の計画ファイルを配置（上書き）すること。
-
-## [TM-SYNC-04] 正常系: 完了実績の回収とDB反映 (Worklog Sync)
-- **事前条件**: Inboxディレクトリに `Briefing_YYYY-MM-DD.md` や `_backup` ファイルが存在する。
-- **事後条件**: `sync_worklogs` 処理により、ファイル内から `- [x]` のマークがついたタスクIDを抽出し、該当タスクの `TaskStatus` を `COMPLETED` に更新、または実績として `Worklog` に記録すること。パース完了後のファイルは Archive 等に移動されること。
-
+### 異常系 / エッジケース (Edge Cases)
+- `[TM-PLAN-02]`: WIP_LIMIT（3つ）を超えるタスクはスケジュールから弾かれること。
+- `[TM-PLAN-03]`: `[W]` タスクの割合が20%未満の場合、返却される `DailyBriefing` の `warning_flags` に `"W_ratio_low"` がセットされること。
+- `[TM-PLAN-04]`: 該当タスクのLFD（限界期限）超過時に `DeadlineExceededWarning` フラグが立つこと。
+- `[TM-PLAN-05]`: タスクが自動バッチ化され、1日の「深い⇔浅い」の往復が最大3回以内に収まること。
+- `[TM-PLAN-06]`: 依存先タスクが未完了の未Readyタスクは完全に除外されること。
+- `[TM-PLAN-08]`: 目的(Areas)に紐付いていない孤立タスクは除外されること。
+- `[TM-PLAN-09]`: ディープワークが90分継続した地点で、強制的にブレイクまたは低負荷/`[W]`タスクが挿入されること。
+- `[TM-PLAN-12]`: 午前中の Shallow Work は拒絶されるか、午後に回されること。
+- `[TM-PLAN-13]`: 外部の「時間指定イベント」は物理的な壁として扱い、外部の「終日イベント（有休等）」や日本の祝日は日のコンテキスト（`day_context="HOLIDAY"`）を切り替えるメタデータとして解釈し、平日専用タスクを除外すること。

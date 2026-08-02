@@ -89,4 +89,3 @@ def test_to_task_creates_task_with_recurring_type():
     assert task.start_time.hour == 9 and task.start_time.minute == 0
     assert task.end_time is not None
     assert task.end_time.hour == 9 and task.end_time.minute == 30
-
