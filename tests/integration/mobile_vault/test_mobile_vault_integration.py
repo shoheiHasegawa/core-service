@@ -3,42 +3,41 @@
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from application.mobile_vault.mobile_vault_service import MobileVaultService
 from application.mobile_vault.peek_inbox_usecase import PeekInboxUseCase
 from application.mobile_vault.process_inbox_item_usecase import ProcessInboxItemUseCase
+from application.second_brain.register_inbox_note_usecase import RegisterInboxNoteUseCase
 from application.second_brain.second_brain_service import SecondBrainService
 from domain.mobile_vault.markdown_image_parser import MarkdownImageParser
 from infrastructure.local_file.local_file_mobile_vault_gateway import LocalFileMobileVaultGateway
 from infrastructure.local_file.local_file_second_brain_gateway import LocalFileSecondBrainGateway
+from infrastructure.sqlalchemy.task_model import TaskModel
 from tests.integration.conftest import IntegrationTestContext
 
 
-def test_peek_and_process_inbox_item_integration(test_context: IntegrationTestContext):
+def test_mobile_vault_inbox_lifecycle_integration(test_context: IntegrationTestContext):
     """
-    [MV-RECV-01] PeekInboxUseCase
-    [MV-RECV-02] ProcessInboxItemUseCase
-    [MV-RECV-03] ProcessInboxItemUseCase with invalid action
-    DBまで貫通させ、実際のファイル移動・タスク生成が行われるか検証する
+    [MV-RECV-01] PeekInboxUseCase: 未処理パケットと添付画像の参照（副作用なし）
+    [MV-RECV-02] ProcessInboxItemUseCase: idea/task/delete の振り分けとVault原本削除
+    実ファイルシステムとSQLite DBを貫通させ、Inboxパケットの受領から振り分け完了までのライフサイクルを検証する。
     """
     with (
         tempfile.TemporaryDirectory() as mobile_dir,
         tempfile.TemporaryDirectory() as mobile_img_dir,
         tempfile.TemporaryDirectory() as sb_dir,
     ):
-        # Gatewayの初期化
+        # 1. Gateway & Service セットアップ
         mobile_gateway = LocalFileMobileVaultGateway(inbox_dir=mobile_dir, attachments_dir=mobile_img_dir)
         sb_gateway = LocalFileSecondBrainGateway(sb_dir)
 
-        # SecondBrain側のテストデータとUseCaseの準備
         inbox_dir = Path(sb_dir) / "00_Inbox"
         inbox_dir.mkdir(parents=True, exist_ok=True)
         template_path = Path(sb_dir) / "template.md"
         template_path.write_text("# {{TITLE}}\n{{BODY}}\ntags: []")
 
-        from application.second_brain.register_inbox_note_usecase import RegisterInboxNoteUseCase
-
         register_inbox_uc = RegisterInboxNoteUseCase(str(inbox_dir), str(template_path), sb_gateway)
-
         sb_service = SecondBrainService(
             register_inbox_note_usecase=register_inbox_uc,
             register_permanent_note_usecase=None,
@@ -47,17 +46,9 @@ def test_peek_and_process_inbox_item_integration(test_context: IntegrationTestCo
             audit_zettelkasten_rules_usecase=None,
         )
         parser = MarkdownImageParser()
-
-        # テストデータの準備 (Mobile側)
-        packet_path = Path(mobile_dir) / "item_test.md"
-        packet_path.write_text("Test idea with image\n![[test_img.png]]")
-        img_path = Path(mobile_img_dir) / "test_img.png"
-        img_path.write_text("fake image content")
-
-        # UseCase初期化
-        peek_uc = PeekInboxUseCase(mobile_gateway, parser)
         attachments_dir = Path(sb_dir) / "90_Meta" / "Attachments"
         attachments_dir.mkdir(parents=True, exist_ok=True)
+
         process_uc = ProcessInboxItemUseCase(
             receiver=mobile_gateway,
             second_brain_service=sb_service,
@@ -66,9 +57,15 @@ def test_peek_and_process_inbox_item_integration(test_context: IntegrationTestCo
             sb_attachments_dir=str(attachments_dir),
             parser=parser,
         )
+        peek_uc = PeekInboxUseCase(mobile_gateway, parser)
         service = MobileVaultService(peek_uc, process_uc, None)
 
-        # --- 1. Peekのテスト [MV-RECV-01] ---
+        # 2. [MV-RECV-01] Peek の検証
+        packet_path = Path(mobile_dir) / "item_test.md"
+        packet_path.write_text("Test idea with image\n![[test_img.png]]")
+        img_path = Path(mobile_img_dir) / "test_img.png"
+        img_path.write_text("fake image content")
+
         inbox_items = service.peek_inbox()
         assert len(inbox_items) == 1
         assert inbox_items[0]["item_id"] == "item_test.md"
@@ -76,35 +73,24 @@ def test_peek_and_process_inbox_item_integration(test_context: IntegrationTestCo
         assert len(inbox_items[0]["images"]) == 1
         assert inbox_items[0]["images"][0]["name"] == "test_img.png"
 
-        # ファイルがまだ削除・移動されていないことの確認
+        # Peek は Read-only でありファイルが残っていることの確認
         assert img_path.exists()
         assert packet_path.exists()
 
-        # --- 2. Processのテスト (ideaアクション) [MV-RECV-02] ---
-        # "idea" アクションは、second-brain の 00_Inbox に保存され、画像が 90_Meta/Attachments に移動する
-        success = service.process_inbox_item(
+        # 3. [MV-RECV-02] Process (idea アクション) の検証
+        success_idea = service.process_inbox_item(
             item_id="item_test.md", action="idea", title="Great Idea", tags=["concept/test"]
         )
-        assert success is True
-
-        # 副作用の検証1: モバイル側のファイルが消えたか
+        assert success_idea is True
+        # 原本ファイルが削除され、Second Brain側に移動・作成されたことを確認
         assert not img_path.exists()
         assert not packet_path.exists()
-
-        # 副作用の検証2: SecondBrain側にファイルが作成されたか
-        inbox_dir = Path(sb_dir) / "00_Inbox"
-        attachments_dir = Path(sb_dir) / "90_Meta" / "Attachments"
-
-        # Ideaノートの確認
         idea_files = list(inbox_dir.glob("*.md"))
         assert len(idea_files) == 1
         assert "Great Idea" in idea_files[0].read_text()
-
-        # 画像が移動したかの確認
         assert (attachments_dir / "test_img.png").exists()
 
-        # --- 3. Processのテスト (taskアクション) [MV-RECV-02] ---
-        # もう一つテストデータを作成
+        # 4. [MV-RECV-02] Process (task アクション) の検証
         item_task_path = Path(mobile_dir) / "item_task.md"
         item_task_path.write_text("Buy milk")
 
@@ -112,17 +98,14 @@ def test_peek_and_process_inbox_item_integration(test_context: IntegrationTestCo
             item_id="item_task.md", action="task", title="Milk", energy_level="Low"
         )
         assert success_task is True
+        assert not item_task_path.exists()
 
-        # DBにタスクが登録されたかを直接アサーション (Integration Testの責務)
-        from infrastructure.sqlalchemy.task_model import TaskModel
-
+        # SQLite DBにタスクが永続化されたことを直接確認
         tasks = test_context.session.query(TaskModel).all()
         assert len(tasks) == 1
         assert tasks[0].title == "Milk"
-        # モバイル側のファイル削除確認
-        assert not item_task_path.exists()
 
-        # --- 4. Processのテスト (deleteアクション) [MV-RECV-02] ---
+        # 5. [MV-RECV-02] Process (delete アクション) の検証
         item_delete_path = Path(mobile_dir) / "item_delete.md"
         item_delete_path.write_text("Delete me with image\n![[del_img.png]]")
         del_img_path = Path(mobile_img_dir) / "del_img.png"
@@ -133,11 +116,37 @@ def test_peek_and_process_inbox_item_integration(test_context: IntegrationTestCo
         assert not item_delete_path.exists()
         assert not del_img_path.exists()
 
-        # --- 5. 異常系テスト (無効なアクション) [MV-RECV-03] ---
+
+def test_mobile_vault_invalid_action_integration(test_context: IntegrationTestContext):
+    """
+    [MV-RECV-03] 異常系: 無効なアクション指定時の例外送出
+    想定外のアクション名が指定された場合にサイレントに完了せず ValueError が送出されることを検証する。
+    """
+    with (
+        tempfile.TemporaryDirectory() as mobile_dir,
+        tempfile.TemporaryDirectory() as mobile_img_dir,
+        tempfile.TemporaryDirectory() as sb_dir,
+    ):
+        mobile_gateway = LocalFileMobileVaultGateway(inbox_dir=mobile_dir, attachments_dir=mobile_img_dir)
+        sb_gateway = LocalFileSecondBrainGateway(sb_dir)
+        parser = MarkdownImageParser()
+
+        process_uc = ProcessInboxItemUseCase(
+            receiver=mobile_gateway,
+            second_brain_service=None,
+            task_operations_service=test_context.task_operations_service,
+            sb_gateway=sb_gateway,
+            sb_attachments_dir=sb_dir,
+            parser=parser,
+        )
+        service = MobileVaultService(None, process_uc, None)
+
         item_invalid_path = Path(mobile_dir) / "item_invalid.md"
         item_invalid_path.write_text("Invalid action note")
 
-        import pytest
-
-        with pytest.raises(ValueError, match="Invalid action: invalid_action"):
+        with pytest.raises(ValueError, match="Invalid action: invalid_action") as exc_info:
             service.process_inbox_item(item_id="item_invalid.md", action="invalid_action")
+
+        assert "Invalid action" in str(exc_info.value)
+        # 異常系ではファイルが勝手に消えていないことを確認
+        assert item_invalid_path.exists()
