@@ -69,8 +69,8 @@ class GoogleCalendarGateway(CalendarGateway):
 
     def sync_daily_briefing(self, target_date: datetime.date, scheduled_tasks: list) -> None:
         """Google Calendar APIを利用してスケジュールを同期する"""
-        start_time = datetime.datetime.combine(target_date, datetime.time.min).isoformat() + "Z"
-        end_time = datetime.datetime.combine(target_date, datetime.time.max).isoformat() + "Z"
+        start_time = f"{target_date.isoformat()}T00:00:00+09:00"
+        end_time = f"{target_date.isoformat()}T23:59:59+09:00"
 
         events_result = (
             self.service.events()
@@ -92,12 +92,40 @@ class GoogleCalendarGateway(CalendarGateway):
             and "you_inc_task_id" in e["extendedProperties"]["private"]
         }
 
+        scheduled_task_ids = {getattr(t, "id", str(t)) for t in scheduled_tasks}
+
+        # Reconciliation: 余剰イベントの削除
+        for task_id, existing_event in existing_map.items():
+            if task_id not in scheduled_task_ids:
+                self.service.events().delete(
+                    calendarId=self.config.calendar_id,
+                    eventId=existing_event["id"],
+                ).execute()
+
         for task in scheduled_tasks:
             task_id = getattr(task, "id", str(task))
+            start_val = getattr(task, "start_time", None)
+            end_val = getattr(task, "end_time", None)
+
+            if start_val and end_val:
+                start_iso = start_val.isoformat() if hasattr(start_val, "isoformat") else str(start_val)
+                end_iso = end_val.isoformat() if hasattr(end_val, "isoformat") else str(end_val)
+                if "+" not in start_iso and not start_iso.endswith("Z"):
+                    start_iso += "+09:00"
+                if "+" not in end_iso and not end_iso.endswith("Z"):
+                    end_iso += "+09:00"
+
+                start_obj = {"dateTime": start_iso, "timeZone": "Asia/Tokyo"}
+                end_obj = {"dateTime": end_iso, "timeZone": "Asia/Tokyo"}
+            else:
+                next_day = target_date + datetime.timedelta(days=1)
+                start_obj = {"date": target_date.isoformat()}
+                end_obj = {"date": next_day.isoformat()}
+
             event_body = {
                 "summary": getattr(task, "title", "Task"),
-                "start": {"date": target_date.isoformat()},
-                "end": {"date": target_date.isoformat()},
+                "start": start_obj,
+                "end": end_obj,
                 "extendedProperties": {"private": {"you_inc_task_id": task_id, "source": "you_inc"}},
             }
 
