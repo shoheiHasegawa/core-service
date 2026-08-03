@@ -17,7 +17,11 @@ class SqlTaskRepository(TaskRepository):
     def get_ready_tasks_for_date(self, target_date: date) -> List[Task]:
         models = (
             self.session.query(TaskModel)
-            .filter(TaskModel.target_date == target_date, TaskModel.status != TaskStatus.COMPLETED.value)
+            .filter(
+                TaskModel.target_date == target_date,
+                TaskModel.status != TaskStatus.COMPLETED.value,
+                TaskModel.task_type == TaskType.ONE_OFF.value,
+            )
             .all()
         )
         return [self._to_entity(m) for m in models]

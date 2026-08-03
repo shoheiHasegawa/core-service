@@ -113,7 +113,9 @@ class CoreServiceContainer:
         )
 
     def get_task_operations_service(self) -> TaskOperationsService:
-        register_task_uc = RegisterTaskUseCase(self.task_repo)
+        from infrastructure.system.system_uuid_generator import SystemUUIDGenerator
+
+        register_task_uc = RegisterTaskUseCase(self.task_repo, SystemUUIDGenerator())
         refine_task_uc = RefineTaskUseCase(self.task_repo)
         return TaskOperationsService(register_task_uc, refine_task_uc)
 

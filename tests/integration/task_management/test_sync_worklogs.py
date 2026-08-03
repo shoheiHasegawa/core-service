@@ -75,3 +75,50 @@ def test_sync_worklogs_integration(test_context: IntegrationTestContext):
     # 昨日のファイルや無関係のファイルがパースされたり異常動作を引き起こしていないことの検証
     worklogs_old = worklog_repo.find_by_task_and_date("t_old", date(2026, 7, 21))
     assert len(worklogs_old) == 0, "昨日のタスク(未DB登録)が無理にパース・保存されていてはいけない"
+
+
+@freeze_time("2026-07-22")
+def test_sync_worklogs_resilient_to_corrupted_markdown(test_context: IntegrationTestContext):
+    """
+    [TM-SYNC-05] 異常系・耐障害性: Markdown上で一部の行のIDコメントが手動削除・破損していても
+    クラッシュせず正常な行のみ回収できること
+    """
+    task_repo = test_context.task_repo
+    worklog_repo = SQLAlchemyWorklogRepository(test_context.session)
+    dashboard_reader = FakeDashboardReader()
+
+    # IDコメントが欠落した行と、正常な行が混在したMarkdown
+    corrupted_content = """# Daily Briefing (2026-07-22)
+- [x] 手動でID消去したタスク (予定: 30m)
+- [x] 正常タスク (予定: 45m) <!-- id: t_valid -->
+- [ ] 未チェックタスク (予定: 60m) <!-- id: t_uncompleted -->
+"""
+    dashboard_reader.publish("Briefing_2026-07-22.md", corrupted_content)
+
+    from datetime import datetime
+
+    from domain.task_management.briefing_markdown_parser import BriefingMarkdownParser
+    from tests.integration.helpers.fake_clock import FakeClock
+    from tests.integration.helpers.fake_uuid_generator import FakeUUIDGenerator
+
+    clock = FakeClock(datetime(2026, 7, 22, 10, 0, 0))
+    uuid_gen = FakeUUIDGenerator(["fake-wl-valid"])
+
+    usecase = SyncWorklogsUseCase(dashboard_reader, task_repo, worklog_repo, BriefingMarkdownParser(), clock, uuid_gen)
+
+    # 準備
+    target_date = date(2026, 7, 22)
+    valid_task = Task(
+        id="t_valid", title="正常タスク", category=TaskCategory.MUST, estimated_minutes=45, target_date=target_date
+    )
+    task_repo.save_tasks([valid_task])
+    test_context.session.commit()
+
+    # 実行: クラッシュせずに終了すること
+    usecase.execute()
+    test_context.session.commit()
+
+    # 検証: 正常なタスクの実績のみが記録されていること
+    worklogs = worklog_repo.find_by_task_and_date("t_valid", target_date)
+    assert len(worklogs) == 1
+    assert worklogs[0].task_id == "t_valid"

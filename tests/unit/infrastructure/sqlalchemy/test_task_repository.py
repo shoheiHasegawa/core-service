@@ -106,7 +106,16 @@ def test_get_ready_tasks_for_date(session):
         target_date=date(2026, 7, 19),
         status=TaskStatus.COMPLETED,
     )
-    repository.save_tasks([task1, task2])
+    task3 = Task(
+        id="t-ready-recurring",
+        title="Recurring Task",
+        category=TaskCategory.MUST,
+        estimated_minutes=30,
+        target_date=date(2026, 7, 19),
+        task_type=TaskType.RECURRING,
+        status=TaskStatus.TODO,
+    )
+    repository.save_tasks([task1, task2, task3])
 
     tasks = repository.get_ready_tasks_for_date(date(2026, 7, 19))
     assert len(tasks) == 1

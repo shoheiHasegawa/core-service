@@ -84,6 +84,16 @@ class PlanDayUseCase:
         # 警告フラグ
         warning_flags = SchedulingValidator.validate(scheduled_tasks)
 
+        # 重複排除（タスクID単位）
+        unique_scheduled = []
+        seen_ids = set()
+        for t in scheduled_tasks:
+            t_id = getattr(t, "id", str(t))
+            if t_id not in seen_ids:
+                seen_ids.add(t_id)
+                unique_scheduled.append(t)
+        scheduled_tasks = unique_scheduled
+
         briefing = DailyBriefing(
             target_date=target_date,
             scheduled_tasks=scheduled_tasks,
