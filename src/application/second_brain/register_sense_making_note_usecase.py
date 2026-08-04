@@ -13,17 +13,21 @@ class RegisterSenseMakingNoteUseCase:
         self.repository = repository
 
     def execute(self, dto: RegisterSenseMakingNoteDto) -> bool:
+        if not dto.title or not dto.title.strip():
+            raise ValueError("Title cannot be empty")
+        if not dto.content or not dto.content.strip():
+            raise ValueError("Content cannot be empty")
 
         template_content = self.repository.read(self.template_path)
         formatter = ZettelkastenFormatter(template=template_content)
         formatted_content = formatter.format(
-            title=dto.title,
+            title=dto.title.strip(),
             body=dto.content,
             current_time=datetime.datetime.now(),
             tags=dto.tags,
             source=dto.source,
         )
-        filename = self.repository.generate_safe_filename(dto.title)
+        filename = self.repository.generate_safe_filename(dto.title.strip())
 
         save_path = os.path.join(self.save_dir, filename)
 

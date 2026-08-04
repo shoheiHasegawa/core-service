@@ -37,3 +37,33 @@ def test_register_inbox_note():
     save_call_args = repo.save.call_args[0]
     assert save_call_args[0].startswith("/inbox/")
     task_repo.save_tasks.assert_called_once()
+
+
+def test_register_inbox_note_empty_title():
+    """[SB-BOUND-01]"""
+    import pytest
+
+    config = _create_mock_config()
+    repo = MagicMock(spec=SecondBrainGateway)
+    usecase = RegisterInboxNoteUseCase(
+        save_dir=config.inbox_dir, template_path=config.inbox_template_path, repository=repo
+    )
+
+    with pytest.raises(ValueError, match="Title cannot be empty") as exc_info:
+        usecase.execute(RegisterInboxNoteDto(title="   ", content="Valid content"))
+    assert "Title cannot be empty" in str(exc_info.value)
+
+
+def test_register_inbox_note_empty_content():
+    """[SB-BOUND-01]"""
+    import pytest
+
+    config = _create_mock_config()
+    repo = MagicMock(spec=SecondBrainGateway)
+    usecase = RegisterInboxNoteUseCase(
+        save_dir=config.inbox_dir, template_path=config.inbox_template_path, repository=repo
+    )
+
+    with pytest.raises(ValueError, match="Content cannot be empty") as exc_info:
+        usecase.execute(RegisterInboxNoteDto(title="Valid title", content="  "))
+    assert "Content cannot be empty" in str(exc_info.value)

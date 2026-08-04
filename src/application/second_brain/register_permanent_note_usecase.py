@@ -26,12 +26,17 @@ class RegisterPermanentNoteUseCase:
         return True
 
     def execute(self, dto: RegisterPermanentNoteDto) -> bool:
+        if not dto.title or not dto.title.strip():
+            raise ValueError("Title cannot be empty")
+        if not dto.claim or not dto.claim.strip():
+            raise ValueError("Claim cannot be empty")
+
         content = f"## 💡 Claim (核となる主張・知見)\n{dto.claim}\n\n"
         content += f"## 🧭 Context (背景と深掘り)\n{dto.context}\n\n"
         content += f"## 🔗 Connections (関連ノードと関係性)\n{dto.connections}"
 
         return self._save_formatted_note(
-            title=dto.title,
+            title=dto.title.strip(),
             content=content,
             tags=dto.tags or [],
         )

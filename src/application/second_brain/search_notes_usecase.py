@@ -8,4 +8,6 @@ class SearchNotesUseCase:
         self.repository = repository
 
     def execute(self, query: str) -> List[str]:
+        if not query or not query.strip():
+            raise ValueError("Query cannot be empty")
         return self.repository.search(query, extension=".md")

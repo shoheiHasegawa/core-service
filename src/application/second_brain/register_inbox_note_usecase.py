@@ -31,8 +31,13 @@ class RegisterInboxNoteUseCase:
         return True
 
     def execute(self, dto: RegisterInboxNoteDto) -> bool:
+        if not dto.title or not dto.title.strip():
+            raise ValueError("Title cannot be empty")
+        if not dto.content or not dto.content.strip():
+            raise ValueError("Content cannot be empty")
+
         success = self._save_formatted_note(
-            title=dto.title,
+            title=dto.title.strip(),
             content=dto.content,
             tags=dto.tags or [],
         )

@@ -28,3 +28,51 @@ def test_register_permanent_note():
 
     assert result is True
     repo.save.assert_called_once()
+
+
+def test_register_permanent_note_empty_title():
+    """[SB-BOUND-01]"""
+    import pytest
+
+    repo = MagicMock(spec=SecondBrainGateway)
+    config = SecondBrainConfig(
+        inbox_dir="/inbox",
+        sense_making_dir="/sense",
+        permanent_notes_dir="/perm",
+        attachments_dir="/att",
+        inbox_template_path="/in",
+        sense_making_template_path="/se",
+        permanent_note_template_path="/pe",
+        forbidden_patterns=[],
+    )
+    usecase = RegisterPermanentNoteUseCase(
+        save_dir=config.permanent_notes_dir, template_path=config.permanent_note_template_path, repository=repo
+    )
+
+    with pytest.raises(ValueError, match="Title cannot be empty") as exc_info:
+        usecase.execute(RegisterPermanentNoteDto(title="   ", claim="C"))
+    assert "Title cannot be empty" in str(exc_info.value)
+
+
+def test_register_permanent_note_empty_claim():
+    """[SB-BOUND-02]"""
+    import pytest
+
+    repo = MagicMock(spec=SecondBrainGateway)
+    config = SecondBrainConfig(
+        inbox_dir="/inbox",
+        sense_making_dir="/sense",
+        permanent_notes_dir="/perm",
+        attachments_dir="/att",
+        inbox_template_path="/in",
+        sense_making_template_path="/se",
+        permanent_note_template_path="/pe",
+        forbidden_patterns=[],
+    )
+    usecase = RegisterPermanentNoteUseCase(
+        save_dir=config.permanent_notes_dir, template_path=config.permanent_note_template_path, repository=repo
+    )
+
+    with pytest.raises(ValueError, match="Claim cannot be empty") as exc_info:
+        usecase.execute(RegisterPermanentNoteDto(title="T", claim="   "))
+    assert "Claim cannot be empty" in str(exc_info.value)
