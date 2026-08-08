@@ -74,7 +74,7 @@ class CoreServiceContainer:
         self.schedule_gateway = DummyScheduleGateway()  # TODO: implement proper gateway
 
         # System Events
-        self.system_event_gateway = QueueSystemEventGateway(queue_dir=Path(self.config.agent_queue_dir))
+        self.system_event_gateway = QueueSystemEventGateway(events_dir=Path(self.config.agent_events_dir))
 
     def get_daily_planning_service(self) -> DailyPlanningService:
         # Assemble UseCases

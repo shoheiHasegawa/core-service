@@ -32,7 +32,7 @@ def test_container_initialization_and_services(monkeypatch):
             sb_sense_making_template_path=f"{temp_dir}/sb_sense_template",
             sb_permanent_note_template_path=f"{temp_dir}/sb_perm_template",
             sb_forbidden_patterns=["forbidden"],
-            agent_queue_dir=f"{temp_dir}/agent_queue",
+            agent_events_dir=f"{temp_dir}/agent_events",
             db_path="sqlite:///:memory:",
         )
 

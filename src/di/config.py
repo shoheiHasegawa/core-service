@@ -19,7 +19,7 @@ class CoreServiceConfig:
     mobile_attachments_dir: str
 
     # エージェント・システムキュー関連
-    agent_queue_dir: str
+    agent_events_dir: str
 
     # 外部API (Google Calendar等) 関連
     google_calendar_id: str

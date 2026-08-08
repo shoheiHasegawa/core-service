@@ -6,11 +6,11 @@ from domain.system_events.gateway import SystemEventGateway
 
 
 class QueueSystemEventGateway(SystemEventGateway):
-    def __init__(self, queue_dir: Path):
-        self.queue_dir = queue_dir
+    def __init__(self, events_dir: Path):
+        self.events_dir = events_dir
 
         # 起動時にキューディレクトリが存在しない場合は作成
-        self.queue_dir.mkdir(parents=True, exist_ok=True)
+        self.events_dir.mkdir(parents=True, exist_ok=True)
 
     def publish_error(self, job_name: str, error_details: str) -> None:
         """
@@ -20,7 +20,7 @@ class QueueSystemEventGateway(SystemEventGateway):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         # 命名規則: error_{job_name}_{timestamp}.md
         packet_name = f"error_{job_name}_{timestamp}.md"
-        packet_path = self.queue_dir / packet_name
+        packet_path = self.events_dir / packet_name
 
         # イベントバス（Queue）にエラーパケットを投函
         with open(packet_path, "w", encoding="utf-8") as f:

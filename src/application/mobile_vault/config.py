@@ -6,5 +6,5 @@ from pathlib import Path
 class MobileVaultConfig:
     inbox_dir: Path
     attachments_dir: Path
-    queue_dir: Path
+    events_dir: Path
     dashboard_dir: Path
