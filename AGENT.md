@@ -23,3 +23,4 @@
 3. **[Service-Configパターン]**: すべては 上位の実行環境（Composition Root等） から Dependency Injection されることを前提とし、内部で具象クラスをインスタンス化しない。（詳細は `docs/rules/dependency_injection.md` を参照）。
 4. **[インフラストラクチャの境界]**: DBやファイル読み書きなどの具象実装（アダプター）は `core-service/src/infrastructure/` に配置すること。`agent-core` 側には実装の実体を持たず、設定とDI（`app_context.py`）の呼び出しのみを行うこと。
 5. **[ルールの遵守義務]**: 実装完了時は、必ず上記ガイドラインに基づく厳格なレビューと、`make check-all`（`validate_sdd.py`）による自動検証を通過させること。
+6. **[Why-First ゲートキーピング (要求の妥当性検証)]**: DDD/SOLIDに基づく実装（コードを書く作業）に入る前に、必ずユーザーの要求に対して「その機能は本当に必要か？」「コードを書かずに既存の仕組みで解決できないか？（YAGNI原則のメタ適用）」というメタ認知プロセスを挟み、妥当性の合意を得てからMakerプロセスへ移行すること。
