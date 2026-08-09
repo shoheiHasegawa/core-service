@@ -21,7 +21,7 @@ def test_scenario_02_wip_limit_exceeded():
     )
 
     briefing = usecase.execute(date.today())
-    must_scheduled = [t for t in briefing.scheduled_tasks if t.category == TaskCategory.MUST and t.id != "sleep"]
+    must_scheduled = [t for t in briefing.scheduled_tasks if t.category == TaskCategory.MUST]
 
     assert len(must_scheduled) == 3
 
@@ -30,8 +30,8 @@ def test_scenario_03_w_ratio_low():
     """[TM-PLAN-03] Wタスクの割合が20%未満の場合、W_ratio_lowフラグが立つこと"""
     task_repo = MagicMock(spec=TaskRepository)
     tasks = [
-        Task(id="t1", title="Must 1", category=TaskCategory.MUST, estimated_minutes=60),
-        Task(id="t2", title="Must 2", category=TaskCategory.MUST, estimated_minutes=60),
+        Task(id="t1", title="Must 1", category=TaskCategory.MUST, estimated_minutes=60, area_id="01_Work"),
+        Task(id="t2", title="Must 2", category=TaskCategory.MUST, estimated_minutes=60, area_id="01_Work"),
     ]
     task_repo.get_ready_tasks_for_date.return_value = tasks
     usecase = PlanDayUseCase(

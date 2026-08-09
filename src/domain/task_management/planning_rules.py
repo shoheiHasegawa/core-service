@@ -7,18 +7,10 @@ from .task import Task, TaskCategory, WarningFlag
 class RecoveryFirstPolicy:
     @staticmethod
     def apply(tasks: List[Task], target_date: date) -> List[Task]:
-        """[TM-PLAN-01] リカバリー・ファースト: 睡眠と1時間以上のWANTを最優先"""
-        sleep_task = Task(
-            id="sleep",
-            title="Sleep",
-            category=TaskCategory.MUST,
-            estimated_minutes=480,
-            area_id="02_Life",
-            target_date=target_date,
-        )
+        """[TM-PLAN-01] リカバリー・ファースト: 1時間以上のWANTを最優先"""
         want_tasks = [t for t in tasks if t.category == TaskCategory.WANT and t.estimated_minutes >= 60]
         other_tasks = [t for t in tasks if not (t.category == TaskCategory.WANT and t.estimated_minutes >= 60)]
-        return [sleep_task] + want_tasks + other_tasks
+        return want_tasks + other_tasks
 
 
 class WIPAllocationPolicy:

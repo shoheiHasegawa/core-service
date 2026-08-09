@@ -16,7 +16,7 @@ class FakeScheduleGateway(ScheduleGateway):
 def test_daily_action_service_plan_day_constraints(test_context: IntegrationTestContext):
     """[TM-PLAN-03]
     PlanDayUseCase.execute の結合検証:
-    1. リカバリー・ファースト制約（睡眠・Wantの確保）
+    1. リカバリー・ファースト制約（Wantの確保）
     2. 15分バッファ制約
     3. Morning Deep Work 制約
     4. 未Readyタスク・孤立タスクの除外
@@ -102,12 +102,7 @@ def test_daily_action_service_plan_day_constraints(test_context: IntegrationTest
     assert "task-isolated" not in scheduled_task_ids, "孤立タスクはスケジュールから除外されるべき"
     assert "task-unready" not in scheduled_task_ids, "依存タスクが未完了のタスクは除外されるべき"
 
-    # 1. リカバリー・ファースト制約: 睡眠ブロックの確保 (sleep というIDまたはタイトルの予定があること)
-    #    及び 1時間以上の Want タスクが含まれていること
-    assert any(
-        "sleep" in getattr(t, "title", "").lower() or "睡眠" in getattr(t, "title", "")
-        for t in briefing.scheduled_tasks
-    ), "睡眠ブロックが確保されていること"
+    # 1. リカバリー・ファースト制約: 1時間以上の Want タスクが含まれていること
     assert "task-want" in scheduled_task_ids, "1時間以上のWantブロックが最優先で確保されていること"
 
     # 5. 視覚的強調(UX): 削除 (Formatterに移譲したため、Coreでは絵文字が付与されないことを確認)

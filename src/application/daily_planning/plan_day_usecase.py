@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time
 from typing import Optional
 
 import holidays
@@ -68,8 +68,8 @@ class PlanDayUseCase:
         tasks = RecoveryFirstPolicy.apply(tasks, target_date)
 
         # タイムスケジュール構築
-        start_time = datetime.combine(target_date, datetime.min.time())
-        end_time = start_time + timedelta(hours=23)
+        start_time = datetime.combine(target_date, time(5, 0))
+        end_time = datetime.combine(target_date, time(20, 0))
 
         # 定期タスクの抽出と固定ブロック化
         fixed_tasks = []

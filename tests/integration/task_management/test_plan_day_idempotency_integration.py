@@ -103,7 +103,7 @@ def test_plan_day_idempotency_consecutive_runs(test_context: IntegrationTestCont
 
 def test_plan_day_empty_tasks_boundary(test_context: IntegrationTestContext):
     """
-    [TM-PLAN-16] 境界値・空データ: タスクが0件の場合でも、固定定期タスクおよび睡眠ブロックのみで構成された有効なスケジュールが生成されること
+    [TM-PLAN-16] 境界値・空データ: タスクが0件の場合でも、活動時間（05:00-20:00）の範囲内で固定定期タスクのみで構成された有効なスケジュールが生成されること
     """
     task_repo = test_context.task_repo
     recurring_task_repo = SqlRecurringTaskRepository(test_context.session)
