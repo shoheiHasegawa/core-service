@@ -18,7 +18,7 @@ class CoreServiceConfig:
     mobile_dashboard_dir: str
     mobile_attachments_dir: str
 
-    # エージェント・システムキュー関連
+    # エージェント・システムイベント関連
     agent_events_dir: str
 
     # 外部API (Google Calendar等) 関連

@@ -16,13 +16,14 @@ class QueueSystemEventGateway(SystemEventGateway):
         """
         システムエラーイベントをキューに発行し、Macの通知センターに通知する。
         Context Engineeringに基づき、処理粒度が明確な命名規則を使用する。
+        システム非同期エラー通知用 Event Busとして機能する。
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         # 命名規則: error_{job_name}_{timestamp}.md
         packet_name = f"error_{job_name}_{timestamp}.md"
         packet_path = self.events_dir / packet_name
 
-        # イベントバス（Queue）にエラーパケットを投函
+        # イベントバス（Events）にエラーパケットを投函
         with open(packet_path, "w", encoding="utf-8") as f:
             f.write(f"# System Error Event: {job_name}\n\n")
             f.write(f"- **Timestamp**: {timestamp}\n")
