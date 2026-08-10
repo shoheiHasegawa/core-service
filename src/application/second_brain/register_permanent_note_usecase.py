@@ -17,7 +17,9 @@ class RegisterPermanentNoteUseCase:
         formatter = ZettelkastenFormatter(template=template_content)
         current_time = datetime.datetime.now()
         note_id = current_time.strftime("%Y%m%d%H%M%S")
-        formatted_content = formatter.format(title=title, body=content, current_time=current_time, tags=tags, id=note_id)
+        formatted_content = formatter.format(
+            title=title, body=content, current_time=current_time, tags=tags, id=note_id
+        )
         filename = self.repository.generate_safe_filename(title)
 
         # Use simple os.path.join or f-string. Here, assuming save_dir does not have trailing slash.
